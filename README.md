@@ -41,11 +41,11 @@ in a chroot jail.
 
 ## Installation
 
-** WARNING ** This current version is intended for installing on a
+**WARNING** This current version is intended for installing on a
 server that firewalled to allow connections ONLY from authorised client
 machines. If you install it on a machine without such firewalling,
 anyone will be able to connect to your machine and run their own code
-on it! ** PROCEED AT YOUR OWN RISK **
+on it! **PROCEED AT YOUR OWN RISK**
 
 Jobe is implemented using Ellis Lab's [codeigniter](http://codeigniter.com) plus the
 [RESTserver plugin](https://github.com/philsturgeon/codeigniter-restserver) from
