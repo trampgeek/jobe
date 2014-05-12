@@ -11,8 +11,11 @@ from base64 import b64encode
 #
 # ===============================================
 
-VERBOSE = True
+VERBOSE = False
 DEBUGGING = False
+
+JOBE_SERVER = 'localhost'
+#JOBE_SERVER = '192.168.1.107'
 
 GOOD_TEST = 0
 FAIL_TEST = 1
@@ -85,30 +88,38 @@ int main() {
     'expect': { 'outcome': 12 }
 },
 
-#{
-    #'comment': 'Test timelimit on C',
-    #'language_id': 'c',
-    #'sourcecode': r'''#include <stdio.h>
-#int main() {
-    #while(1) {};
-#}
-#''',
-    #'sourcefilename': 'prog.c',
-    #'expect': { 'outcome': 13 }
-#},
+{
+    'comment': 'Test timelimit on C',
+    'language_id': 'c',
+    'sourcecode': r'''#include <stdio.h>
+int main() {
+    while(1) {};
+}
+''',
+    'sourcefilename': 'prog.c',
+    'expect': { 'outcome': 13 }
+},
 
 {
     'comment': 'Memory limit exceeded in C (seg faults)',
     'language_id': 'c',
     'sourcecode': r'''#include <stdio.h>
-#include <assert.h>
+#include <stdlib.h>
+// Will try to allocate 100MB; default limit is 50MB
+#define CHUNKSIZE 100000000
+
 int main() {
-    int data[1000000000];
-    printf("%ld\n", sizeof(data));
+    char* p = malloc(CHUNKSIZE);
+    if (p == NULL) {
+        printf("Memory limit worked\n");
+    } else {
+        printf("Oh dear, the malloc worked");
+    }
 }
+
 ''',
     'sourcefilename': 'prog.c',
-    'expect': { 'outcome': 12 }
+    'expect': { 'outcome': 0, 'stdout': 'Memory limit worked\n' }
 },
 
 {
@@ -170,7 +181,7 @@ def check_file(file_id):
 
     resource = '/jobe/index.php/restapi/files/' + file_id
     headers = {"Accept": "text/plain"}
-    connect = http.client.HTTPConnection('localhost')
+    connect = http.client.HTTPConnection(JOBE_SERVER)
     connect.request('HEAD', resource, '', headers)
     try:
         response = connect.getresponse()
@@ -197,7 +208,7 @@ def put_file(file_desc):
     resource = '/jobe/index.php/restapi/files/' + file_id
     headers = {"Content-type": "application/json",
                "Accept": "text/plain"}
-    connect = http.client.HTTPConnection('localhost')
+    connect = http.client.HTTPConnection(JOBE_SERVER)
     connect.request('PUT', resource, data, headers)
     response = connect.getresponse()
     if VERBOSE:
@@ -227,18 +238,16 @@ def run_test(test):
 
     # Prepare the request
 
-    # url = 'http://192.168.1.107/jobe/index.php/restapi/runs'
-    url = 'http://localhost/jobe/index.php/restapi/runs'
     resource = '/jobe/index.php/restapi/runs/'
     data = json.dumps({ 'run_spec' : runspec })
     headers = {"Content-type": "application/json",
-               "Accept": "text/plain"}
+               "Accept": "application/json"}
     response = None
     content = ''
     result = {}
     # Send the request
     try:
-        connect = http.client.HTTPConnection('localhost')
+        connect = http.client.HTTPConnection(JOBE_SERVER)
         connect.request('POST', resource, data, headers)
         response = connect.getresponse()
         if response.status != 204:
@@ -246,12 +255,13 @@ def run_test(test):
             if content:
                 result = json.loads(content)
         connect.close()
+        #print(response.status, response.reason, content)
 
     except (HTTPError, ValueError) as e:
         print("\n***************** HTTP ERROR ******************\n")
         print(test['comment'], end='')
         if response:
-            print(' Response:', response.code, response.reason, content)
+            print(' Response:', response.status, response.reason, content)
         else:
             print(e)
         return EXCEPTION
@@ -266,15 +276,17 @@ def run_test(test):
         return GOOD_TEST
     else:
         print("\n***************** FAILED TEST ******************\n")
+        print(result)
         display_result(test['comment'], result)
         print("\n************************************************\n")
         return FAIL_TEST
 
+
 def display_result(comment, ro):
     '''Display the given result object'''
     print(comment)
-    if isinstance(ro, str) or isinstance(ro, list):
-        print(ro)
+    if not isinstance(ro, dict) or 'outcome' not in ro:
+        print("Bad result object", ro)
         return
 
     outcomes = {

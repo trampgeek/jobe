@@ -51,7 +51,7 @@ abstract class Task {
         'disklimit'     => 100,     // MB
         'cputime'       => 5,       // secs
         'memorylimit'   => 50,      // MB
-        'numprocs'      => 10
+        'numprocs'      => 20
     );
 
     public $cmpinfo = '';   // Output from compilation
@@ -80,7 +80,11 @@ abstract class Task {
 
 
     protected function getParam($key) {
-        return $this->DEFAULT_PARAMS[$key];
+        if (isset($this->params) && array_key_exists($key, $this->params)) {
+            return $this->params[$key];
+        } else {
+            return $this->DEFAULT_PARAMS[$key];
+        }
     }
     
 
@@ -147,7 +151,7 @@ abstract class Task {
 
         $workdir = $this->workdir;
         chdir($workdir);
-        //$this->loadFiles($files);
+
         try {
             $this->cmpinfo = ''; // Set defaults first
             $this->signal = 0;
@@ -206,7 +210,7 @@ abstract class Task {
     // Subclasses may wish to add further postprocessing, e.g. for memory
     // limit exceeded if the language identifies this specifically.
     public function diagnose_result() {
-        if (!empty($this->filteredStderr())) {
+        if (strlen($this->filteredStderr())) {
             $this->result = TASK::RESULT_RUNTIME_ERROR;
         } else {
             $this->result = TASK::RESULT_OK;
@@ -276,6 +280,13 @@ abstract class Task {
         return rmdir($dir);
     }
 }
+
+
+// =======================================================================
+//
+// Define the behaviour of all the supported languages
+//
+// =======================================================================
 
 class Matlab_Task extends Task {
     public function __construct($source, $filename) {
@@ -350,7 +361,7 @@ class Matlab_Task extends Task {
      }
 };
 
-
+// =======================================================================
 class Octave_Task extends Task {
     public function __construct($source, $filename) {
         Task::__construct($source, $filename);
@@ -387,7 +398,7 @@ class Octave_Task extends Task {
      }
 }
 
-
+// =======================================================================
 class Python2_Task extends Task {
     public function __construct($source, $filename) {
         Task::__construct($source, $filename);
@@ -413,6 +424,7 @@ class Python2_Task extends Task {
      }
 };
 
+// =======================================================================
 class Python3_Task extends Task {
     public function __construct($source, $filename) {
         Task::__construct($source, $filename);
@@ -454,22 +466,18 @@ class Python3_Task extends Task {
      }
 };
 
+// =======================================================================
 class Java_Task extends Task {
     public function __construct($source, $filename) {
         Task::__construct($source, $filename);
-        $this->workdir = tempnam("/tmp", "coderunner_");
-        if (!unlink($this->workdir) || !mkdir($this->workdir)) {
-            throw new coding_exception("LanguageTask: error making temp directory (race error?)");
-        }
-        $this->sourceFileName = "sourceFile";
-        chdir($this->workdir);
-        $handle = fopen($this->sourceFileName, "w");
-        fwrite($handle, $sourceCode);
-        fclose($handle);
+        
+        // TODO: find out why java won't work with memory limit set to
+        // more plausible values.
+        $this->params = array('memorylimit' => 0);
     }
 
     public function getVersion() {
-        return 'Java 1.6';
+        return 'Java 1.7';
     }
 
     public function compile() {
@@ -523,7 +531,7 @@ class Java_Task extends Task {
      }
 };
 
-
+// =======================================================================
 class C_Task extends Task {
 
     public function __construct($source, $filename) {

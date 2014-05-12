@@ -42,7 +42,7 @@ in a chroot jail.
 ## Installation
 
 **WARNING** This current version is intended for installing on a
-server that firewalled to allow connections ONLY from authorised client
+server that is firewalled to allow connections ONLY from authorised client
 machines. If you install it on a machine without such firewalling,
 anyone will be able to connect to your machine and run their own code
 on it! **PROCEED AT YOUR OWN RISK**
@@ -59,13 +59,15 @@ Installation steps are something like the following (**TO CHECK AND UPDATE**):
 
 1.  Add a user *jobe* to the system
 
-1.  So that runguard can set the user to jobe during runs, it must itself
+1.  Runguard needs to be compiled for the target machine. Also,
+    so that runguard can set the user to jobe during runs, it must itself
     be owned by root and must be set-uid root. Also, the web server
     must be able to write to the directory /var/www/jobe/files. 
     On a Debian/Ubuntu/Mint system, these requirements are achieved by:
 
-        sudo chown root /var/www/jobe/runguard/runguard
-        sudo chmod 4755 /var/www/jobe/runguard/runguard
+        cd /var/www/jobe/runguard
+        sudo gcc -o runguard runguard.c
+        sudo chmod 4755 runguard
         sudo chgrp www-data /var/www/jobe/files
         sudo chmod g+rwX /var/www/jobe/files
 

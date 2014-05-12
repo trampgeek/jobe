@@ -26,10 +26,19 @@ require_once('application/libraries/LanguageTasks.php');
 define('MAX_READ', 4096);  // Max bytes to read in popen
 define ('MIN_FILE_IDENTIFIER_SIZE', 8);
 define ('FILE_CACHE_BASE', '/var/www/jobe/files/');
-// define ('FILE_CACHE_BASE', '/tmp/jobefiles/');
+
 
 
 class Restapi extends REST_Controller {
+    
+    protected $LANGUAGES = array(
+        'c'         => 'gcc 4.8.1',
+        'python3'   => 'Python 3.3.2+',
+        'python2'   => 'Python 2.7.5+',
+        'java'      => 'javac 1.7.0_51',
+        'octave'    => 'GNU Octave 3.6.4'
+    );
+    
     
     public function index_get() {
         $this->response('Please access this API via the runs, runresults, files or languages collections');
@@ -89,7 +98,7 @@ class Restapi extends REST_Controller {
     
     public function runs_post() {
         if (!$run = $this->post('run_spec')) {
-            $this->response('Missing or invalid runspec parameter', 400);
+            $this->response('Missing or invalid run_spec parameter', 400);
         } elseif (!is_array($run) || !isset($run['sourcecode']) ||
                     !isset($run['language_id'])) {
                 $this->response('Invalid run specification', 400);
@@ -114,7 +123,7 @@ class Restapi extends REST_Controller {
             $sourcecode = $this->run->sourcecode;
             $language = $this->run->language_id;
             $filename = $this->run->sourcefilename;
-            if ($language != 'c' && $language != 'python3') {
+            if (!array_key_exists($language, $this->LANGUAGES)) {
                 $this->response("Language '$language' is not known", 400);
             } else {
                 $reqdTaskClass = ucwords($language) . '_Task';
@@ -153,10 +162,11 @@ class Restapi extends REST_Controller {
     // **********************
     public function languages_get()
     {
-        $this->response(array(
-                array('c', 'gcc 4.8.1'),
-                array('python3', 'Python 3.3.2+')
-            ));
+        $langs = array();
+        foreach ($this->LANGUAGES as $id => $version) {
+            $langs[] = array($id, $version);
+        }
+        $this->response($langs);
     }
     
     // **********************
