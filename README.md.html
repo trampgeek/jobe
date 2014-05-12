@@ -1,0 +1,69 @@
+<h1>JOBE</h1>
+
+<p>Version: 0.1 alpha May 2014</p>
+
+<p>Author: Richard Lobb, University of Canterbury, New Zealand.</p>
+
+<h2>Introduction</h2>
+
+<p>Jobe (short for Job Engine) is a server that supports running of small
+compile-and-run jobs in a variety of programming languages, in a similar
+way to the <a href="http://ideone.com">Ideone</a> website. It is being
+developed as a remote sandbox for use by <a href="http://github.com/trampgeek/coderunner">CodeRunner</a>, 
+a Moodle question-type plugin that asks students to write code to some
+relatively simple specification. However, Jobe servers could be useful in
+a variety of other contexts, particularly in education.</p>
+
+<p>A job specifies a programming language, the source code, the standard input
+to the run and an optional list of additional files. Jobe compiles the
+source code (if compilation is appropriate in the specified language) and 
+runs it with the given input data. It returns a run_result object containing
+various status information plus the output and error output from the run.</p>
+
+<p>The interface is via a RESTful API, that is documented <a href="./restapi.pdf">here</a>.</p>
+
+<h2>Implementation status</h2>
+
+<p>Jobe is still under development. The current alpha version implements
+enough of the API to provide the services needed by CodeRunner (hopefully --
+this is still being developed). Only 
+immediate-mode runs are supported, with run results being returned with the
+response to the POST of the run requests. Run results are not retained by
+the server, so 
+get<em>run</em>status always returns 404 not found. Only C and Python3 have been
+tested at this stage, although untested code exists to support Python2, Java
+Matlab and Octave.</p>
+
+<p>Sandboxing is rather basic. It uses the <a href="http://domjudge.org">domjudge</a> 
+<em>runguard</em> program to run student jobs with restrictions on resource
+allocation (memory, processes, cpu time) as a low-privileged user.
+However it does not restrict any system calls and the task is not yet run
+in a chroot jail.</p>
+
+<h2>Installation</h2>
+
+<p>Jobe is implemented using Ellis Lab's <a href="http://codeigniter.com">codeigniter</a> plus the
+<a href="https://github.com/philsturgeon/codeigniter-restserver">RESTserver plugin</a> from
+Phil Sturgeon. Jobe runs only on Linux, which must have the Apache web server
+installed and running. Python3 and the C development system must also be
+installed.</p>
+
+<p>Installation steps are something like the following (<strong>TO CHECK AND UPDATE</strong>):</p>
+
+<ol>
+<li><p>Clone this repository into /var/www/jobe</p></li>
+<li><p>Add a user <em>jobe</em> to the system</p></li>
+<li><p>So that runguard can set the user to jobe during runs, it must itself
+be owned by root and must be set-uid root. Also, the web server
+must be able to write to the directory /var/www/jobe/files. 
+On a Debian/Ubuntu/Mint system, these requirements are achieved by:</p>
+
+<pre><code>sudo chown root /var/www/jobe/runguard/runguard
+sudo chmod 4755 /var/www/jobe/runguard/runguard
+sudo chgrp www-data /var/www/jobe/files
+sudo chmod g+rwX /var/www/jobe/files
+</code></pre>
+
+<p>On other servers, replace www-data in the above commands by the user name
+for the web server (e.g. apache on RedHat/Fedora).</p></li>
+</ol>

@@ -60,13 +60,14 @@ class Restapi extends REST_Controller {
 
         $contents = base64_decode($contentsb64, TRUE);
         if ($contents === FALSE) {
-            $this->response("Conents of file $fileId are not valid base-64", 400);
+            $this->response("Contents of file $fileId are not valid base-64", 400);
         }
         $destPath = FILE_CACHE_BASE . $fileId;
+
         if (file_put_contents($destPath, $contents) === FALSE) {
             $this->response("Failed to write file $destPath to cache", 500);
         }
-        $this->response('', 204);
+        $this->response(NULL, 204);
     }
     
     
@@ -75,9 +76,9 @@ class Restapi extends REST_Controller {
         if (!$fileId) {
             $this->response('Missing file ID parameter in URL', 400);
         } else if (file_exists(FILE_CACHE_BASE . $fileId)) {
-            $this->response('', 200);
+            $this->response(NULL, 204);
         } else {
-            $this->response('', 404);
+            $this->response(NULL, 404);
         }
     }
     
@@ -114,7 +115,7 @@ class Restapi extends REST_Controller {
                 $files = $run->file_list;
                 foreach ($files as $file) {
                     if (!$this->is_valid_filespec($file)) {
-                        $this->response(print_r($file, TRUE), 400);
+                        $this->response("Invalid file specifier: " . print_r($file, TRUE), 400);
                     }
                 }
             } else {
@@ -178,8 +179,8 @@ class Restapi extends REST_Controller {
              is_string($file[1]) &&             
              strlen($file[0]) >= MIN_FILE_IDENTIFIER_SIZE &&
              ctype_alnum($file[0]) &&
-             !empty($file[1]) &&
-             ctype_alnum(str_replace('-_.', '', $file[1]));
+             strlen($file[1]) > 0 &&
+             ctype_alnum(str_replace(array('-', '_', '.'), '', $file[1]));
     }    
 
 }

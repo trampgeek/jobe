@@ -233,7 +233,7 @@ def run_test(test):
     # First put any files to the server
     for file_desc in test.get('files', []):
         put_file(file_desc)
-        if check_file(file_desc[0]) != 200:
+        if check_file(file_desc[0]) != 204:
             print("******** Put file/check file failed. File not found.****")
 
     # Prepare the request
