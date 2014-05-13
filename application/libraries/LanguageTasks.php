@@ -38,7 +38,6 @@ abstract class Task {
 
     // Symbolic constants as per ideone API
 
-    const RESULT_OK      = 0;
     const RESULT_COMPILATION_ERROR = 11;
     const RESULT_RUNTIME_ERROR = 12;
     const RESULT_TIME_LIMIT   = 13;
@@ -65,13 +64,17 @@ abstract class Task {
 
     // For all languages it is necessary to store the source code in a
     // temporary file when constructing the task. A temporary directory
-    // is made to hold the source code.
-    public function __construct($sourceCode, $filename) {
+    // is made to hold the source code. The standard input ($input) and
+    // the run parameters ($params) are
+    // saved for use at runtime.
+    public function __construct($sourceCode, $filename, $input, $params) {
         $this->workdir = tempnam("/tmp", "jobe_");
         if (!unlink($this->workdir) || !mkdir($this->workdir)) {
             throw new coding_exception("Task: error making temp directory (race error?)");
         }
+        $this->input = $input;
         $this->sourceFileName = $filename;
+        $this->params = $params;
         chdir($this->workdir);
         $handle = fopen($this->sourceFileName, "w");
         fwrite($handle, $sourceCode);
@@ -95,7 +98,7 @@ abstract class Task {
         }
         return new ResultObject(
             $this->workdir,     // TODO get a better ID than this
-            $this->result == Task::RESULT_SUCCESS ? 0 : $this->result,
+            $this->result,
             $this->cmpinfo,
             $this->filteredStdout(),
             $this->filteredStderr()
@@ -158,9 +161,9 @@ abstract class Task {
             $this->time = 0;
             $this->memory = 0;
 
-            if (isset($this->run->input) && $this->run->input != '') {
+            if ($this->input != '') {
                 $f = fopen('prog.in', 'w');
-                fwrite($f, $this->run->input);
+                fwrite($f, $this->input);
                 fclose($f);
                 $cmd .= " <prog.in";
             }
@@ -201,7 +204,7 @@ abstract class Task {
 
     
     // Called after each run to set the task result value. Default is to
-    // set the result to OK if there's no stderr output or to timelimit
+    // set the result to SUCCESS if there's no stderr output or to timelimit
     // exceeded if the appropriate warning message is found in stdout or
     // to runtime error otherwise.
     // Note that Runguard does not identify memorylimit exceeded as a special
@@ -213,7 +216,7 @@ abstract class Task {
         if (strlen($this->filteredStderr())) {
             $this->result = TASK::RESULT_RUNTIME_ERROR;
         } else {
-            $this->result = TASK::RESULT_OK;
+            $this->result = TASK::RESULT_SUCCESS;
         } 
         
         // Refine RuntimeError if possible
@@ -289,8 +292,8 @@ abstract class Task {
 // =======================================================================
 
 class Matlab_Task extends Task {
-    public function __construct($source, $filename) {
-        Task::__construct($source, $filename);
+    public function __construct($source, $filename, $input, $params) {
+        Task::__construct($source, $filename, $input, $params);
     }
 
     public function getVersion() {
@@ -363,8 +366,8 @@ class Matlab_Task extends Task {
 
 // =======================================================================
 class Octave_Task extends Task {
-    public function __construct($source, $filename) {
-        Task::__construct($source, $filename);
+    public function __construct($source, $filename, $input, $params) {
+        Task::__construct($source, $filename, $input, $params);
     }
 
     public function getVersion() {
@@ -400,8 +403,8 @@ class Octave_Task extends Task {
 
 // =======================================================================
 class Python2_Task extends Task {
-    public function __construct($source, $filename) {
-        Task::__construct($source, $filename);
+    public function __construct($source, $filename, $input, $params) {
+        Task::__construct($source, $filename, $input, $params);
     }
 
     public function getVersion() {
@@ -426,8 +429,8 @@ class Python2_Task extends Task {
 
 // =======================================================================
 class Python3_Task extends Task {
-    public function __construct($source, $filename) {
-        Task::__construct($source, $filename);
+    public function __construct($source, $filename, $input, $params) {
+        Task::__construct($source, $filename, $input, $params);
     }
 
     public function getVersion() {
@@ -468,8 +471,8 @@ class Python3_Task extends Task {
 
 // =======================================================================
 class Java_Task extends Task {
-    public function __construct($source, $filename) {
-        Task::__construct($source, $filename);
+    public function __construct($source, $filename, $input, $params) {
+        Task::__construct($source, $filename, $input, $params);
         
         // TODO: find out why java won't work with memory limit set to
         // more plausible values.
@@ -534,8 +537,8 @@ class Java_Task extends Task {
 // =======================================================================
 class C_Task extends Task {
 
-    public function __construct($source, $filename) {
-        Task::__construct($source, $filename);
+    public function __construct($source, $filename, $input, $params) {
+        Task::__construct($source, $filename, $input, $params);
     }
 
     public function getVersion() {

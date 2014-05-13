@@ -105,12 +105,11 @@ class Restapi extends REST_Controller {
                 $this->response('Invalid run specification', 400);
         } else {
             // REST_Controller has called to_array on the JSON decoded
-            // object, so we first turn it back into an object
-            $run = json_decode(json_encode($run));
+            // object, so we must first turn it back into an object
+            $run = (object) $run;
             
             // Now we can process the run request
             
-            $this->run = $run;
             if (isset($run->file_list)) {
                 $files = $run->file_list;
                 foreach ($files as $file) {
@@ -121,15 +120,17 @@ class Restapi extends REST_Controller {
             } else {
                 $files = array();
             }
-            $sourcecode = $this->run->sourcecode;
-            $language = $this->run->language_id;
-            $filename = $this->run->sourcefilename;
+
+            $language = $run->language_id;
+            $input = isset($run->input) ? $run->input : '';
+            $params = isset($run->parameters) ? $run->parameters : array();
             if (!array_key_exists($language, $this->LANGUAGES)) {
                 $this->response("Language '$language' is not known", 400);
             } else {
                 $reqdTaskClass = ucwords($language) . '_Task';
-                $this->task = new $reqdTaskClass($sourcecode, $filename);
-                $deleteFiles = !isset($this->run->debug) || !$this->run->debug;
+                $this->task = new $reqdTaskClass($run->sourcecode,
+                        $run->sourcefilename, $input, $params);
+                $deleteFiles = !isset($run->debug) || !$run->debug;
                 if (!$this->task->load_files($files, FILE_CACHE_BASE)) {
                     $this->task->close($deleteFiles);
                     $this->response('One or more of the specified files is missing/unavailable', 404);

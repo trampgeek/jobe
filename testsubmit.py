@@ -12,7 +12,7 @@ from base64 import b64encode
 # ===============================================
 
 VERBOSE = False
-DEBUGGING = False
+DEBUGGING = True
 
 JOBE_SERVER = 'localhost'
 #JOBE_SERVER = '192.168.1.107'
@@ -22,13 +22,25 @@ FAIL_TEST = 1
 EXCEPTION = 2
 
 TEST_SET = [
+
 {
     'comment': 'Valid Python3',
     'language_id': 'python3',
     'sourcecode': r'''print("Hello world!")
 ''',
     'sourcefilename': 'test.py',
-    'expect': { 'outcome': 0, 'stdout': 'Hello world!\n' }
+    'expect': { 'outcome': 15, 'stdout': 'Hello world!\n' }
+},
+
+{
+    'comment': 'Python3 with stdin',
+    'language_id': 'python3',
+    'sourcecode': r'''print(input())
+print(input())
+''',
+    'input': 'Line1\nLine2\n',
+    'sourcefilename': 'test.py',
+    'expect': { 'outcome': 15, 'stdout': 'Line1\nLine2\n' }
 },
 
 {
@@ -59,7 +71,7 @@ int main() {
 }
 ''',
     'sourcefilename': 'prog.c',
-    'expect': { 'outcome': 0, 'stdout': "Hello world\nIsn't this fun!\n" }
+    'expect': { 'outcome': 15, 'stdout': "Hello world\nIsn't this fun!\n" }
 },
 
 {
@@ -119,7 +131,7 @@ int main() {
 
 ''',
     'sourcefilename': 'prog.c',
-    'expect': { 'outcome': 0, 'stdout': 'Memory limit worked\n' }
+    'expect': { 'outcome': 15, 'stdout': 'Memory limit worked\n' }
 },
 
 {
@@ -156,9 +168,23 @@ print(open('file2').read())
 ''',
     'file_list': [('randomid0129798', 'file1'),('randomid0980128', 'file2')],
     'sourcefilename': 'test.py',
-    'expect': { 'outcome': 0, 'stdout': '''The first file
+    'expect': { 'outcome': 15, 'stdout': '''The first file
 Line 2
 Second file
+'''}
+},
+
+{
+    'comment': 'Python3 program with customised timeout',
+    'language_id': 'python3',
+    'sourcecode': r'''from time import clock
+t = clock()
+while clock() < t + 10: pass  # Wait 10 seconds
+print("Hello Python")
+''',
+    'sourcefilename': 'test.py',
+    'parameters': {'cputime':11},
+    'expect': { 'outcome': 15, 'stdout': '''Hello Python
 '''}
 }
 ]
