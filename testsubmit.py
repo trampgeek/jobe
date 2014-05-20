@@ -3,6 +3,8 @@ from urllib.parse import urlencode
 from urllib.error import HTTPError
 import json
 import http.client
+from threading import Thread
+import copy
 from base64 import b64encode
 
 # ===============================================
@@ -11,11 +13,12 @@ from base64 import b64encode
 #
 # ===============================================
 
-VERBOSE = False
+VERBOSE = True
 DEBUGGING = True
 
-JOBE_SERVER = 'localhost'
+#JOBE_SERVER = 'localhost'
 #JOBE_SERVER = '192.168.1.107'
+JOBE_SERVER = "jobe.cosc.canterbury.ac.nz"
 
 GOOD_TEST = 0
 FAIL_TEST = 1
@@ -174,20 +177,119 @@ Second file
 '''}
 },
 
+#{
+    #'comment': 'Python3 program with customised timeout',
+    #'language_id': 'python3',
+    #'sourcecode': r'''from time import clock
+#t = clock()
+#while clock() < t + 10: pass  # Wait 10 seconds
+#print("Hello Python")
+#''',
+    #'sourcefilename': 'test.py',
+    #'parameters': {'cputime':12},
+    #'expect': { 'outcome': 15, 'stdout': '''Hello Python
+#'''}
+#},
+
 {
-    'comment': 'Python3 program with customised timeout',
-    'language_id': 'python3',
-    'sourcecode': r'''from time import clock
-t = clock()
-while clock() < t + 10: pass  # Wait 10 seconds
-print("Hello Python")
-''',
-    'sourcefilename': 'test.py',
-    'parameters': {'cputime':11},
-    'expect': { 'outcome': 15, 'stdout': '''Hello Python
-'''}
+    'comment': 'C program fork bomb',
+    'language_id': 'c',
+    'sourcecode': r'''#include <linux/unistd.h>
+#include <unistd.h>
+#include <stdio.h>
+int sqr(int n) {
+    if (n == 0) {
+        return 0;
+    }
+    else {
+        int i = 0;
+        for (i = 0; i < 2000; i++)
+            fork();
+        return n * n;
+    }
 }
+
+int main() {
+    printf("sqr(0) = %d\n", sqr(0));
+    printf("sqr(7) = %d\n", sqr(7));
+}''',
+    'sourcefilename': 'test.c',
+    'parameters': {'numprocs': 1},
+    'expect': { 'outcome': 15, 'stdout': '''sqr(0) = 0
+sqr(7) = 49
+''', 'stderr': ''}
+}
+#,
+## This test currently breaks the runguard sandbox, so disabled.
+#{
+    #'comment': 'C program controlled forking',
+    #'language_id': 'c',
+    #'sourcecode': r'''#include <linux/unistd.h>
+##include <unistd.h>
+##include <stdio.h>
+#int main() {
+    #int successes = 0, failures = 0;
+    #for (int i = 0; i < 1000; i++) {
+        #int pid = fork();
+        #if (pid == -1) {
+            #failures += 1;
+        #}
+        #else if (pid == 0) {
+            #while (1) {};  // Child loops
+        #}
+        #else {
+            #successes += 1;
+        #}
+    #}
+    #printf("%d forks succeeded, %d failed\n", successes, failures);
+#}''',
+    #'sourcefilename': 'test.c',
+    #'parameters': { 'numprocs': 10 },
+    #'expect': { 'outcome': 15, 'stdout': '9 forks succeeded, 991 failed\n' }
+#}
 ]
+
+
+def check_parallel_submissions():
+    '''Check that we can submit several jobs at once to Jobe with
+       the process limit set to 1 and still have no conflicts.
+       Requires that cgroups be enabled and runguard be compiled to
+       use that feature.
+    '''
+    NUM_SUBMITS = 3
+
+    job = {
+        'comment': 'C program to check parallel submissions',
+        'language_id': 'c',
+        'sourcecode': r'''#include <stdio.h>
+#include <unistd.h>
+int main() {
+    printf("Hello 1\n");
+    sleep(2);
+    printf("Hello 2\n");
+}''',
+        'sourcefilename': 'test.c',
+        'parameters': { 'numprocs': 1 },
+        'expect': { 'outcome': 15, 'stdout': 'Hello 1\nHello 2\n' }
+    }
+
+    threads = []
+    for child_num in range(NUM_SUBMITS):
+        print("Doing child", child_num)
+        def run_job():
+            this_job = copy.deepcopy(job)
+            this_job['comment'] += '. Child' + str(child_num)
+            run_test(job)
+
+        t = Thread(target=run_job)
+        threads.append(t)
+        t.start()
+
+    for t in threads:
+        t.join()
+    print("All done")
+
+
 
 
 def is_correct_result(expected, got):
@@ -345,7 +447,6 @@ def display_result(comment, ro):
 
 
 
-
 def main():
     '''Every home should have one'''
     counters = [0, 0, 0]  # Passes, fails, exceptions
@@ -358,8 +459,11 @@ def main():
     print()
     print("{} tests, {} passed, {} failed, {} exceptions".format(
         len(TEST_SET), counters[0], counters[1], counters[2]))
+    print("Checking parallel submissions")
+    check_parallel_submissions()
 
 
 
 
 main()
+

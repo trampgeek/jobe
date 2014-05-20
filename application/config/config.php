@@ -357,6 +357,21 @@ $config['rewrite_short_tags'] = FALSE;
 */
 $config['proxy_ips'] = '';
 
+/*
+|--------------------------------------------------------------------------
+| Jobe parameters
+|--------------------------------------------------------------------------
+|
+| This section of the config file is not CodeIgniter standard. It contains
+| constants related to the Jobe server itself.
+|
+| jobe_max_users controls how many jobs can be run by the server at any
+| one time. It *must* agree with the number of users with names jobe01,
+| jobe02, jobe03 etc.
+|
+*/
+$config['jobe_max_users'] = 10;
+
 
 /* End of file config.php */
 /* Location: ./application/config/config.php */

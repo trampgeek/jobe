@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+# This "installer" sets up the required jobe users (i.e. the "users"
+# that run submitted jobs) and compiles and adjusts the runguard sandbox.
+# It must be run as root.
+
+from __future__ import print_function
+import os
+import subprocess
+import re
+
+JOBE_DIR = '/var/www/jobe'
+
+def get_config(param_name):
+    '''Get a config parameter from application/config/config.php.
+       An exception occurs if either the file or the required parameter
+       is not found.
+    '''
+    with open('/var/www/jobe/application/config/config.php') as config:
+        lines = config.readlines()
+    pattern = r" *\$config\[ *'{}' *\] *= *([^;]+).*$".format(param_name)
+    for line in lines:
+        match = re.match(pattern, line)
+        if match:
+            return match.group(1)
+    raise Exception('Config param ' + param_name + ' not found')
+    
+
+def printFailMessage():
+    print("Install failed")
+
+
+def get_webserver():
+    '''Find the user name used to run the Apache web server'''
+    ps_cmd = "ps aux | grep /usr/sbin/apache2"
+    ps_lines = subprocess.check_output(ps_cmd, shell=True).decode('utf8').split('\n')
+    names = {ps_line.split(' ')[0] for ps_line in ps_lines}
+    candidates = names.intersection(set(['apache', 'www-data']))
+    if len(candidates) != 1:
+        raise Exception("Couldn't determine web-server user id. Is the web server running?")
+    return list(candidates)[0]
+
+
+def do_command(cmd):
+    '''Execute the given OS command user subprocess.call.
+       Raise an exception on failure.
+    '''
+    if subprocess.call(cmd, shell=True) != 0:
+        raise OSError("Command ({}) failed".format(cmd))
+
+
+def main():
+    install_dir = os.getcwd()
+    if install_dir != JOBE_DIR:
+        print("WARNING: Jobe appears not to have been installed in /var/www")
+        print ("as recommended.")
+
+    if subprocess.check_output('whoami', shell=True) != b'root\n':
+            print("****This script must be run by root*****")
+            printFailMessage()
+    else:
+        try:
+            #print('Making file-cache directory')
+            #do_command('mkdir ' + install_dir + '/files')
+            num_jobe_users = int(get_config('jobe_max_users'))
+            print('Configuring for', num_jobe_users, 'simultaneous job runs') 
+            webserver_user = get_webserver()
+            print("Web server is", webserver_user)
+            print()
+            print("Making required jobe users")
+            for i in range(num_jobe_users):
+                username = 'jobe{:02d}'.format(i)
+                try:
+                    do_command('id ' + username + '> /dev/null 2>&1')
+                    print(username, 'already exists')
+                except:
+                    do_command('useradd -M -s "/bin/false" -c "Jobe server task runner"' + username)
+           
+            print("Building runguard")
+            runguard_commands = [
+                "cd {0}".format(install_dir + '/runguard'),
+                "gcc -o runguard runguard.c", # Add -lcgroups  if using cgroups
+                "chown root runguard",
+                "chgrp {0} runguard".format(webserver_user),
+                "chmod 4750 runguard"
+            ]
+            cmd = ';'.join(runguard_commands)
+            do_command(cmd)
+            print("Runguard installation complete")
+
+        except Exception as e:
+            print("Exception during install: " + str(e))
+            printFailMessage()
+
+main()

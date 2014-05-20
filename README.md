@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 0.1 alpha May 2014
+Version: 0.2 alpha May 2014
 
 Author: Richard Lobb, University of Canterbury, New Zealand.
 
@@ -8,7 +8,8 @@ Author: Richard Lobb, University of Canterbury, New Zealand.
 
 Jobe (short for Job Engine) is a server that supports running of small
 compile-and-run jobs in a variety of programming languages. It is being
-developed as a remote sandbox for use by [CodeRunner](http://github.com/trampgeek/coderunner), 
+developed as a remote sandbox for use by
+[CodeRunner](http://github.com/trampgeek/coderunner), 
 a Moodle question-type plugin that asks students to write code to some
 relatively simple specification. However, Jobe servers could be useful in
 a variety of other contexts, particularly in education.
@@ -45,31 +46,24 @@ in a chroot jail.
 server that is firewalled to allow connections ONLY from authorised client
 machines. If you install it on a machine without such firewalling,
 anyone will be able to connect to your machine and run their own code
-on it! **PROCEED AT YOUR OWN RISK**
+on it! **CAVEAT EMPTOR!**
 
 Jobe is implemented using Ellis Lab's [codeigniter](http://codeigniter.com) plus the
 [RESTserver plugin](https://github.com/philsturgeon/codeigniter-restserver) from
-Phil Sturgeon. Jobe runs only on Linux, which must have the Apache web server
+Phil Sturgeon. It uses Jaap Eldering's and Keith Johnson's *Runguard*
+module from the programming contest server (DOMJudge )[http://domjudge.org] 
+as a sandbox to limit resource use by submitted jobs.
+
+Jobe runs only on Linux, which must have the Apache web server
 installed and running. Python3 and the C development system must also be
 installed.
 
-Installation steps are something like the following (**TO CHECK AND UPDATE**):
+*** TBS *** Discussion on use of cgroups (current disabled)
 
-1.  Clone this repository into /var/www/jobe
+Installation is performed by the install script, which must be run as root
+so that it can add the required jobe run users (jobe00, jobe01, etc) and
+set the runguard executable to setuid root so that it can change the user
+to one of the jobe<n> users when running a job.
 
-1.  Add a user *jobe* to the system
-
-1.  Runguard needs to be compiled for the target machine. Also,
-    so that runguard can set the user to jobe during runs, it must itself
-    be owned by root and must be set-uid root. Also, the web server
-    must be able to write to the directory /var/www/jobe/files. 
-    On a Debian/Ubuntu/Mint system, these requirements are achieved by:
-
-        cd /var/www/jobe/runguard
-        sudo gcc -o runguard runguard.c
-        sudo chmod 4755 runguard
-        sudo chgrp www-data /var/www/jobe/files
-        sudo chmod g+rwX /var/www/jobe/files
-
-    On other servers, replace www-data in the above commands by the user name
-    for the web server (e.g. apache on RedHat/Fedora).
+    cd /var/www/jobe
+    sudo ./install

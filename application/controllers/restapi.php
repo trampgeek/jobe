@@ -21,7 +21,7 @@
 if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 require_once('application/libraries/REST_Controller.php');
-require_once('application/libraries/LanguageTasks.php');
+require_once('application/libraries/LanguageTask.php');
 
 define('MAX_READ', 4096);  // Max bytes to read in popen
 define ('MIN_FILE_IDENTIFIER_SIZE', 8);
@@ -31,13 +31,26 @@ define ('FILE_CACHE_BASE', '/var/www/jobe/files/');
 
 class Restapi extends REST_Controller {
     
-    protected $LANGUAGES = array(
-        'c'         => 'gcc 4.8.1',
-        'python3'   => 'Python 3.3.2+',
-        'python2'   => 'Python 2.7.5+',
-        'java'      => 'javac 1.7.0_51',
-        'octave'    => 'GNU Octave 3.6.4'
-    );
+    protected $languages = array();
+    
+    // Constructor loads the available languages from the libraries directory
+    public function __construct()
+    {
+        parent::__construct();
+        
+        $library_files = scandir('application/libraries');
+        foreach ($library_files as $file) {
+            $end = '_task.php';
+            $pos = strpos($file, $end);
+            if ($pos == strlen($file) - strlen($end)) {
+                $lang = substr($file, 0, $pos);
+                require_once("application/libraries/$file");
+                $class = $lang . '_Task';
+                $version = $class::getVersion();
+                $this->languages[$lang] = $version;
+            }
+        }
+    }
     
     
     public function index_get() {
@@ -124,7 +137,7 @@ class Restapi extends REST_Controller {
             $language = $run->language_id;
             $input = isset($run->input) ? $run->input : '';
             $params = isset($run->parameters) ? $run->parameters : array();
-            if (!array_key_exists($language, $this->LANGUAGES)) {
+            if (!array_key_exists($language, $this->languages)) {
                 $this->response("Language '$language' is not known", 400);
             } else {
                 $reqdTaskClass = ucwords($language) . '_Task';
@@ -165,7 +178,7 @@ class Restapi extends REST_Controller {
     public function languages_get()
     {
         $langs = array();
-        foreach ($this->LANGUAGES as $id => $version) {
+        foreach ($this->languages as $id => $version) {
             $langs[] = array($id, $version);
         }
         $this->response($langs);
