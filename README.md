@@ -51,19 +51,35 @@ on it! **CAVEAT EMPTOR!**
 Jobe is implemented using Ellis Lab's [codeigniter](http://codeigniter.com) plus the
 [RESTserver plugin](https://github.com/philsturgeon/codeigniter-restserver) from
 Phil Sturgeon. It uses Jaap Eldering's and Keith Johnson's *Runguard*
-module from the programming contest server (DOMJudge )[http://domjudge.org] 
+module from the programming contest server (DOMJudge)[http://domjudge.org] 
 as a sandbox to limit resource use by submitted jobs.
 
 Jobe runs only on Linux, which must have the Apache web server
-installed and running. Python3 and the C development system must also be
+installed and running. PHP must have been compiled with the System V
+Semaphone and shared-memory functions enabled
+(see here)[http://www.php.net/manual/en/sem.setup.php].
+The Python3 and the C development system must also be
 installed.
 
 *** TBS *** Discussion on use of cgroups (current disabled)
 
 Installation is performed by the install script, which must be run as root
 so that it can add the required jobe run users (jobe00, jobe01, etc) and
-set the runguard executable to setuid root so that it can change the user
-to one of the jobe<n> users when running a job.
+set-up a jobe-sudoers file in /etc/sudoers.d that allows the web server
+to execute the runguard program as root and to kill any residual jobe
+processes from the run.
 
     cd /var/www/jobe
     sudo ./install
+
+To test the installation, first try running the tester with the command
+
+    python3 testsubmit.py
+
+All going well, you should then be able to copy the *testsubmit.py* file to
+any client machine that is allowed to access the jobe server, edit the line
+
+    JOBE_SERVER = 'localhost'
+
+to reference the JOBE_SERVER, e.g. by replacing *localhost* with its IP
+number, and re-run the tester with the same command from the client machine.

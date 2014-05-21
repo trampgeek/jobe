@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# This "installer" sets up the required jobe users (i.e. the "users"
+# This installer sets up the required jobe users (i.e. the "users"
 # that run submitted jobs) and compiles and adjusts the runguard sandbox.
 # It must be run as root.
 
@@ -48,6 +48,22 @@ def do_command(cmd):
         raise OSError("Command ({}) failed".format(cmd))
 
 
+def make_sudoers(install_dir, webserver_user, num_jobe_users):
+    '''Build a custom jobe-sudoers file for include in /etc/sudoers.d.
+       It allows the webserver to run the runguard program as root and also to
+       kill any jobe tasks.
+    '''
+    commands = [install_dir + '/runguard/runguard']
+    for i in range(num_jobe_users):
+        commands.append('/usr/bin/pkill -9 -u jobe{:02d}'.format(i))
+    
+    sudoers_file_name = '/etc/sudoers.d/jobe-sudoers'
+    with open(sudoers_file_name, 'w') as sudoers:
+        os.chmod(sudoers_file_name, 0o660)
+        for cmd in commands:
+            sudoers.write('{} ALL=(root) NOPASSWD: {}\n'.format(webserver_user, cmd))
+
+
 def main():
     install_dir = os.getcwd()
     if install_dir != JOBE_DIR:
@@ -59,13 +75,13 @@ def main():
             printFailMessage()
     else:
         try:
-            #print('Making file-cache directory')
-            #do_command('mkdir ' + install_dir + '/files')
             num_jobe_users = int(get_config('jobe_max_users'))
             print('Configuring for', num_jobe_users, 'simultaneous job runs') 
             webserver_user = get_webserver()
             print("Web server is", webserver_user)
-            print()
+            print("Giving web-server write-access to file cache")
+            do_command('chgrp {} {}/files'.format(webserver_user, install_dir))
+            do_command('chmod g+rwX {}/files'.format(install_dir))
             print("Making required jobe users")
             for i in range(num_jobe_users):
                 username = 'jobe{:02d}'.format(i)
@@ -73,18 +89,18 @@ def main():
                     do_command('id ' + username + '> /dev/null 2>&1')
                     print(username, 'already exists')
                 except:
-                    do_command('useradd -M -s "/bin/false" -c "Jobe server task runner"' + username)
+                    do_command('useradd -M -s "/bin/false" -c "Jobe server task runner" ' + username)
            
             print("Building runguard")
             runguard_commands = [
                 "cd {0}".format(install_dir + '/runguard'),
-                "gcc -o runguard runguard.c", # Add -lcgroups  if using cgroups
-                "chown root runguard",
-                "chgrp {0} runguard".format(webserver_user),
-                "chmod 4750 runguard"
+                "gcc -o runguard runguard.c", # TODO Add -lcgroups  if using cgroups
+                "chmod 750 runguard"
             ]
             cmd = ';'.join(runguard_commands)
             do_command(cmd)
+            print('Setting up sudo permissions for webserver')
+            make_sudoers(install_dir, webserver_user, num_jobe_users)
             print("Runguard installation complete")
 
         except Exception as e:

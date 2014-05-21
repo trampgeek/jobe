@@ -13,6 +13,13 @@
 
 require_once('application/libraries/resultobject.php');
 
+define('ACTIVE_USERS', 1);  // The key for the shared memory active users array
+define('MAX_RETRIES', 5);   // Maximum retries (1 secs per retry), waiting for free user account
+
+class OverloadException extends Exception {
+}
+
+
 abstract class Task {
 
     // Symbolic constants as per ideone API
@@ -24,6 +31,7 @@ abstract class Task {
     const RESULT_MEMORY_LIMIT    = 17;
     const RESULT_ILLEGAL_SYSCALL = 19;
     const RESULT_INTERNAL_ERR = 20;
+    const RESULT_SERVER_OVERLOAD = 21;
 
     public $DEFAULT_PARAMS = array(
         'disklimit'     => 100,     // MB
@@ -109,37 +117,103 @@ abstract class Task {
     public abstract function compile();
 
     
+    // Find a currently unused jobe user account.
+    // Uses a shared memory segment containing one byte (used as a 'busy'
+    // boolean) for each of the possible user accounts.
+    // If no free accounts exist at present, the function sleeps for a
+    // second then retries, up to a maximum of 10 retries.
+    // Throws OverloadException if a free user cannot be found, otherwise 
+    // returns an integer in the range 0 to jobe_max_users - 1 inclusive.
+    private function getFreeUser() {
+        global $CI;
 
+        $numUsers = $CI->config->item('jobe_max_users');
+        $key = ftok(__FILE__, 'j');
+        $sem = sem_get($key);
+        $user = -1;
+        $retries = 0; 
+        while ($user == -1 && $retries < MAX_RETRIES) {
+            sem_acquire($sem);
+            $shm = shm_attach($key); 
+            if (!shm_has_var($shm, ACTIVE_USERS)) {
+                // First time since boot -- initialise active list
+                $active = array();
+                for($i = 0; $i < $numUsers; $i++) {
+                    $active[$i] = FALSE;
+                }
+                shm_put_var($shm, ACTIVE_USERS, $active);
+            }
+            $active = shm_get_var($shm, ACTIVE_USERS);
+            for ($user = 0; $user < $numUsers; $user++) {
+                if (!$active[$user]) {
+                    $active[$user] = TRUE;
+                    shm_put_var($shm, ACTIVE_USERS, $active);
+                    break;
+                }
+            }
+            shm_detach($shm);
+            sem_release($sem);
+            if ($user == $numUsers) {
+                $user = -1;
+                $retries += 1;
+                if ($retries < MAX_RETRIES) {
+                    sleep(1);
+                } else {
+                    throw new OverloadException();
+                }
+            }
+        }
+        return $user;
+    }
+    
+    
+    // Mark the given user number (0 to jobe_max_users - 1) as free.
+    private function freeUser($userNum) {
+        $key = ftok(__FILE__, 'j');
+        $sem = sem_get($key);
+        sem_acquire($sem);
+        $shm = shm_attach($key);
+        $active = shm_get_var($shm, ACTIVE_USERS);
+        $active[$userNum] = FALSE;
+        shm_put_var($shm, ACTIVE_USERS, $active);
+        shm_detach($shm);
+        sem_release($sem);        
+    }
+
+    
     // Execute this task, which must already have been compiled if necessary
     public function execute() {
-        $filesize = 1000 * $this->getParam('disklimit'); // MB -> kB
-        $memsize = 1000 * $this->getParam('memorylimit');
-        $cputime = $this->getParam('cputime');
-        $numProcs = $this->getParam('numprocs');
-        $sandboxCmdBits = array(
-             dirname(__FILE__)  . "/../../runguard/runguard",
-             "--user=jobe",
-             "--time=$cputime",         // Seconds of execution time allowed
-             "--filesize=$filesize",    // Max file sizes
-             "--nproc=$numProcs",       // Max num processes/threads for this *user*
-             "--no-core",
-             "--streamsize=$filesize");  // Max stdout/stderr sizes
-
-        if ($memsize != 0) {  // Special case: Matlab won't run with a memsize set. TODO: WHY NOT!
-            $sandboxCmdBits[] = "--memsize=$memsize";
-        }
-        $allCmdBits = array_merge($sandboxCmdBits, $this->getRunCommand());
-        $cmd = implode(' ', $allCmdBits) . " >prog.out 2>prog.err";
-
-        $workdir = $this->workdir;
-        chdir($workdir);
-        file_put_contents('prog.cmd', $cmd);
 
         try {
-            $this->cmpinfo = ''; // Set defaults first
-            $this->signal = 0;
-            $this->time = 0;
-            $this->memory = 0;
+            // Establish all the parameters for the job run
+            
+            $userId = $this->getFreeUser();
+            $user = sprintf("jobe%02d", $userId);
+            $filesize = 1000 * $this->getParam('disklimit'); // MB -> kB
+            $memsize = 1000 * $this->getParam('memorylimit');
+            $cputime = $this->getParam('cputime');
+            $numProcs = $this->getParam('numprocs');
+            $sandboxCmdBits = array(
+                 "sudo " . dirname(__FILE__)  . "/../../runguard/runguard",
+                 "--user=$user",
+                 "--time=$cputime",         // Seconds of execution time allowed
+                 "--filesize=$filesize",    // Max file sizes
+                 "--nproc=$numProcs",       // Max num processes/threads for this *user*
+                 "--no-core",
+                 "--streamsize=$filesize");  // Max stdout/stderr sizes
+
+            if ($memsize != 0) {  // Special case: Matlab won't run with a memsize set. TODO: WHY NOT!
+                $sandboxCmdBits[] = "--memsize=$memsize";
+            }
+            $allCmdBits = array_merge($sandboxCmdBits, $this->getRunCommand());
+            $cmd = implode(' ', $allCmdBits) . " >prog.out 2>prog.err";
+
+            // Set up the work directory and run the job
+            $workdir = $this->workdir;
+            exec("setfacl -m u:$user:rwX $workdir");  // Give the user RW access
+            
+            chdir($workdir);
+            file_put_contents('prog.cmd', $cmd);
 
             if ($this->input != '') {
                 $f = fopen('prog.in', 'w');
@@ -155,21 +229,30 @@ abstract class Task {
             $result = fread($handle, MAX_READ);
             pclose($handle);
             
+            // Copy results back out into this object
+            
             $this->stdout = file_get_contents("$workdir/prog.out");
             
             if (file_exists("$workdir/prog.err")) {
                 $this->stderr = file_get_contents("$workdir/prog.err");
-            } else {
-                $this->stderr = '';
             }
             
+            $this->stderr = $this->filteredStderr();
             $this->diagnose_result();  // Analyse output and set result
+        }
+        catch (OverloadException $e) {
+            $this->result = Task::RESULT_SERVER_OVERLOAD;
+            $this->stderr = $e->getMessage();
         }
         catch (Exception $e) {
             $this->result = Task::RESULT_INTERNAL_ERR;
-            $this->stderr = $this->cmpinfo = print_r($e, true);
-            $this->stdout = $this->stderr;
-            $this->signal = $this->time = $this->memory = 0;
+            $this->stderr = $e->getMessage();
+        }
+        finally {
+            if (isset($userId)) {
+                exec("sudo /usr/bin/pkill -9 -u $user"); // Kill any remaining processes
+                $this->freeUser($userId);
+            }
         }
     }
 

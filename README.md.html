@@ -1,15 +1,15 @@
 <h1>JOBE</h1>
 
-<p>Version: 0.1 alpha May 2014</p>
+<p>Version: 0.2 alpha May 2014</p>
 
 <p>Author: Richard Lobb, University of Canterbury, New Zealand.</p>
 
 <h2>Introduction</h2>
 
 <p>Jobe (short for Job Engine) is a server that supports running of small
-compile-and-run jobs in a variety of programming languages, in a similar
-way to the <a href="http://ideone.com">Ideone</a> website. It is being
-developed as a remote sandbox for use by <a href="http://github.com/trampgeek/coderunner">CodeRunner</a>, 
+compile-and-run jobs in a variety of programming languages. It is being
+developed as a remote sandbox for use by
+<a href="http://github.com/trampgeek/coderunner">CodeRunner</a>, 
 a Moodle question-type plugin that asks students to write code to some
 relatively simple specification. However, Jobe servers could be useful in
 a variety of other contexts, particularly in education.</p>
@@ -42,28 +42,47 @@ in a chroot jail.</p>
 
 <h2>Installation</h2>
 
+<p><strong>WARNING</strong> This current version is intended for installing on a
+server that is firewalled to allow connections ONLY from authorised client
+machines. If you install it on a machine without such firewalling,
+anyone will be able to connect to your machine and run their own code
+on it! <strong>CAVEAT EMPTOR!</strong></p>
+
 <p>Jobe is implemented using Ellis Lab's <a href="http://codeigniter.com">codeigniter</a> plus the
 <a href="https://github.com/philsturgeon/codeigniter-restserver">RESTserver plugin</a> from
-Phil Sturgeon. Jobe runs only on Linux, which must have the Apache web server
-installed and running. Python3 and the C development system must also be
+Phil Sturgeon. It uses Jaap Eldering's and Keith Johnson's <em>Runguard</em>
+module from the programming contest server (DOMJudge)[http://domjudge.org] 
+as a sandbox to limit resource use by submitted jobs.</p>
+
+<p>Jobe runs only on Linux, which must have the Apache web server
+installed and running. PHP must have been compiled with the System V
+Semaphone and shared-memory functions enabled
+(see here)[http://www.php.net/manual/en/sem.setup.php].
+The Python3 and the C development system must also be
 installed.</p>
 
-<p>Installation steps are something like the following (<strong>TO CHECK AND UPDATE</strong>):</p>
+<p><strong>* TBS *</strong> Discussion on use of cgroups (current disabled)</p>
 
-<ol>
-<li><p>Clone this repository into /var/www/jobe</p></li>
-<li><p>Add a user <em>jobe</em> to the system</p></li>
-<li><p>So that runguard can set the user to jobe during runs, it must itself
-be owned by root and must be set-uid root. Also, the web server
-must be able to write to the directory /var/www/jobe/files. 
-On a Debian/Ubuntu/Mint system, these requirements are achieved by:</p>
+<p>Installation is performed by the install script, which must be run as root
+so that it can add the required jobe run users (jobe00, jobe01, etc) and
+set-up a jobe-sudoers file in /etc/sudoers.d that allows the web server
+to execute the runguard program as root and to kill any residual jobe
+processes from the run.</p>
 
-<pre><code>sudo chown root /var/www/jobe/runguard/runguard
-sudo chmod 4755 /var/www/jobe/runguard/runguard
-sudo chgrp www-data /var/www/jobe/files
-sudo chmod g+rwX /var/www/jobe/files
+<pre><code>cd /var/www/jobe
+sudo ./install
 </code></pre>
 
-<p>On other servers, replace www-data in the above commands by the user name
-for the web server (e.g. apache on RedHat/Fedora).</p></li>
-</ol>
+<p>To test the installation, first try running the tester with the command</p>
+
+<pre><code>python3 testsubmit.py
+</code></pre>
+
+<p>All going well, you should then be able to copy the <em>testsubmit.py</em> file to
+any client machine that is allowed to access the jobe server, edit the line</p>
+
+<pre><code>JOBE_SERVER = 'localhost'
+</code></pre>
+
+<p>to reference the JOBE_SERVER, e.g. by replacing <em>localhost</em> with its IP
+number, and re-run the tester with the same command from the client machine.</p>

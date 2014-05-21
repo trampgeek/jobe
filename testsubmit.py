@@ -2,6 +2,7 @@ from urllib.request import urlopen
 from urllib.parse import urlencode
 from urllib.error import HTTPError
 import json
+import sys
 import http.client
 from threading import Thread
 import copy
@@ -13,12 +14,12 @@ from base64 import b64encode
 #
 # ===============================================
 
-VERBOSE = True
-DEBUGGING = True
+VERBOSE = False
+DEBUGGING = False
 
-#JOBE_SERVER = 'localhost'
+JOBE_SERVER = 'localhost'
 #JOBE_SERVER = '192.168.1.107'
-JOBE_SERVER = "jobe.cosc.canterbury.ac.nz"
+#JOBE_SERVER = "jobe.cosc.canterbury.ac.nz"
 
 GOOD_TEST = 0
 FAIL_TEST = 1
@@ -63,6 +64,18 @@ print(data[2])
 ''',
     'sourcefilename': 'test.py',
     'expect': { 'outcome': 12 }
+},
+
+{
+    'comment': 'Python3 file I/O',
+    'language_id': 'python3',
+    'sourcecode': r'''with open('testoutput.txt', 'w') as output:
+    output.write("One fish\nTwo fish\n")
+with open('testoutput.txt') as input:
+    print(input.read(), end='')
+''',
+    'sourcefilename': 'test.py',
+    'expect': { 'outcome': 15, 'stdout': 'One fish\nTwo fish\n' }
 },
 
 {
@@ -177,19 +190,19 @@ Second file
 '''}
 },
 
-#{
-    #'comment': 'Python3 program with customised timeout',
-    #'language_id': 'python3',
-    #'sourcecode': r'''from time import clock
-#t = clock()
-#while clock() < t + 10: pass  # Wait 10 seconds
-#print("Hello Python")
-#''',
-    #'sourcefilename': 'test.py',
-    #'parameters': {'cputime':12},
-    #'expect': { 'outcome': 15, 'stdout': '''Hello Python
-#'''}
-#},
+{
+    'comment': 'Python3 program with customised timeout',
+    'language_id': 'python3',
+    'sourcecode': r'''from time import clock
+t = clock()
+while clock() < t + 10: pass  # Wait 10 seconds
+print("Hello Python")
+''',
+    'sourcefilename': 'test.py',
+    'parameters': {'cputime':12},
+    'expect': { 'outcome': 15, 'stdout': '''Hello Python
+'''}
+},
 
 {
     'comment': 'C program fork bomb',
@@ -219,44 +232,77 @@ int main() {
 sqr(7) = 49
 ''', 'stderr': ''}
 }
-#,
-## This test currently breaks the runguard sandbox, so disabled.
-#{
-    #'comment': 'C program controlled forking',
-    #'language_id': 'c',
-    #'sourcecode': r'''#include <linux/unistd.h>
-##include <unistd.h>
-##include <stdio.h>
-#int main() {
-    #int successes = 0, failures = 0;
-    #for (int i = 0; i < 1000; i++) {
-        #int pid = fork();
-        #if (pid == -1) {
-            #failures += 1;
-        #}
-        #else if (pid == 0) {
-            #while (1) {};  // Child loops
-        #}
-        #else {
-            #successes += 1;
-        #}
-    #}
-    #printf("%d forks succeeded, %d failed\n", successes, failures);
-#}''',
-    #'sourcefilename': 'test.c',
-    #'parameters': { 'numprocs': 10 },
-    #'expect': { 'outcome': 15, 'stdout': '9 forks succeeded, 991 failed\n' }
-#}
+,
+
+{
+    'comment': 'C program controlled forking',
+    'language_id': 'c',
+    'sourcecode': r'''#include <linux/unistd.h>
+#include <unistd.h>
+#include <stdio.h>
+int main() {
+    int successes = 0, failures = 0;
+    for (int i = 0; i < 1000; i++) {
+        int pid = fork();
+        if (pid == -1) {
+            failures += 1;
+        }
+        else if (pid == 0) {
+            while (1) {};  // Child loops
+        }
+        else {
+            successes += 1;
+        }
+    }
+    printf("%d forks succeeded, %d failed\n", successes, failures);
+}''',
+    'sourcefilename': 'test.c',
+    'parameters': { 'numprocs': 10 },
+    'expect': { 'outcome': 15, 'stdout': '9 forks succeeded, 991 failed\n' }
+},
+
+{
+    'comment': 'Valid Octave',
+    'language_id': 'octave',
+    'sourcecode': r'''function sq = sqr(n)
+    sq = n * n;
+end
+
+fprintf('%d\n%d\n%d\n', sqr(-3), sqr(11), sqr(0));
+''',
+    'parameters': {'memorylimit': 200000},
+    'sourcefilename': 'jobe_test.m',
+    'expect': { 'outcome': 15, 'stdout': '9\n121\n0\n' }
+},
+
+{
+    'comment': 'octave with stdin',
+    'language_id': 'octave',
+    'sourcecode': r'''fprintf('%s\n%s\n', input('', 's'), input('', 's'));
+''',
+    'parameters': {'memorylimit': 200000},
+    'input': 'Line1\nLine2\n',
+    'sourcefilename': 'jobe_test.m',
+    'expect': { 'outcome': 15, 'stdout': 'Line1\nLine2\n' }
+},
+
+{
+    'comment': 'Syntactically invalid Octave (treated as runtime error)',
+    'language_id': 'octave',
+    'sourcecode': r'''s = "hi there';
+''',
+    'parameters': {'memorylimit': 200000},
+    'sourcefilename': 'jobe_test.m',
+    'expect': { 'outcome': 12 }
+}
 ]
 
 
 def check_parallel_submissions():
     '''Check that we can submit several jobs at once to Jobe with
        the process limit set to 1 and still have no conflicts.
-       Requires that cgroups be enabled and runguard be compiled to
-       use that feature.
     '''
-    NUM_SUBMITS = 3
+    NUM_SUBMITS = 5
 
     job = {
         'comment': 'C program to check parallel submissions',
@@ -274,6 +320,7 @@ int main() {
     }
 
     threads = []
+    print("\nChecking parallel submissions")
     for child_num in range(NUM_SUBMITS):
         print("Doing child", child_num)
         def run_job():
@@ -446,21 +493,25 @@ def display_result(comment, ro):
             print(ro['stderr'])
 
 
+#TEST_LANG = 'octave'
+TEST_LANG = 'ALL'
 
 def main():
     '''Every home should have one'''
     counters = [0, 0, 0]  # Passes, fails, exceptions
     for test in TEST_SET:
-        result = run_test(test)
-        counters[result] += 1
-        if VERBOSE:
-            print('=====================================')
+        if TEST_LANG == 'ALL' or test['language_id'] == TEST_LANG:
+            result = run_test(test)
+            counters[result] += 1
+            if VERBOSE:
+                print('=====================================')
 
     print()
     print("{} tests, {} passed, {} failed, {} exceptions".format(
         len(TEST_SET), counters[0], counters[1], counters[2]))
-    print("Checking parallel submissions")
-    check_parallel_submissions()
+
+    if TEST_LANG == 'ALL':
+        check_parallel_submissions()
 
 
 

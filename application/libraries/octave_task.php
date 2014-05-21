@@ -34,16 +34,36 @@ class Octave_Task extends Task {
              '--norc',
              '--no-window-system',
              '--silent',
-             basename($this->sourceFileName)
+             $this->sourceFileName
          );
      }
 
 
-     // Remove return chars and delete the extraneous error: lines
+     // Remove return chars and delete the extraneous error: lines at the end
      public function filteredStderr() {
          $out1 = str_replace("\r", '', $this->stderr);
-         $out2 = preg_replace("/\nerror:.*\n/s", "\n", $out1);
-         $out3 = preg_replace("|file /tmp/coderunner_.*|", 'source file', $out2);
-         return $out3;
+         $lines = explode("\n", $out1);
+         while (count($lines) > 0 && trim($lines[count($lines) - 1]) === '') {
+             array_pop($lines);
+         }
+         if (count($lines) > 0 && 
+                 strpos($lines[count($lines) - 1],
+                         'error: ignoring octave_execution_exception') === 0) {
+             array_pop($lines);
+         }
+         
+         // A bug in octave results in some errors lines at the end due to the
+         // non-existence of some environment variables that we can't set up
+         // in jobe. So trim them off.
+         if (count($lines) >= 1 && 
+                    $lines[count($lines) - 1] == 'error: No such file or directory') {
+             array_pop($lines);
+         }
+
+         if (count($lines) > 0) {
+            return implode("\n", $lines) . "\n";
+         } else {
+             return '';
+         }
      }
 }
