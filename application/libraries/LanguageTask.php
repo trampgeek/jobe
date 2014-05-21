@@ -55,7 +55,7 @@ abstract class Task {
     // the run parameters ($params) are
     // saved for use at runtime.
     public function __construct($sourceCode, $filename, $input, $params) {
-        $this->workdir = tempnam("/tmp", "jobe_");
+        $this->workdir = tempnam("/home/jobe/runs", "jobe_");
         if (!unlink($this->workdir) || !mkdir($this->workdir)) {
             throw new coding_exception("Task: error making temp directory (race error?)");
         }
@@ -211,7 +211,6 @@ abstract class Task {
             // Set up the work directory and run the job
             $workdir = $this->workdir;
             exec("setfacl -m u:$user:rwX $workdir");  // Give the user RW access
-            
             chdir($workdir);
             file_put_contents('prog.cmd', $cmd);
 
@@ -316,7 +315,8 @@ abstract class Task {
     // Called to clean up task when done
     public function close($deleteFiles=TRUE) {
         if ($deleteFiles) {
-            $this->delTree($this->workdir);
+            $dir = $this->workdir;
+            exec("sudo rm -R $dir");
         }
     }
 
@@ -338,15 +338,6 @@ abstract class Task {
         }
     }
 
-
-    // Delete a given directory tree
-    private function delTree($dir) {
-        $files = array_diff(scandir($dir), array('.','..'));
-        foreach ($files as $file) {
-            (is_dir("$dir/$file")) ? $this->delTree("$dir/$file") : unlink("$dir/$file");
-        }
-        return rmdir($dir);
-    }
 }
 
 

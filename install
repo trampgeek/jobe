@@ -51,9 +51,10 @@ def do_command(cmd):
 def make_sudoers(install_dir, webserver_user, num_jobe_users):
     '''Build a custom jobe-sudoers file for include in /etc/sudoers.d.
        It allows the webserver to run the runguard program as root and also to
-       kill any jobe tasks.
+       kill any jobe tasks and delete the run directories.
     '''
     commands = [install_dir + '/runguard/runguard']
+    commands.append('/bin/rm -R /home/jobe/runs/*')
     for i in range(num_jobe_users):
         commands.append('/usr/bin/pkill -9 -u jobe{:02d}'.format(i))
     
@@ -62,6 +63,18 @@ def make_sudoers(install_dir, webserver_user, num_jobe_users):
         os.chmod(sudoers_file_name, 0o660)
         for cmd in commands:
             sudoers.write('{} ALL=(root) NOPASSWD: {}\n'.format(webserver_user, cmd))
+
+
+def make_user(username, comment, make_home_dir=False):
+    ''' Check if user exists. If not, add the named user with the given comment.
+        Make a home directory only if make_home_dir is true.
+    '''
+    try:
+        do_command('id ' + username + '> /dev/null 2>&1')
+        print(username, 'already exists')
+    except:
+        opt = '--home /home/jobe -m' if make_home_dir else ' -M'
+        do_command('useradd {} -s "/bin/false" -c "{}" {}'.format(opt, comment, username))
 
 
 def main():
@@ -83,14 +96,15 @@ def main():
             do_command('chgrp {} {}/files'.format(webserver_user, install_dir))
             do_command('chmod g+rwX {}/files'.format(install_dir))
             print("Making required jobe users")
+            make_user('jobe', 'Jobe user. Provides home for runs.', True)
             for i in range(num_jobe_users):
                 username = 'jobe{:02d}'.format(i)
-                try:
-                    do_command('id ' + username + '> /dev/null 2>&1')
-                    print(username, 'already exists')
-                except:
-                    do_command('useradd -M -s "/bin/false" -c "Jobe server task runner" ' + username)
+                make_user(username, 'Jobe server task runner')
            
+            rundir = '/home/jobe/runs'
+            cmd ='mkdir {run}; chown jobe:{web} {run}; chmod 771 {run}'.format(
+                run=rundir, web=webserver_user)
+            do_command(cmd)
             print("Building runguard")
             runguard_commands = [
                 "cd {0}".format(install_dir + '/runguard'),

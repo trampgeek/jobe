@@ -294,6 +294,42 @@ fprintf('%d\n%d\n%d\n', sqr(-3), sqr(11), sqr(0));
     'parameters': {'memorylimit': 200000},
     'sourcefilename': 'jobe_test.m',
     'expect': { 'outcome': 12 }
+},
+
+{
+    'comment': 'Valid pylint program',
+    'language_id': 'python3',
+    'sourcecode': """__student_answer__ = '''\"\"\"Doc string\"\"\"
+GLOBAL = 20
+print("GLOBAL =", GLOBAL)
+'''
+
+import subprocess
+import os
+
+def check_code(s):
+    try:
+        source = open('source.py', 'w')
+        source.write(__student_answer__)
+        source.close()
+        env = os.environ.copy()
+        os.mkdir('Home')
+        env['HOME'] = os.getcwd() + '/Home'
+        result = subprocess.check_output(['pylint', 'source.py'], stderr=subprocess.STDOUT, env=env)
+    except Exception as e:
+        result = e.output.decode('utf-8')
+
+    if result.strip():
+        print("pylint doesn't approve of your program")
+        print(result)
+        raise Exception("Submission rejected")
+
+check_code(__student_answer__)
+print("Yay!")
+""",
+    'parameters': {'memorylimit': 200000},
+    'sourcefilename': 'prog.py',
+    'expect': { 'outcome': 15, 'stdout': 'Yay!\n' }
 }
 ]
 
