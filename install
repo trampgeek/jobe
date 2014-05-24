@@ -3,6 +3,9 @@
 # that run submitted jobs) and compiles and adjusts the runguard sandbox.
 # It must be run as root.
 
+# If run with the parameter --purge, all files and users set up by a previous
+# run of the script are deleted at the start.
+
 from __future__ import print_function
 import os
 import subprocess
@@ -92,7 +95,27 @@ def make_directory(dirpath, webuser):
     do_command('chown jobe:{0} {1}; chmod 771 {1}'.format(webuser, dirpath)) 
 
 
+def do_purge(install_dir, num_runners):
+    '''Purge existing users and extra files set up by a previous install'''
+
+    try:
+        for i in range(num_runners):
+            do_command('userdel jobe{:02d}'.format(i))
+        do_command('userdel jobe')
+    except:
+        pass
+    do_command('rm -r /home/jobe')
+    do_command('rm -r {}/files'.format(install_dir))
+    do_command('rm -r /var/log/jobe')
+
+    
 def main():
+    if len(sys.argv) > 2 or (len(sys.argv) > 1 and sys.argv[1] != '--purge'):
+        print("Usage: install [--purge]")
+        sys.exit(0)
+
+    purging = len(sys.argv) == 2
+        
     install_dir = os.getcwd()
     if install_dir != JOBE_DIR:
         print("WARNING: Jobe appears not to have been installed in /var/www")
@@ -104,6 +127,10 @@ def main():
     else:
         try:
             num_jobe_users = int(get_config('jobe_max_users', install_dir))
+            if purging:
+                print('Purging all prior jobe users and files')
+                do_purge(install_dir, num_jobe_users)
+            
             print('Configuring for', num_jobe_users, 'simultaneous job runs') 
             webserver_user = get_webserver()
             print("Web server is", webserver_user)

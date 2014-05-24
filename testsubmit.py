@@ -15,7 +15,7 @@ from base64 import b64encode
 # ===============================================
 
 VERBOSE = False
-DEBUGGING = True
+DEBUGGING = False
 
 JOBE_SERVER = 'localhost'
 #JOBE_SERVER = '192.168.1.107'
