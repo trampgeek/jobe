@@ -48,6 +48,7 @@ abstract class Task {
     public $stderr = '';
     public $result = Task::RESULT_INTERNAL_ERR;  // Should get overwritten
     public $workdir = '';   // The temporary working directory created in constructor
+    public $id = '';        // The basename of the workdir, used as a job id
 
     // For all languages it is necessary to store the source code in a
     // temporary file when constructing the task. A temporary directory
@@ -57,8 +58,10 @@ abstract class Task {
     public function __construct($sourceCode, $filename, $input, $params) {
         $this->workdir = tempnam("/home/jobe/runs", "jobe_");
         if (!unlink($this->workdir) || !mkdir($this->workdir)) {
+            log_message('error', 'LanguageTask constructor: error making temp directory');
             throw new coding_exception("Task: error making temp directory (race error?)");
         }
+        $this->id = basename($this->workdir);
         $this->input = $input;
         $this->sourceFileName = $filename;
         $this->params = $params;

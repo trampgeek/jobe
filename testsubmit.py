@@ -15,7 +15,7 @@ from base64 import b64encode
 # ===============================================
 
 VERBOSE = False
-DEBUGGING = False
+DEBUGGING = True
 
 JOBE_SERVER = 'localhost'
 #JOBE_SERVER = '192.168.1.107'
@@ -451,7 +451,7 @@ def run_test(test):
 
     resource = '/jobe/index.php/restapi/runs/'
     data = json.dumps({ 'run_spec' : runspec })
-    headers = {"Content-type": "application/json",
+    headers = {"Content-type": "application/json; charset=utf-8",
                "Accept": "application/json"}
     response = None
     content = ''

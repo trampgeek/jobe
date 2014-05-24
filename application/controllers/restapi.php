@@ -53,6 +53,14 @@ class Restapi extends REST_Controller {
     }
     
     
+    protected function error($message, $httpCode=400) {
+        // Generate the http response containing the given message with the given
+        // HTTP response code. Log the error first.
+        log_message('error', $message);
+        $this->response($message, $httpCode);
+    }
+    
+    
     public function index_get() {
         $this->response('Please access this API via the runs, runresults, files or languages collections');
     }
@@ -64,22 +72,24 @@ class Restapi extends REST_Controller {
     // Put (i.e. create or update) a file
     public function files_put($fileId=FALSE) {
         if ($fileId === FALSE) {
-            $this->response('No file id in URL', 400);
+            $this->error('No file id in URL');
         }
-        $contentsb64 = $this->put('file_contents');
+        $contentsb64 = $this->put('file_contents', FALSE);
         if ($contentsb64 === FALSE) {
-            $this->response('Missing file_contents parameter');
+            $this->error('put: missing file_contents parameter');
         }
 
         $contents = base64_decode($contentsb64, TRUE);
         if ($contents === FALSE) {
-            $this->response("Contents of file $fileId are not valid base-64", 400);
+            $this->error("put: contents of file $fileId are not valid base-64");
         }
         $destPath = FILE_CACHE_BASE . $fileId;
 
         if (file_put_contents($destPath, $contents) === FALSE) {
-            $this->response("Failed to write file $destPath to cache", 500);
+            $this->error("put: failed to write file $destPath to cache", 500);
         }
+        $len = strlen($contents);
+        log_message('debug', "Put file $fileId, size $len");
         $this->response(NULL, 204);
     }
     
@@ -87,17 +97,19 @@ class Restapi extends REST_Controller {
     // Check file
     public function files_head($fileId) {
         if (!$fileId) {
-            $this->response('Missing file ID parameter in URL', 400);
+            $this->error('head: missing file ID parameter in URL');
         } else if (file_exists(FILE_CACHE_BASE . $fileId)) {
+            log_message('debug', "head: file $fileId exists");
             $this->response(NULL, 204);
         } else {
+            log_message('debug', "head: file $fileId not found");
             $this->response(NULL, 404);
         }
     }
     
     // Post file
     public function files_post() {
-        $this->response('Posting of files is not implemented on this server', 403);
+        $this->error('file_post: not implemented on this server', 403);
     }
  
     // ****************************
@@ -106,16 +118,16 @@ class Restapi extends REST_Controller {
     
     public function runs_get() {
         $id = $this->get('runId');
-        $this->response('No such run or run result discarded', 200);
+        $this->error('runs_get: no such run or run result discarded', 200);
     }
     
     
     public function runs_post() {
-        if (!$run = $this->post('run_spec')) {
-            $this->response('Missing or invalid run_spec parameter', 400);
+        if (!$run = $this->post('run_spec', FALSE)) {
+            $this->error('runs_post: missing or invalid run_spec parameter', 400);
         } elseif (!is_array($run) || !isset($run['sourcecode']) ||
                     !isset($run['language_id'])) {
-                $this->response('Invalid run specification', 400);
+                $this->error('runs_post: invalid run specification', 400);
         } else {
             // REST_Controller has called to_array on the JSON decoded
             // object, so we must first turn it back into an object
@@ -127,7 +139,7 @@ class Restapi extends REST_Controller {
                 $files = $run->file_list;
                 foreach ($files as $file) {
                     if (!$this->is_valid_filespec($file)) {
-                        $this->response("Invalid file specifier: " . print_r($file, TRUE), 400);
+                        $this->error("runs_post: invalid file specifier: " . print_r($file, TRUE));
                     }
                 }
             } else {
@@ -146,10 +158,13 @@ class Restapi extends REST_Controller {
                 $deleteFiles = !isset($run->debug) || !$run->debug;
                 if (!$this->task->load_files($files, FILE_CACHE_BASE)) {
                     $this->task->close($deleteFiles);
+                    log_message('debug', 'runs_post: file(s) not found');
                     $this->response('One or more of the specified files is missing/unavailable', 404);
                 } else {
+                    log_message('debug', "runs_post: compiling job {$this->task->id}");
                     $this->task->compile();
                     if ($this->task->cmpinfo == '') {
+                        log_message('debug', "runs_post: executing job {$this->task->id}");
                         $this->task->execute();
                     }
                 }
@@ -159,6 +174,8 @@ class Restapi extends REST_Controller {
                 $this->task->close($deleteFiles); 
             }
         }
+        
+        log_message('debug', "runs_post: returning 200 OK for task {$this->task->id}");
         $this->response($this->task->resultObject(), 200);
 
     }
@@ -168,7 +185,7 @@ class Restapi extends REST_Controller {
     // **********************
     public function runresults_get()
     {
-        $this->response('Unimplemented, as all submissions run immediately.', 404);
+        $this->error('runresults_get: unimplemented, as all submissions run immediately.', 404);
     }
     
     
@@ -177,6 +194,7 @@ class Restapi extends REST_Controller {
     // **********************
     public function languages_get()
     {
+        log_message('debug', 'languages_get called');
         $langs = array();
         foreach ($this->languages as $id => $version) {
             $langs[] = array($id, $version);

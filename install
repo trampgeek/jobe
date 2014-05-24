@@ -7,15 +7,17 @@ from __future__ import print_function
 import os
 import subprocess
 import re
+import sys
+
 
 JOBE_DIR = '/var/www/jobe'
 
-def get_config(param_name):
-    '''Get a config parameter from application/config/config.php.
+def get_config(param_name, install_dir):
+    '''Get a config parameter from <<install_dir>>/application/config/config.php.
        An exception occurs if either the file or the required parameter
        is not found.
     '''
-    with open('/var/www/jobe/application/config/config.php') as config:
+    with open('{}/application/config/config.php'.format(install_dir)) as config:
         lines = config.readlines()
     pattern = r" *\$config\[ *'{}' *\] *= *([^;]+).*$".format(param_name)
     for line in lines:
@@ -25,8 +27,9 @@ def get_config(param_name):
     raise Exception('Config param ' + param_name + ' not found')
     
 
-def printFailMessage():
+def fail():
     print("Install failed")
+    sys.exit(1);
 
 
 def get_webserver():
@@ -65,7 +68,7 @@ def make_sudoers(install_dir, webserver_user, num_jobe_users):
             sudoers.write('{} ALL=(root) NOPASSWD: {}\n'.format(webserver_user, cmd))
 
 
-def make_user(username, comment, make_home_dir=False):
+def make_user(username, comment, make_home_dir=False, group='jobe'):
     ''' Check if user exists. If not, add the named user with the given comment.
         Make a home directory only if make_home_dir is true.
     '''
@@ -74,37 +77,52 @@ def make_user(username, comment, make_home_dir=False):
         print(username, 'already exists')
     except:
         opt = '--home /home/jobe -m' if make_home_dir else ' -M'
-        do_command('useradd {} -s "/bin/false" -c "{}" {}'.format(opt, comment, username))
+        if group is None:
+            group_opt = ''
+        else:
+            group_opt = ' -g ' + group
+        do_command('useradd {} -s "/bin/false"{} -c "{}" {}'.format(opt, group_opt, comment, username))
+
+
+def make_directory(dirpath, webuser):
+    '''If dirpath doesn't exist, make a directory and give it
+       jobe:webuser ownership and 770 permissions'''
+    if not os.path.exists(dirpath):
+        os.makedirs(dirpath)
+    do_command('chown jobe:{0} {1}; chmod 771 {1}'.format(webuser, dirpath)) 
 
 
 def main():
     install_dir = os.getcwd()
     if install_dir != JOBE_DIR:
         print("WARNING: Jobe appears not to have been installed in /var/www")
-        print ("as recommended.")
+        print ("as expected. Things might turn ugly.")
 
     if subprocess.check_output('whoami', shell=True) != b'root\n':
             print("****This script must be run by root*****")
-            printFailMessage()
+            fail()
     else:
         try:
-            num_jobe_users = int(get_config('jobe_max_users'))
+            num_jobe_users = int(get_config('jobe_max_users', install_dir))
             print('Configuring for', num_jobe_users, 'simultaneous job runs') 
             webserver_user = get_webserver()
             print("Web server is", webserver_user)
-            print("Giving web-server write-access to file cache")
+            print("Make user jobe")
+            make_user('jobe', 'Jobe user. Provides home for runs.', True, None)
+            print("Setting up file cache")
+            make_directory('{}/files'.format(install_dir), webserver_user);
             do_command('chgrp {} {}/files'.format(webserver_user, install_dir))
             do_command('chmod g+rwX {}/files'.format(install_dir))
-            print("Making required jobe users")
-            make_user('jobe', 'Jobe user. Provides home for runs.', True)
+            print("Making required job-runner users")
             for i in range(num_jobe_users):
                 username = 'jobe{:02d}'.format(i)
                 make_user(username, 'Jobe server task runner')
            
-            rundir = '/home/jobe/runs'
-            cmd ='mkdir {run}; chown jobe:{web} {run}; chmod 771 {run}'.format(
-                run=rundir, web=webserver_user)
-            do_command(cmd)
+            print("Set up Jobe runs directory (/home/jobe/runs)")
+            make_directory('/home/jobe/runs', webserver_user)
+            print("Set up Jobe log directory (/var/log/jobe)")
+            make_directory('/var/log/jobe', webserver_user)
+
             print("Building runguard")
             runguard_commands = [
                 "cd {0}".format(install_dir + '/runguard'),
@@ -119,6 +137,6 @@ def main():
 
         except Exception as e:
             print("Exception during install: " + str(e))
-            printFailMessage()
+            fail()
 
 main()

@@ -4,7 +4,7 @@
 // status of the active users variable in the shared memory area.
 
 define('ACTIVE_USERS', 1);  // The key for the shared memory active users array
-$key = ftok('/home/rjl83/CADDY/www/jobe/application/libraries/LanguageTask.php', 'j');
+$key = ftok('/var/www/jobe/application/libraries/LanguageTask.php', 'j');
 $sem = sem_get($key);
 sem_acquire($sem);
 $shm = shm_attach($key);
