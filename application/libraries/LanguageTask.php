@@ -250,12 +250,12 @@ abstract class Task {
             $this->result = Task::RESULT_INTERNAL_ERR;
             $this->stderr = $e->getMessage();
         }
-        finally {
-            if (isset($userId)) {
-                exec("sudo /usr/bin/pkill -9 -u $user"); // Kill any remaining processes
-                $this->freeUser($userId);
-            }
+
+        if (isset($userId)) {
+            exec("sudo /usr/bin/pkill -9 -u $user"); // Kill any remaining processes
+            $this->freeUser($userId);
         }
+
     }
 
     // Return the Linux command to use to run the current job with the given
