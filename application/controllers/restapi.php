@@ -25,18 +25,18 @@ require_once('application/libraries/LanguageTask.php');
 
 define('MAX_READ', 4096);  // Max bytes to read in popen
 define ('MIN_FILE_IDENTIFIER_SIZE', 8);
-define ('FILE_CACHE_BASE', '/var/www/jobe/files/');
-
 
 
 class Restapi extends REST_Controller {
     
     protected $languages = array();
+    protected $file_cache_base = NULL;
     
     // Constructor loads the available languages from the libraries directory
     public function __construct()
     {
         parent::__construct();
+        $this->file_cache_base = FCPATH . '/files/';
         
         $library_files = scandir('application/libraries');
         foreach ($library_files as $file) {
@@ -90,7 +90,7 @@ class Restapi extends REST_Controller {
         if ($contents === FALSE) {
             $this->error("put: contents of file $fileId are not valid base-64");
         }
-        $destPath = FILE_CACHE_BASE . $fileId;
+        $destPath = $this->file_cache_base . $fileId;
 
         if (file_put_contents($destPath, $contents) === FALSE) {
             $this->error("put: failed to write file $destPath to cache", 500);
@@ -105,7 +105,7 @@ class Restapi extends REST_Controller {
     public function files_head($fileId) {
         if (!$fileId) {
             $this->error('head: missing file ID parameter in URL');
-        } else if (file_exists(FILE_CACHE_BASE . $fileId)) {
+        } else if (file_exists($this->file_cache_base .$fileId)) {
             $this->log('debug', "head: file $fileId exists");
             $this->response(NULL, 204);
         } else {
@@ -163,7 +163,7 @@ class Restapi extends REST_Controller {
                 $this->task = new $reqdTaskClass($run->sourcecode,
                         $run->sourcefilename, $input, $params);
                 $deleteFiles = !isset($run->debug) || !$run->debug;
-                if (!$this->task->load_files($files, FILE_CACHE_BASE)) {
+                if (!$this->task->load_files($files, $this->file_cache_base)) {
                     $this->task->close($deleteFiles);
                     $this->log('debug', 'runs_post: file(s) not found');
                     $this->response('One or more of the specified files is missing/unavailable', 404);

@@ -63,13 +63,13 @@ installed.
 *** TBS *** Discussion on use of cgroups (currently disabled)
 
 The first step is to clone the project in the web root directory (assumed
-to be /var/www although hopefully other web roots will work). Do not clone
+to be /var/www/html although hopefully other web roots will work). Do not clone
 the project elsewhere and attempt to add it to web root with symbolic links.
 That breaks this installer.
 
 To clone the project:
 
-    cd /var/www
+    cd /var/www/html
     sudo git clone https://github.com/trampgeek/jobe.git
 
 Installation is performed by the install script, which must be run as root
@@ -78,7 +78,7 @@ set-up a jobe-sudoers file in /etc/sudoers.d that allows the web server
 to execute the runguard program as root and to kill any residual jobe
 processes from the run.
 
-    cd /var/www/jobe
+    cd /var/www/html/jobe
     sudo ./install
 
 To test the installation, first try running the tester with the command

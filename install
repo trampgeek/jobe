@@ -13,7 +13,7 @@ import re
 import sys
 
 
-JOBE_DIR = '/var/www/jobe'
+JOBE_DIRS = ['/var/www/jobe', '/var/www/html/jobe']
 
 def get_config(param_name, install_dir):
     '''Get a config parameter from <<install_dir>>/application/config/config.php.
@@ -117,9 +117,9 @@ def main():
     purging = len(sys.argv) == 2
         
     install_dir = os.getcwd()
-    if install_dir != JOBE_DIR:
+    if install_dir not in JOBE_DIRS:
         print("WARNING: Jobe appears not to have been installed in /var/www")
-        print ("as expected. Things might turn ugly.")
+        print ("or /var/www/html as expected. Things might turn ugly.")
 
     if subprocess.check_output('whoami', shell=True) != b'root\n':
             print("****This script must be run by root*****")
