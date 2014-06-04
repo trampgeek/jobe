@@ -32,7 +32,7 @@ TEST_SET = [
     'language_id': 'python3',
     'sourcecode': r'''print("Hello world!")
 ''',
-    'sourcefilename': 'test.py',
+    'sourcefilename': 'test.js',
     'expect': { 'outcome': 15, 'stdout': 'Hello world!\n' }
 },
 
@@ -43,7 +43,7 @@ TEST_SET = [
 print(input())
 ''',
     'input': 'Line1\nLine2\n',
-    'sourcefilename': 'test.py',
+    'sourcefilename': 'test.js',
     'expect': { 'outcome': 15, 'stdout': 'Line1\nLine2\n' }
 },
 
@@ -199,7 +199,7 @@ while clock() < t + 10: pass  # Wait 10 seconds
 print("Hello Python")
 ''',
     'sourcefilename': 'test.py',
-    'parameters': {'cputime':12},
+    'parameters': {'cputime':15},
     'expect': { 'outcome': 15, 'stdout': '''Hello Python
 '''}
 },
@@ -330,6 +330,27 @@ print("Yay!")
     'parameters': {'memorylimit': 200000},
     'sourcefilename': 'prog.py',
     'expect': { 'outcome': 15, 'stdout': 'Yay!\n' }
+}, 
+
+{
+    'comment': 'Syntactically valid Nodejs hello world',
+    'language_id': 'nodejs',
+    'sourcecode': r'''console.log('Hello world!');
+''',
+    'sourcefilename': 'test.js',
+    'parameters': {'memorylimit': 1000000},
+    'expect': { 'outcome': 15, 'stdout': 'Hello world!\n' }
+},
+
+{
+    'comment': 'Syntactically invalid (non-strict) Nodejs',
+    'language_id': 'nodejs',
+    'sourcecode': r'''s = 'Hello world!'
+console.log(s)
+''',
+    'sourcefilename': 'test.js',
+    'parameters': {'memorylimit': 1000000},
+    'expect': { 'outcome': 12 }
 }
 ]
 
