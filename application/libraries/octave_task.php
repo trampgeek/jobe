@@ -34,6 +34,7 @@ class Octave_Task extends Task {
              '--norc',
              '--no-window-system',
              '--silent',
+             '-H',
              $this->sourceFileName
          );
      }
