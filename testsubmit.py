@@ -351,7 +351,49 @@ console.log(s)
     'sourcefilename': 'test.js',
     'parameters': {'memorylimit': 1000000},
     'expect': { 'outcome': 12 }
-}
+}, 
+
+{
+    'comment': 'Correct Php program ',
+    'language_id': 'php',
+    'sourcecode': r'''<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+<h1>Heading</h1>
+<p><?php echo "A paragraph"; ?></p>
+</body>
+</html>
+''',
+    'sourcefilename': 'test.py',
+    'parameters': {'cputime':15},
+    'expect': { 'outcome': 15, 'stdout': '''<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+<h1>Heading</h1>
+<p>A paragraph</p>
+</body>
+</html>
+'''}
+},
+
+{
+    'comment': 'Syntactically incorrect Php program ',
+    'language_id': 'php',
+    'sourcecode': r'''<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+<h1>Heading</h1>
+<p><?php echo "A paragraph' ?></p>
+</body>
+</html>
+''',
+    'sourcefilename': 'test.py',
+    'parameters': {'cputime':15},
+    'expect': { 'outcome': 11 }
+},
 ]
 
 
@@ -359,7 +401,7 @@ def check_parallel_submissions():
     '''Check that we can submit several jobs at once to Jobe with
        the process limit set to 1 and still have no conflicts.
     '''
-    NUM_SUBMITS = 5
+    NUM_SUBMITS = 30
 
     job = {
         'comment': 'C program to check parallel submissions',
@@ -569,8 +611,6 @@ def main():
 
     if TEST_LANG == 'ALL':
         check_parallel_submissions()
-
-
 
 
 main()
