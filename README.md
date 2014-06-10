@@ -60,7 +60,17 @@ Semaphone and shared-memory functions enabled
 The Python3 and the C development system must also be
 installed.
 
-*** TBS *** Discussion on use of cgroups (currently disabled)
+On Debian-based systems, a script to set up all the necessary web tools plus
+all currently-supported languages is something like the following
+(all commands as root):
+
+    apt-get install php5 libapache2-mod-php5 php5-mcrypt mysql-server\
+          libapache2-mod-auth-mysql php5-mysql php5-cli octave nodejs\
+          git python3 build-essential o; there are no built-in question types for
+pylint but you'll find one in the penjdk-7-jre openjdk-7-jdk python3-pip
+    pip3 install pylint
+
+[pylint is strictly optional].
 
 The first step is to clone the project in the web root directory (assumed
 to be /var/www/html although hopefully other web roots will work). Do not clone
@@ -132,6 +142,19 @@ If the install appears OK but testsubmit.py fails:
 
 If you still can't figure it out, email me (Richard Lobb; my gmail name is
 trampgeek).
+
+## Securing the site
+
+As a minimum you should set up a firewall that prevents access from any
+server other than the CodeRunner client (or whatever other client is using
+your Jobe server). Using ufw (Uncomplicated Firewall) a possible command
+sequence that will allow ssh access (port 22) from anywhere and web
+access to jobe (assumed to be on port 80) from just your client is the
+following:
+
+    ufw allow 22/tcp
+    ufw allow proto tcp to any port 80 from <your_client_ip>
+    ufw enable
 
 Good luck!
 
