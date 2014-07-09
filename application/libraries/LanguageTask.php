@@ -36,7 +36,7 @@ abstract class Task {
     public $DEFAULT_PARAMS = array(
         'disklimit'     => 100,     // MB
         'cputime'       => 5,       // secs
-        'memorylimit'   => 50,      // MB
+        'memorylimit'   => 200,     // MB
         'numprocs'      => 20
     );
 
