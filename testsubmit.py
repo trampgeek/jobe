@@ -129,12 +129,24 @@ int main() {
 },
 
 {
+    'comment': 'Test outputlimit on C',
+    'language_id': 'c',
+    'sourcecode': r'''#include <stdio.h>
+int main() {
+    while(1) { printf("Hello"); };
+}
+''',
+    'sourcefilename': 'prog.c',
+    'expect': { 'outcome': 13 }
+},
+
+{
     'comment': 'Memory limit exceeded in C (seg faults)',
     'language_id': 'c',
     'sourcecode': r'''#include <stdio.h>
 #include <stdlib.h>
-// Will try to allocate 100MB; default limit is 50MB
-#define CHUNKSIZE 100000000
+// Will try to allocate 500MB; default limit is 200MB
+#define CHUNKSIZE 500000000
 
 int main() {
     char* p = malloc(CHUNKSIZE);
@@ -330,7 +342,7 @@ print("Yay!")
     'parameters': {'memorylimit': 200000},
     'sourcefilename': 'prog.py',
     'expect': { 'outcome': 15, 'stdout': 'Yay!\n' }
-}, 
+},
 
 {
     'comment': 'Syntactically valid Nodejs hello world',
@@ -351,7 +363,7 @@ console.log(s)
     'sourcefilename': 'test.js',
     'parameters': {'memorylimit': 1000000},
     'expect': { 'outcome': 12 }
-}, 
+},
 
 {
     'comment': 'Correct Php program ',
@@ -594,6 +606,7 @@ def display_result(comment, ro):
 
 #TEST_LANG = 'octave'
 TEST_LANG = 'ALL'
+
 
 def main():
     '''Every home should have one'''
