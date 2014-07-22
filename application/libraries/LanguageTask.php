@@ -34,7 +34,7 @@ abstract class Task {
     const RESULT_SERVER_OVERLOAD = 21;
 
     public $DEFAULT_PARAMS = array(
-        'disklimit'     => 100,     // MB
+        'disklimit'     => 20,      // MB
         'cputime'       => 5,       // secs
         'memorylimit'   => 200,     // MB
         'numprocs'      => 20
