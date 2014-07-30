@@ -24,7 +24,7 @@ The interface is via a RESTful API, that is documented [here](./restapi.pdf).
 
 ## Implementation status
 
-Jobe is still under development. The current alpha version implements
+Jobe is still under development. The current beta version implements
 enough of the API to provide the services needed by CodeRunner. Only 
 immediate-mode runs are supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
@@ -38,6 +38,16 @@ Sandboxing is fairly basic. It uses the [domjudge](http://domjudge.org)
 allocation (memory, processes, cpu time) as a low-privileged user.
 However it does not restrict any system calls and the task is not yet run
 in a chroot jail.
+
+Programs may write binary output but the results are returned to the caller
+JSON-encoded, which requires UTF-8 strings. To avoid crashing the
+json-encoder, the standard output and standard error output from the program
+are taken as 8-bit character streams; characters below '\x20' (the space
+character) and above '\x7E' are replaced by C-style hexadecimal encodings 
+(e.g. '\x8E') except for newlines and returns, which are passed through directly.
+Also, the Runguard sandbox currently runs programs in the default C locale. 
+As a consequence of these two constraints, programs that generate utf-8 output
+cannot currently be run on Jobe. It is hoped to improve on this in the future.
 
 ## Installation
 

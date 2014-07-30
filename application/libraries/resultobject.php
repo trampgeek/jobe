@@ -22,8 +22,29 @@ class ResultObject {
     {
         $this->run_id = $run_id;   // A unique identifying string
         $this->outcome = $outcome; // Outcome of this job
-        $this->cmpinfo = $cmpinfo;
-        $this->stdout = $stdout;
-        $this->stderr = $stderr;
+        $this->cmpinfo = $this->clean($cmpinfo);
+        $this->stdout = $this->clean($stdout);
+        $this->stderr = $this->clean($stderr);
+    }
+    
+   
+    protected static function clean(&$s) {
+        // A copy of $s sanitised by replacing all control
+        // chars except newlines and returns with hex equivalents.
+        // Implemented here because non-utf8 output causes the json-encoding
+        // of the result to fail.
+        // TODO: implement this in a proper utf-8 aware manner.
+
+        $new_s = '';  // Output string
+        $n = strlen($s);
+        for ($i = 0; $i < $n; $i++) {
+            $c = $s[$i];
+            if (($c != "\n" && $c != "\r" && $c < " ") || $c > "\x7E") {
+                $c = '\\x' . sprintf("%02x", ord($c));
+            }
+            $new_s .= $c;
+        }
+
+        return $new_s;
     }
 }
