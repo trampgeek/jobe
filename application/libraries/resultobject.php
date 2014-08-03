@@ -30,7 +30,7 @@ class ResultObject {
    
     protected static function clean(&$s) {
         // A copy of $s sanitised by replacing all control
-        // chars except newlines and returns with hex equivalents.
+        // chars except newlines, tabs and returns with hex equivalents.
         // Implemented here because non-utf8 output causes the json-encoding
         // of the result to fail.
         // TODO: implement this in a proper utf-8 aware manner.
@@ -39,7 +39,7 @@ class ResultObject {
         $n = strlen($s);
         for ($i = 0; $i < $n; $i++) {
             $c = $s[$i];
-            if (($c != "\n" && $c != "\r" && $c < " ") || $c > "\x7E") {
+            if (($c != "\n" && $c != "\r" && $c != "\t" && $c < " ") || $c > "\x7E") {
                 $c = '\\x' . sprintf("%02x", ord($c));
             }
             $new_s .= $c;
