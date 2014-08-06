@@ -34,7 +34,8 @@ abstract class Task {
     const RESULT_SERVER_OVERLOAD = 21;
 
     public $DEFAULT_PARAMS = array(
-        'disklimit'     => 20,      // MB
+        'disklimit'     => 20,      // MB (for normal files)
+        'streamsize'    => 2,       // MB (for stdout/stderr)
         'cputime'       => 5,       // secs
         'memorylimit'   => 200,     // MB
         'numprocs'      => 20
@@ -193,6 +194,7 @@ abstract class Task {
             $userId = $this->getFreeUser();
             $user = sprintf("jobe%02d", $userId);
             $filesize = 1000 * $this->getParam('disklimit'); // MB -> kB
+            $streamsize = 1000 * $this->getParam('streamsize'); // MB -> kB
             $memsize = 1000 * $this->getParam('memorylimit');
             $cputime = $this->getParam('cputime');
             $numProcs = $this->getParam('numprocs');
@@ -203,7 +205,7 @@ abstract class Task {
                  "--filesize=$filesize",    // Max file sizes
                  "--nproc=$numProcs",       // Max num processes/threads for this *user*
                  "--no-core",
-                 "--streamsize=$filesize");  // Max stdout/stderr sizes
+                 "--streamsize=$streamsize");   // Max stdout/stderr sizes
 
             if ($memsize != 0) {  // Special case: Matlab won't run with a memsize set. TODO: WHY NOT!
                 $sandboxCmdBits[] = "--memsize=$memsize";
