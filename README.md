@@ -25,7 +25,7 @@ The interface is via a RESTful API, that is documented [here](./restapi.pdf).
 ## Implementation status
 
 The current version of Jobe (Version 1.0) implements
-enough of the API to provide the services needed by CodeRunner. . Only 
+enough of the API to provide the services needed by CodeRunner. Only 
 immediate-mode runs are supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
 the server (unless *run\_spec.debug* is true; see the API), so 
