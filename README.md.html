@@ -1,13 +1,13 @@
 <h1>JOBE</h1>
 
-<p>Version: 0.3 alpha May 2014</p>
+<p>Version: 1.0 August 2014</p>
 
 <p>Author: Richard Lobb, University of Canterbury, New Zealand.</p>
 
 <h2>Introduction</h2>
 
 <p>Jobe (short for Job Engine) is a server that supports running of small
-compile-and-run jobs in a variety of programming languages. It is being
+compile-and-run jobs in a variety of programming languages. It was
 developed as a remote sandbox for use by
 <a href="http://github.com/trampgeek/coderunner">CodeRunner</a>, 
 a Moodle question-type plugin that asks students to write code to some
@@ -24,7 +24,7 @@ various status information plus the output and error output from the run.</p>
 
 <h2>Implementation status</h2>
 
-<p>Jobe is still under development. The current alpha version implements
+<p>The current version of Jobe (Version 1.0) implements
 enough of the API to provide the services needed by CodeRunner. Only 
 immediate-mode runs are supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
@@ -32,6 +32,12 @@ the server (unless <em>run_spec.debug</em> is true; see the API), so
 <em>get_run_status</em> always returns 404 not found.  C, Python3, Python2, Octave
 and Java have been
 tested at this stage, and untested code exists to support C++ and Matlab.</p>
+
+<p>The Computer Science quiz server at the University of Canterbury switched to
+exclusive use of the Jobe sandbox in early July 2014. At the time of writing
+(mid August 2014) it has run several
+tens of thousands of Python3 and C jobs unattended since then with only a few
+minor bug fixes.</p>
 
 <p>Sandboxing is fairly basic. It uses the <a href="http://domjudge.org">domjudge</a> 
 <em>runguard</em> program to run student jobs with restrictions on resource
@@ -75,7 +81,7 @@ sudo git clone https://github.com/trampgeek/jobe.git
 
 <p>Installation is performed by the install script, which must be run as root
 so that it can add the required jobe run users (jobe00, jobe01, etc) and
-set-up a jobe-sudoers file in /etc/sudoers.d that allows the web server
+set up a jobe-sudoers file in /etc/sudoers.d that allows the web server
 to execute the runguard program as root and to kill any residual jobe
 processes from the run.</p>
 
@@ -99,9 +105,7 @@ number, and re-run the tester with the same command from the client machine.</p>
 
 <h2>Debugging</h2>
 
-<p>At this stage (Alpha release) I've no idea what will go wrong for other
-people, but here are some of the things I did during development, which may
-be of use to you.</p>
+<p>If you have problems installing Jobe, here are some things to check.</p>
 
 <p>If the install script fails, check the error message. You should be able
     to read through the script and figure out what went wrong. Otherwise ...</p>
