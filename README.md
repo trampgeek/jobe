@@ -1,13 +1,13 @@
 # JOBE
 
-Version: 0.3 alpha May 2014
+Version: 1.0 August 2014
 
 Author: Richard Lobb, University of Canterbury, New Zealand.
 
 ## Introduction
 
 Jobe (short for Job Engine) is a server that supports running of small
-compile-and-run jobs in a variety of programming languages. It is being
+compile-and-run jobs in a variety of programming languages. It was
 developed as a remote sandbox for use by
 [CodeRunner](http://github.com/trampgeek/coderunner), 
 a Moodle question-type plugin that asks students to write code to some
@@ -24,14 +24,20 @@ The interface is via a RESTful API, that is documented [here](./restapi.pdf).
 
 ## Implementation status
 
-Jobe is still under development. The current beta version implements
-enough of the API to provide the services needed by CodeRunner. Only 
+The current version of Jobe (Version 1.0) implements
+enough of the API to provide the services needed by CodeRunner. . Only 
 immediate-mode runs are supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
 the server (unless *run\_spec.debug* is true; see the API), so 
 *get\_run\_status* always returns 404 not found.  C, Python3, Python2, Octave
 and Java have been
 tested at this stage, and untested code exists to support C++ and Matlab.
+
+The Computer Science quiz server at the University of Canterbury switched to
+exclusive use of the Jobe sandbox in early July 2014. At the time of writing
+(mid August 2014) it has run several
+tens of thousands of Python3 and C jobs unattended since then with only a few
+minor bug fixes.
 
 Sandboxing is fairly basic. It uses the [domjudge](http://domjudge.org) 
 *runguard* program to run student jobs with restrictions on resource
@@ -44,10 +50,17 @@ JSON-encoded, which requires UTF-8 strings. To avoid crashing the
 json-encoder, the standard output and standard error output from the program
 are taken as 8-bit character streams; characters below '\x20' (the space
 character) and above '\x7E' are replaced by C-style hexadecimal encodings 
-(e.g. '\x8E') except for newlines and returns, which are passed through directly.
+(e.g. '\x8E') except for newlines which are passed through directly, and
+tabls and returns which are replaced with '\t' and '\r' respectively.
 Also, the Runguard sandbox currently runs programs in the default C locale. 
 As a consequence of these two constraints, programs that generate utf-8 output
 cannot currently be run on Jobe. It is hoped to improve on this in the future.
+
+Jobe is implemented using Ellis Lab's [codeigniter](http://codeigniter.com) plus the
+[RESTserver plugin](https://github.com/philsturgeon/codeigniter-restserver) from
+Phil Sturgeon. It uses Jaap Eldering's and Keith Johnson's *Runguard*
+module from the programming contest server (DOMJudge)[http://domjudge.org] 
+as a sandbox to limit resource use by submitted jobs.
 
 ## Installation
 
@@ -56,12 +69,6 @@ server that is firewalled to allow connections ONLY from authorised client
 machines. If you install it on a machine without such firewalling,
 anyone will be able to connect to your machine and run their own code
 on it! **CAVEAT EMPTOR!**
-
-Jobe is implemented using Ellis Lab's [codeigniter](http://codeigniter.com) plus the
-[RESTserver plugin](https://github.com/philsturgeon/codeigniter-restserver) from
-Phil Sturgeon. It uses Jaap Eldering's and Keith Johnson's *Runguard*
-module from the programming contest server (DOMJudge)[http://domjudge.org] 
-as a sandbox to limit resource use by submitted jobs.
 
 Jobe runs only on Linux, which must have the Apache web server
 installed and running. PHP must have been compiled with the System V
@@ -76,8 +83,7 @@ all currently-supported languages is something like the following
 
     apt-get install php5 libapache2-mod-php5 php5-mcrypt mysql-server\
           libapache2-mod-auth-mysql php5-mysql php5-cli octave nodejs\
-          git python3 build-essential o; there are no built-in question types for
-pylint but you'll find one in the penjdk-7-jre openjdk-7-jdk python3-pip
+          git python3 build-essential openjdk-7-jre openjdk-7-jdk python3-pip
     pip3 install pylint
 
 [pylint is strictly optional].
@@ -115,9 +121,7 @@ number, and re-run the tester with the same command from the client machine.
 
 ## Debugging
 
-At this stage (Alpha release) I've no idea what will go wrong for other
-people, but here are some of the things I did during development, which may
-be of use to you.
+If you have problems installing Jobe, here are some things to check.
 
 If the install script fails, check the error message. You should be able
     to read through the script and figure out what went wrong. Otherwise ...
