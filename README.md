@@ -88,14 +88,15 @@ all currently-supported languages is something like the following
 
 [pylint is strictly optional].
 
-The first step is to clone the project in the web root directory (assumed
-to be /var/www/html although hopefully other web roots will work). Do not clone
-the project elsewhere and attempt to add it to web root with symbolic links.
-That breaks this installer.
+The first step is to clone the project in the web root directory WEBROOT
+(usually /var/www on Debian-based systems or /var/www/html on Red Hat).
+Do not clone the project elsewhere and attempt to add it to web root with
+symbolic links. That breaks this installer. In what follows, replace
+WEBROOT with either /var/www or /var/www/html as appropriate.
 
 To clone the project:
 
-    cd /var/www/html
+    cd WEBROOT
     sudo git clone https://github.com/trampgeek/jobe.git
 
 Installation is performed by the install script, which must be run as root
@@ -104,7 +105,7 @@ set-up a jobe-sudoers file in /etc/sudoers.d that allows the web server
 to execute the runguard program as root and to kill any residual jobe
 processes from the run.
 
-    cd /var/www/html/jobe
+    cd WEBROOT
     sudo ./install
 
 To test the installation, first try running the tester with the command
@@ -128,7 +129,7 @@ If the install script fails, check the error message. You should be able
 
 1. Check the install went OK:
 
- 1. Make sure your webserver has read access to the entire jobe subtree.
+ 1. Make sure your webserver has read access to twith clarifications elsewhere in the documentation that what's imhe entire jobe subtree.
  1. Make sure your webserver has write access to jobe/files
  1. Make sure there exist users jobe and jobe00 through jobe09.
  1. Make sure there is a directory /home/jobe/runs owned by jobe and writeable
