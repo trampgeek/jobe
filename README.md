@@ -129,7 +129,7 @@ If the install script fails, check the error message. You should be able
 
 1. Check the install went OK:
 
- 1. Make sure your webserver has read access to twith clarifications elsewhere in the documentation that what's imhe entire jobe subtree.
+ 1. Make sure your webserver has read access to the entire jobe subtree.
  1. Make sure your webserver has write access to jobe/files
  1. Make sure there exist users jobe and jobe00 through jobe09.
  1. Make sure there is a directory /home/jobe/runs owned by jobe and writeable
