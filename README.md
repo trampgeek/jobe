@@ -223,13 +223,6 @@ Additionally the subclass may define:
 1. filteredStdout(). This performs the same task as filteredStderr() except it
    filters stdout, available to the function as $this->stdout.
 
-1. getParam(param). This function is called by the Runguard Sandbox to set
-   the memorylimit, max cputime, maximum stderr and stdout stream sizes
-   and the maximum amount of file output. The base class method just returns
-   the default values; subclasses can override the defaults if they wish
-   (but currently no subclasses do).
-
-
 
 Good luck!
 
