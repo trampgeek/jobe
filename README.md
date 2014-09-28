@@ -171,6 +171,66 @@ following:
     ufw allow proto tcp to any port 80 from <your_client_ip>
     ufw enable
 
+## Configuration
+
+This version of jobe is configured for use by Moodle Coderunner. The 
+various language compile and run flags should be appropriate for most
+such use, but can be changed by editing the course code as follows.
+
+The folder *application/libraries* contains all the code that executes
+submitted jobs. The file *LanguageTask.php* defines an abstract class
+*Task* that contains default configuration parameters for things like
+memory limit, maximum cpu run time, maximum disk output, etc. For each
+supported language, a subclass with a name of the form *&lt;Language&gt;_Task*
+resides in a file named *&lt;language&gt;_task.php*. For example, *c_task.php*
+contains all the parameters specific to running C tasks, *octave_task.php*
+contains parameters for running Octave tasks, etc. To add a new language
+to Jobe you just drop in a new *&lt;language&gt;_task.php* file;
+its presence is autodetected
+by the Restapi constructor and the language will be available immediately.
+
+Each subclass of LanguageTask typically defines at least the following three
+methods:
+
+1. getVersion(). This returns a string defining what version of the language,
+   compiler etc is supported. It's not actually used by CodeRunner but is
+   available via the rest API.
+
+1. compile(). Calling this method must result in the file named
+   $this->sourceFileName being compiled, with an executable output file
+   being placed in the current working directory. If compilation succeeds
+   the name of the executable
+   must be returned in $this->executableFileName; alternatively
+   $this->cmpinfo should be set to an appropriate error message; any non-empty
+   string is taken as a compile error. Interpreted languages might do nothing
+   or might copy the program.
+
+1. getRunCommand(). This method must return an array of strings that, when
+   joined with a space separator, make a bash command to execute the
+   program resulting from the compile(). Execution parameters
+   like the Java heap size are set in this function. The output from this
+   function is passed to the RunguardSandbox, after addition of standard
+   I/O redirection plus other sandbox parameters (see *getParam* below).
+
+Additionally the subclass may define:
+
+1. filteredStderr(). This takes $this->stderr and returns a filtered version,
+   which might be necessary in some languages to remove extraneous text
+   or remove special characters like form-feed or tab in order to make the
+   result more appropriate for subsequent use, e.g. for display to students
+   in a CodeRunner result table.
+
+1. filteredStdout(). This performs the same task as filteredStderr() except it
+   filters stdout, available to the function as $this->stdout.
+
+1. getParam(param). This function is called by the Runguard Sandbox to set
+   the memorylimit, max cputime, maximum stderr and stdout stream sizes
+   and the maximum amount of file output. The base class method just returns
+   the default values; subclasses can override the defaults if they wish
+   (but currently no subclasses do).
+
+
+
 Good luck!
 
 Richard
