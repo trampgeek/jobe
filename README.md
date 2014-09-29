@@ -105,7 +105,7 @@ set-up a jobe-sudoers file in /etc/sudoers.d that allows the web server
 to execute the runguard program as root and to kill any residual jobe
 processes from the run.
 
-    cd WEBROOT
+    cd WEBROOT/jobe
     sudo ./install
 
 To test the installation, first try running the tester with the command
