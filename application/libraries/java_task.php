@@ -74,5 +74,11 @@ class Java_Task extends Task {
              return $matches[2][0];
          }
      }
+     
+     // Get rid of the tab characters at the start of indented lines in 
+     // traceback output.
+     public function filteredStderr() {
+         return str_replace("\n\t", "\n        ", $this->stderr);
+     }
 };
 
