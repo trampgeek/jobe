@@ -175,7 +175,7 @@ following:
 
 This version of jobe is configured for use by Moodle Coderunner. The 
 various language compile and run flags should be appropriate for most
-such use, but can be changed by editing the course code as follows.
+such use, but can be changed by editing the source code as follows.
 
 The folder *application/libraries* contains all the code that executes
 submitted jobs. The file *LanguageTask.php* defines an abstract class
