@@ -15,6 +15,7 @@ require_once('application/libraries/LanguageTask.php');
 class Php_Task extends Task {
     public function __construct($source, $filename, $input, $params) {
         Task::__construct($source, $filename, $input, $params);
+        $this->DEFAULT_PARAMS['interpreterargs'] = array('--no-php-ini');
     }
 
     public static function getVersion() {
@@ -42,13 +43,13 @@ class Php_Task extends Task {
     }
 
 
-    // Return the command to pass to localrunner as a list of arguments,
-    // starting with the program to run followed by a list of its arguments.
-    public function getRunCommand() {
-        return array(
-             '/usr/bin/php5',
-            '--no-php-ini',
-             $this->executableFileName
-         );
+
+    public function getExecutablePath() {
+        return '/usr/bin/php5';
+     }
+     
+     
+     public function getTargetFile() {
+         return $this->sourceFileName;
      }
 };

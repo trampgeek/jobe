@@ -16,6 +16,11 @@ class C_Task extends Task {
 
     public function __construct($source, $filename, $input, $params) {
         Task::__construct($source, $filename, $input, $params);
+        $this->DEFAULT_PARAMS['compileargs'] = array(
+            '-Wall',
+            '-Werror',
+            '-std=c99',
+            '-x c');
     }
 
     public static function getVersion() {
@@ -26,9 +31,8 @@ class C_Task extends Task {
         $src = basename($this->sourceFileName);
         $errorFileName = "$src.err";
         $execFileName = "$src.exe";
-        $cmd = "gcc -Wall -Werror -std=c99 -x c -o $execFileName $src -lm 2>$errorFileName";
-        // To support C++ instead use something like ...
-        // $cmd = "g++ -Wall -Werror -x ++ -o $execFileName $src -lm 2>$errorFileName";
+        $compileargs = $this->getParam('compileargs');
+        $cmd = "gcc " . implode(' ', $compileargs) . " -o $execFileName $src -lm 2>$errorFileName";
         exec($cmd, $output, $returnVar);
         if ($returnVar == 0) {
             $this->cmpinfo = '';
@@ -39,10 +43,14 @@ class C_Task extends Task {
         }
     }
 
-
-    public function getRunCommand() {
-        return array(
-             "./" . $this->executableFileName
-         );
+    
+    // The executable is the output from the compilation
+    public function getExecutablePath() {
+        return "./" . $this->executableFileName;
+    }
+    
+    
+    public function getTargetFile() {
+        return '';
     }
 };

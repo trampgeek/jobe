@@ -32,7 +32,7 @@ TEST_SET = [
     'language_id': 'python3',
     'sourcecode': r'''print("Hello world!")
 ''',
-    'sourcefilename': 'test.js',
+    'sourcefilename': 'test.py',
     'expect': { 'outcome': 15, 'stdout': 'Hello world!\n' }
 },
 
@@ -43,7 +43,7 @@ TEST_SET = [
 print(input())
 ''',
     'input': 'Line1\nLine2\n',
-    'sourcefilename': 'test.js',
+    'sourcefilename': 'test.py',
     'expect': { 'outcome': 15, 'stdout': 'Line1\nLine2\n' }
 },
 
@@ -79,6 +79,29 @@ with open('testoutput.txt') as input:
 },
 
 {
+    'comment': 'Testing use of interpreter args with Python3',
+    'language_id': 'python3',
+    'sourcecode': r'''
+''',
+    'sourcefilename': 'test.py',
+    'expect': { 'outcome': 15, 'stdout': 'Blah\n' },
+    'parameters': {'interpreterargs': [r'-c "print(\"Blah\")"'] }
+},
+
+{
+    'comment': 'Testing use of runargs args with Python3',
+    'language_id': 'python3',
+    'sourcecode': r'''
+import sys
+for arg in sys.argv[1:]:
+    print(arg)
+''',
+    'sourcefilename': 'test.py',
+    'expect': { 'outcome': 15, 'stdout': 'Arg1\nArg2\n' },
+    'parameters': {'runargs': ['Arg1', 'Arg2'] }
+},
+
+{
     'comment': 'Test good C hello world',
     'language_id': 'c',
     'sourcecode': r'''#include <stdio.h>
@@ -100,6 +123,20 @@ int main() {
 ''',
     'sourcefilename': 'prog.c',
     'expect': { 'outcome': 11 }
+},
+
+{
+    'comment': 'Test use of compileargs with C',
+    'language_id': 'c',
+    'sourcecode': r'''#include <stdio.h>
+int main() {
+    printf("Hello world\nIsn't this fun!\n");
+    /* No return so shouldn't compile in ANSI C */
+}
+''',
+    'sourcefilename': 'prog.c',
+    'expect': { 'outcome': 11 },
+    'parameters': { 'compileargs': ['std=c89'] }
 },
 
 {
@@ -606,6 +643,7 @@ def display_result(comment, ro):
 
 #TEST_LANG = 'octave'
 TEST_LANG = 'ALL'
+
 
 
 def main():

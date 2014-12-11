@@ -15,6 +15,11 @@ require_once('application/libraries/LanguageTask.php');
 class Octave_Task extends Task {
     public function __construct($source, $filename, $input, $params) {
         Task::__construct($source, $filename, $input, $params);
+        $this->DEFAULT_PARAMS['interpreterargs'] = array(
+             '--norc',
+             '--no-window-system',
+             '--silent',
+             '-H');
     }
 
     public static function getVersion() {
@@ -28,15 +33,13 @@ class Octave_Task extends Task {
         }
     }
 
-    public function getRunCommand() {
-         return array(
-             '/usr/bin/octave',
-             '--norc',
-             '--no-window-system',
-             '--silent',
-             '-H',
-             $this->sourceFileName
-         );
+    public function getExecutablePath() {
+         return '/usr/bin/octave';
+     }
+     
+     
+     public function getTargetFile() {
+         return $this->sourceFileName;
      }
 
 

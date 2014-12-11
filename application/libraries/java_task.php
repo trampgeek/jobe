@@ -14,11 +14,16 @@ require_once('application/libraries/LanguageTask.php');
 
 class Java_Task extends Task {
     public function __construct($source, $filename, $input, $params) {
-        Task::__construct($source, $filename, $input, $params);
-        
         // TODO: find out why java won't work with memory limit set to
         // more plausible values.
-        $this->params = array('memorylimit' => 0);
+        $params['memorylimit'] = 0;
+        Task::__construct($source, $filename, $input, $params);
+        $this->DEFAULT_PARAMS['interpreterargs'] = array(
+            "-Xrs",    //  reduces usage signals by java, because that generates debug
+                       //  output when program is terminated on timelimit exceeded.
+             "-Xss8m",
+             "-Xmx200m"
+        );
     }
 
     public static function getVersion() {
@@ -36,7 +41,9 @@ class Java_Task extends Task {
                 throw new coding_exception("Java compile: couldn't rename source file");
             }
             $this->sourceFileName = "{$this->mainClassName}.java";
-            exec("/usr/bin/javac {$this->sourceFileName} 2>compile.out", $output, $returnVar);
+            $compileArgs = $this->getParam('compileArgs');
+            $cmd = '/usr/bin/javac ' . implode(' ', $compileArgs) . " {$this->sourceFileName} 2>compile.out";
+            exec($cmd, $output, $returnVar);
             if ($returnVar == 0) {
                 $this->cmpinfo = '';
                 $this->executableFileName = $this->sourceFileName;
@@ -48,16 +55,15 @@ class Java_Task extends Task {
     }
 
 
-    public function getRunCommand() {
-        return array(
-             '/usr/bin/java',
-             "-Xrs",   //  reduces usage signals by java, because that generates debug
-                       //  output when program is terminated on timelimit exceeded.
-             "-Xss8m",
-             "-Xmx200m",
-             $this->mainClassName
-         );
+    public function getExecutablePath() {
+        return '/usr/bin/java';
     }
+    
+    
+     
+     public function getTargetFile() {
+         return $this->mainClassName;
+     }
 
 
      // Return the name of the main class in the given prog, or FALSE if no

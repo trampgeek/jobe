@@ -15,6 +15,7 @@ require_once('application/libraries/LanguageTask.php');
 class Nodejs_Task extends Task {
     public function __construct($source, $filename, $input, $params) {
         Task::__construct($source, $filename, $input, $params);
+        $this->DEFAULT_PARAMS['interpreterargs'] = array('--use_strict');
     }
 
     public static function getVersion() {
@@ -32,11 +33,12 @@ class Nodejs_Task extends Task {
     }
     
     
-    public function getRunCommand() {
-         return array(
-             '/usr/bin/nodejs',
-             '--use_strict',
-             $this->sourceFileName
-         );
+    public function getExecutablePath() {
+         return '/usr/bin/nodejs';
+     }
+     
+     
+     public function getTargetFile() {
+         return $this->sourceFileName;
      }
 }

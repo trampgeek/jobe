@@ -171,11 +171,89 @@ following:
     ufw allow proto tcp to any port 80 from <your_client_ip>
     ufw enable
 
+## Run_spec parameters
+
+The Jobe REST API specification document defines the format of a so-called
+*run_spec*, which is the record/object that is encoded within a POST request
+or a run request to specify the job details. It includes the language_id, the
+source code, the source file name, any standard input data, a list of required
+files and a set of job parameters. The job parameters are not defined by the
+REST API as they are implementation dependent. This section defines the
+format of the *parameters* field of a *run_spec* in this implementation.
+
+The allowable attributes of the parameters field, plus their global default values
+in parentheses, are:
+
+ 1. disklimit (20): the maximum number of megabytes that can be written to disk file(s)
+before the job is aborted
+ 1. streamsize (2): the maximum number of megabytes of standard output before the
+job is aborted.
+ 1. cputime (5): the maximum number of seconds of CPU time before the job is aborted
+ 1. memorylimit (200): the maximum number of megabytes of memory the task can
+consume. This value is used to set the Linux RLIMIT_STACK, RLIMIT_DATA and
+RLIMIT_AS via the *setrlimit* system call. If the value is exceeded the job
+is not aborted but malloc and/or mmap calls will fail to allocate more memory
+with somewhat unpredictable results, although a segmentation fault is the most
+likely outcome.
+ 1. numprocs (20): the maximum number of processes the task is allowed. If
+this is exceeded the *fork* system call will fail with, again, somewhat
+unpredictable outcomes.
+ 1. compileargs ([]): a list of string option values to pass to the compiler,
+such as ["-Wall", "-std=c99"] for the C compiler. Meaningful only for compiled
+languages.
+ 1. interpreterargs ([]): a list of string option values to pass to the 
+language interpreter or Java VM etc when the program is executed. Meaningful
+only for languages like Python, PHP and Java where the output from the compiler
+is not pure executable machine code.
+ 1. runargs ([]): a list of string option values to pass to the executed
+program, e.g. to set *argc* and *argv* for a C program. Not generally useful
+from CodeRunner as there is no way to set parameters on a per-test-case basis.
+
+Individual languages will usually set their own default values for *compileargs*
+and *interpreterargs*. 
+
+If any of the above attributes are defined within the run_spec
+*parameters* field, the latter is used and the defaults are ignored.
+
+The default values of *compileargs*
+and *interpreterargs* for the currently-implemented languages are as follows.
+An empty default means the global default is used.
+
+<table>
+<tr>
+   <th>language_id</th><th>language</th><th>compileargs</th><th>interpreterargs</th>
+</tr>
+  <td>c</td><td>C</td><td>['-Wall', -Werror', '-std=c99', '-x c']</td><td></td>
+<tr>
+  <td>cpp</td><td>C++</td><td>['-Wall', '-Werror', '-x ++']</td><td></td>
+</tr>
+<tr>
+  <td>python2</td><td>Python2</td><td></td><td>['-BESs']</td>
+</tr>
+<tr>
+  <td>python3</td><td>Python3</td><td></td><td>['-BE']</td>
+</tr>
+<tr>
+  <td>java</td><td>Java</td><td></td><td>['-Xrs', '-Xss8m', '-Xmx200m']</td>
+</tr>
+<tr>
+  <td>nodejs</td><td>JavaScript (nodejs)</td><td></td><td>['--use_strict']</td>
+</tr>
+<tr>
+  <td>octave</td><td>Octave (matlab variant)</td><td></td><td>['--norc', '--no-window-system', '--silent', '-H']</td>
+</tr>
+<tr>
+  <td>php</td><td>PHP5</td><td></td><td>['--no-php-ini']</td>
+</tr>
+
+</table>
+
+
 ## Configuration
 
 This version of jobe is configured for use by Moodle Coderunner. The 
 various language compile and run flags should be appropriate for most
-such use, but can be changed by editing the course code as follows.
+such use, but can be changed by editing the source code as follows.
 
 The folder *application/libraries* contains all the code that executes
 submitted jobs. The file *LanguageTask.php* defines an abstract class
@@ -200,10 +278,11 @@ methods:
    $this->sourceFileName being compiled, with an executable output file
    being placed in the current working directory. If compilation succeeds
    the name of the executable
-   must be returned in $this->executableFileName; alternatively
+   is usually be returned in $this->executableFileName, for use by
+   the getRunCommand method. Interpreted languages might do nothing
+   or might copy the program. If compilation fails,
    $this->cmpinfo should be set to an appropriate error message; any non-empty
-   string is taken as a compile error. Interpreted languages might do nothing
-   or might copy the program.
+   string is taken as a compile error. 
 
 1. getRunCommand(). This method must return an array of strings that, when
    joined with a space separator, make a bash command to execute the

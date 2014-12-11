@@ -38,7 +38,10 @@ abstract class Task {
         'streamsize'    => 2,       // MB (for stdout/stderr)
         'cputime'       => 5,       // secs
         'memorylimit'   => 200,     // MB
-        'numprocs'      => 20
+        'numprocs'      => 20,
+        'compileargs'   => array(),
+        'interpreterargs' => array(),
+        'runargs'       => array()
     );
 
     public $cmpinfo = '';   // Output from compilation
@@ -261,11 +264,42 @@ abstract class Task {
     }
 
     // Return the Linux command to use to run the current job with the given
-    // standard input. It's an array of string arguments, suitable
-    // for passing to the LiuSandbox.
-    public abstract function getRunCommand();
+    // standard input. It's an array of strings, which when joined with a
+    // a space character makes a bash command. The default is to use the
+    // name of the executable from getExecutablePath() followed by the strings
+    // in the 'interpreterargs' parameter followed by the name of the target file
+    // as returned by getTargetFile() followed by the strings in the
+    // 'runargs' parameter. For compiled languages, getExecutablePath
+    // should generally return the path to the compiled object file and
+    // getTargetFile() should return the empty string. The interpreterargs
+    // and runargs parameters are then just added (in that order) to the
+    // run command. For interpreted languages getExecutablePath should return
+    // the path to the interpreter and getTargetFile() should return the
+    // name of the file to be interpreted (in the current directory).
+    // This design allows for commands like java -Xss256k thing -blah.
+    
+    public function getRunCommand() {
+        $cmd = array($this->getExecutablePath());
+        $cmd = array_merge($cmd, $this->getParam('interpreterargs'));
+        if ($this->getTargetFile()) {
+            $cmd[] = $this->getTargetFile();
+        }
+        $cmd = array_merge($cmd, $this->getParam('runargs')); 
+        return $cmd;
+    }
 
-
+    // Return the path to the executable that runs this job. For compiled
+    // languages this will be the output from the compilation. For interpreted
+    // languages it will be the path to the interpreter or JVM etc.
+    public abstract function getExecutablePath(); 
+    
+    
+    // Return the name of the so called "target file", which will typically be empty
+    // for compiled languages and will be the name of the file to be interpreted
+    // (usually just $this->executableFileName) for interpreted languages.
+    public abstract function getTargetFile();
+    
+    
     // Return the version of language supported by this particular Language/Task
     public static function getVersion() {
         return '';  // To be overridden by subclass

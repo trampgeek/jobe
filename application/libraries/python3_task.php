@@ -15,6 +15,7 @@ require_once('application/libraries/LanguageTask.php');
 class Python3_Task extends Task {
     public function __construct($source, $filename, $input, $params) {
         Task::__construct($source, $filename, $input, $params);
+        $this->DEFAULT_PARAMS['interpreterargs'] = array('-BE');
     }
 
     public static function getVersion() {
@@ -42,13 +43,13 @@ class Python3_Task extends Task {
     }
 
 
-    // Return the command to pass to localrunner as a list of arguments,
-    // starting with the program to run followed by a list of its arguments.
-    public function getRunCommand() {
-        return array(
-             '/usr/bin/python3',
-             '-BE',
-             $this->sourceFileName
-         );
+
+    public function getExecutablePath() {
+        return '/usr/bin/python3';
+     }
+
+     
+     public function getTargetFile() {
+         return $this->sourceFileName;
      }
 };
