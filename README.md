@@ -251,9 +251,21 @@ An empty default means the global default is used.
 
 ## Configuration
 
-This version of jobe is configured for use by Moodle Coderunner. The 
-various language compile and run flags should be appropriate for most
-such use, but can be changed by editing the source code as follows.
+This version of jobe is configured for use by Moodle Coderunner. When using
+Jobe from CodeRunner the 
+various language compile and run options can be changed
+via the Sandbox Parameter field in the question authoring field (using the
+advanced customisation capabilities) of either the question prototype
+or within a particular question as suggested by the previous
+section. For example, if the sandbox *Parameters* field is set to
+
+        { 'compileargs': ['-Wall', '-Werror', 'std=c89'] }
+
+for a C question, the code will be compiled with all warnings enabled, aborting
+if any warnings are issued and will need to be C89 compliant.
+
+If you wish to change the existing default options within Jobe, or you wish to
+add new languages, you must edit the source code as follows.
 
 The folder *application/libraries* contains all the code that executes
 submitted jobs. The file *LanguageTask.php* defines an abstract class
@@ -269,6 +281,10 @@ by the Restapi constructor and the language will be available immediately.
 
 Each subclass of LanguageTask typically defines at least the following three
 methods:
+
+1. __construct(). This is the constructor. It should generally call the parent
+   constructor then set any language-specific default compile and/or interpret
+   and/or run options.
 
 1. getVersion(). This returns a string defining what version of the language,
    compiler etc is supported. It's not actually used by CodeRunner but is
