@@ -16,7 +16,7 @@ class C_Task extends Task {
 
     public function __construct($source, $filename, $input, $params) {
         Task::__construct($source, $filename, $input, $params);
-        $this->DEFAULT_PARAMS['compileargs'] = array(
+        $this->default_params['compileargs'] = array(
             '-Wall',
             '-Werror',
             '-std=c99',

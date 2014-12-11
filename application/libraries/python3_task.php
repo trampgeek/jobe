@@ -15,7 +15,7 @@ require_once('application/libraries/LanguageTask.php');
 class Python3_Task extends Task {
     public function __construct($source, $filename, $input, $params) {
         Task::__construct($source, $filename, $input, $params);
-        $this->DEFAULT_PARAMS['interpreterargs'] = array('-BE');
+        $this->default_params['interpreterargs'] = array('-BE');
     }
 
     public static function getVersion() {

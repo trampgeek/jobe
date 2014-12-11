@@ -33,7 +33,9 @@ abstract class Task {
     const RESULT_INTERNAL_ERR = 20;
     const RESULT_SERVER_OVERLOAD = 21;
 
-    public $DEFAULT_PARAMS = array(
+    // Global default parameter values. Can be overridden by subclasses,
+    // and then further overridden by the individual run requests.
+    public $default_params = array(
         'disklimit'     => 20,      // MB (for normal files)
         'streamsize'    => 2,       // MB (for stdout/stderr)
         'cputime'       => 5,       // secs
@@ -80,7 +82,7 @@ abstract class Task {
         if (isset($this->params) && array_key_exists($key, $this->params)) {
             return $this->params[$key];
         } else {
-            return $this->DEFAULT_PARAMS[$key];
+            return $this->default_params[$key];
         }
     }
     
