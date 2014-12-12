@@ -247,8 +247,6 @@ An empty default means the global default is used.
 </tr>
 
 </table>
-
-
 ## Configuration
 
 This version of jobe is configured for use by Moodle Coderunner. When using
@@ -281,7 +279,6 @@ by the Restapi constructor and the language will be available immediately.
 
 Each subclass of LanguageTask typically defines at least the following three
 methods:
-
 1. __construct(). This is the constructor. It should generally call the parent
    constructor then set any language-specific default compile and/or interpret
    and/or run options.
@@ -294,11 +291,10 @@ methods:
    $this->sourceFileName being compiled, with an executable output file
    being placed in the current working directory. If compilation succeeds
    the name of the executable
-   is usually be returned in $this->executableFileName, for use by
-   the getRunCommand method. Interpreted languages might do nothing
-   or might copy the program. If compilation fails,
+   must be returned in $this->executableFileName; alternatively
    $this->cmpinfo should be set to an appropriate error message; any non-empty
-   string is taken as a compile error. 
+   string is taken as a compile error. Interpreted languages might do nothing
+   or might copy the program.
 
 1. getRunCommand(). This method must return an array of strings that, when
    joined with a space separator, make a bash command to execute the
