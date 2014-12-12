@@ -254,7 +254,7 @@ An empty default means the global default is used.
 This version of jobe is configured for use by Moodle Coderunner. When using
 Jobe from CodeRunner the 
 various language compile and run options can be changed
-via the Sandbox Parameter field in the question authoring field (using the
+via the sandbox Parameters field in the question authoring form (using the
 advanced customisation capabilities) of either the question prototype
 or within a particular question as suggested by the previous
 section. For example, if the sandbox *Parameters* field is set to
