@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.0 August 2014
+Version: 1.1 December 2014
 
 Author: Richard Lobb, University of Canterbury, New Zealand.
 
@@ -24,7 +24,7 @@ The interface is via a RESTful API, that is documented [here](./restapi.pdf).
 
 ## Implementation status
 
-The current version of Jobe (Version 1.0) implements
+The current version of Jobe (Version 1.1) implements
 enough of the API to provide the services needed by CodeRunner. Only 
 immediate-mode runs are supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
