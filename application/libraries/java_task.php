@@ -41,7 +41,7 @@ class Java_Task extends Task {
                 throw new coding_exception("Java compile: couldn't rename source file");
             }
             $this->sourceFileName = "{$this->mainClassName}.java";
-            $compileArgs = $this->getParam('compileArgs');
+            $compileArgs = $this->getParam('compileargs');
             $cmd = '/usr/bin/javac ' . implode(' ', $compileArgs) . " {$this->sourceFileName} 2>compile.out";
             exec($cmd, $output, $returnVar);
             if ($returnVar == 0) {
