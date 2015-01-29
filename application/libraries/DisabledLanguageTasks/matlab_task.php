@@ -23,8 +23,13 @@ class Matlab_Task extends Task {
 
     public function compile() {
         $this->setPath();
-        $this->executableFileName = $this->sourceFileName . '.m';
-        if (!copy($this->sourceFileName, $this->executableFileName)) {
+	$filename = basename($this->sourceFileName); // Strip any path bits
+	$dotpos = strpos($filename, '.');
+	if ($dotpos !== FALSE) { // Strip trailing .matlab if given
+            $filename = substr($filename, 0, $dotpos);
+        }
+        $this->executableFileName =  $filename; // Matlab's idea of the executable filename doesn't include .m
+        if (!copy($this->sourceFileName, $this->executableFileName . '.m')) {
             throw new coding_exception("Matlab_Task: couldn't copy source file");
         }
     }
@@ -34,7 +39,7 @@ class Matlab_Task extends Task {
              '/usr/local/bin/matlab_exec_cli',
              '-nojvm',
              '-r',
-             basename($this->sourceFileName)
+             $this->executableFileName
          );
      }
 
@@ -68,7 +73,7 @@ class Matlab_Task extends Task {
              if ($headerEnded) {
                  $outlines[] = $line;
              }
-             if (strpos($line, 'For product information, visit www.mathworks.com.') !== FALSE) {
+             if (strpos($line, 'Research and commercial use is prohibited.') !== FALSE) {
                  $headerEnded = TRUE;
              }
          }

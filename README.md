@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.1 December 2014
+Version: 1.2 January 2015
 
 Author: Richard Lobb, University of Canterbury, New Zealand.
 
@@ -24,7 +24,7 @@ The interface is via a RESTful API, that is documented [here](./restapi.pdf).
 
 ## Implementation status
 
-The current version of Jobe (Version 1.1) implements
+The current version of Jobe (Version 1.21) implements
 enough of the API to provide the services needed by CodeRunner. Only 
 immediate-mode runs are supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
@@ -35,7 +35,7 @@ tested at this stage, and untested code exists to support C++ and Matlab.
 
 The Computer Science quiz server at the University of Canterbury switched to
 exclusive use of the Jobe sandbox in early July 2014. At the time of writing
-(mid August 2014) it has run several
+(January 2015) it has run 
 tens of thousands of Python3 and C jobs unattended since then with only a few
 minor bug fixes.
 
@@ -57,8 +57,10 @@ As a consequence of these two constraints, programs that generate utf-8 output
 cannot currently be run on Jobe. It is hoped to improve on this in the future.
 
 Jobe is implemented using Ellis Lab's [codeigniter](http://codeigniter.com) plus the
-[RESTserver plugin](https://github.com/philsturgeon/codeigniter-restserver) from
-Phil Sturgeon. It uses Jaap Eldering's and Keith Johnson's *Runguard*
+[RESTserver plugin](https://github.com/chriskacerguis/codeigniter-restserver) originally
+written by
+Phil Sturgeon and now maintained by Chris Kacerguis. Jobe uses Jaap Eldering's
+and Keith Johnson's *Runguard*
 module from the programming contest server (DOMJudge)[http://domjudge.org] 
 as a sandbox to limit resource use by submitted jobs.
 
@@ -160,16 +162,99 @@ trampgeek).
 
 ## Securing the site
 
-As a minimum you should set up a firewall that prevents access from any
-server other than the CodeRunner client (or whatever other client is using
-your Jobe server). Using ufw (Uncomplicated Firewall) a possible command
-sequence that will allow ssh access (port 22) from anywhere and web
-access to jobe (assumed to be on port 80) from just your client is the
+### Securing by means of a firewall
+
+By default, Jobe is expected to run on an Intranet server 
+that is firewalled
+to permit access only from specific authorised hosts. In this mode,
+the client is assumed to be trusted and does not need to provide any form of
+authorisation or authentication. It is also important to prevent the jobe
+server from opening connections to other machines, so that a student
+program cannot do nasty things like port-scanning within your Intranet.
+
+Using ufw (Uncomplicated Firewall) a possible command
+sequence that will restrict outgoing traffic to just a single nominated host
+("some useful ip") on ports 80 and 443, allow ssh access (port 22) from anywhere and web
+access to jobe (assumed to be on port 80) from just one specified client is the
 following:
 
-    ufw allow 22/tcp
-    ufw allow proto tcp to any port 80 from <your_client_ip>
+    ufw default reject outgoing
+    ufw allow out proto tcp to <some_useful_ip> port 80,443
+    ufw allow in 22/tcp
+    ufw allow in proto tcp to any port 80 from <your_client_ip>
     ufw enable
+
+### Securing with API keys
+
+If you wish Jobe to serve multiple clients and do not wish to open a
+specific port for each one you should instead configure the rest-server
+to require some form of authentication and authorisation. The various
+ways of achieving this are discussed in the documentation of the
+[rest-server plugin](https://github.com/chriskacerguis/codeigniter-restserver).
+
+The simplest authorisation approach is to provide an API key on each request.
+The client must then provide the key with each request in an X-API-Key header of
+the form
+
+    X-API-KEY: <key>
+
+To set up Jobe to run in this way, proceed as follows:
+
+ 1. Edit the file *application/config/rest.php* and set the configuration
+    parameter *rest_enable_keys* to 1.
+
+ 1. Install a mysql server on the jobe machine or elsewhere.
+
+ 1. Create a database called *jobe*
+
+ 1. In the *jobe* database create a table *keys* with the mysql command
+
+    CREATE TABLE  `keys` (
+     `id` INT( 11 ) NOT NULL AUTO_INCREMENT,
+     `key` VARCHAR( 40 ) NOT NULL,
+     `level` INT( 2 ) NOT NULL,
+     `ignore_limits` TINYINT( 1 ) NOT NULL DEFAULT  '0',
+     `date_created` INT( 11 ) NOT NULL,
+    PRIMARY KEY (  `id` )
+    ) ENGINE = INNODB DEFAULT CHARSET = utf8;
+
+    Populate the table with any keys you wish to issue to clients.
+    *level* will normally be 0.
+
+ 1. Edit *application/config/database.php* to access your mysql server and
+    the jobe database.
+
+If running in API-Key mode, you should still firewall the Jobe server to
+prevent it opening any sockets to other machines.
+
+### Other security mechanisms
+
+If serving multiple clients, you may wish to restrict the use made of the
+server by one or more clients. This can be done by
+setting the *rest_enable_limits* parameter
+in *application/config/rest.php* to non-zero.
+Jobe will then limit the number of requests made
+with any given key to the values set in
+*application/config/per_method_limits.php*. 
+
+For this to work, the *jobe* database must contain an additional table *limits*,
+defined with an SQL command like
+
+	CREATE TABLE `limits` (
+	  `id` int(11) NOT NULL AUTO_INCREMENT,
+	  `uri` varchar(255) NOT NULL,
+	  `count` int(10) NOT NULL,
+	  `hour_started` int(11) NOT NULL,
+	  `api_key` varchar(40) NOT NULL,
+	  PRIMARY KEY (`id`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+You can turn off limit checking on a key-by-key basis by setting the *ignore_limits*
+to FALSE in the *keys* table.
+
+You should read the REST-server plugin documentation and the file
+*application/config/rest.php* for other features available.
+
 
 ## Run_spec parameters
 
@@ -314,6 +399,14 @@ Additionally the subclass may define:
 1. filteredStdout(). This performs the same task as filteredStderr() except it
    filters stdout, available to the function as $this->stdout.
 
+## Change Log
+
+### Version 1.2
+
+Added code to load limit data from a config file "per_method_limits.php" to
+support per-API-key limits on the number of calls that can be made to the
+restapi's POST and PUT entry points per hour. Updated the documentation to
+explain how to turn on API-key authorisation and per-method limits.
 
 Good luck!
 

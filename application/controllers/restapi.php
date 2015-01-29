@@ -50,6 +50,14 @@ class Restapi extends REST_Controller {
                 $this->languages[$lang] = $version;
             }
         }
+        
+        if ($this->config->item('rest_enable_limits')) {
+            $this->load->config('per_method_limits');
+            $limits = $this->config->item('per_method_limits');
+            foreach ($limits as $method=>$limit) {
+                $this->methods[$method]['limit'] = $limit;
+            }
+        }
     }
     
     
