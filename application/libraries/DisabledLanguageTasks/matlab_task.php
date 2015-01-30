@@ -6,7 +6,7 @@
  *
  * ==============================================================
  *
- * @copyright  2014 Richard Lobb, University of Canterbury
+ * @copyright  2014, 2015 Richard Lobb, University of Canterbury
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -15,17 +15,22 @@ require_once('application/libraries/LanguageTask.php');
 class Matlab_Task extends Task {
     public function __construct($source, $filename, $input, $params) {
         Task::__construct($source, $filename, $input, $params);
+        $this->default_params['interpreterargs'] = array(
+            '-nojvm',  //  don't load the Java VM
+            '-r'       //  script filename follows
+        );
     }
 
     public static function getVersion() {
-        return 'Matlab R2013b';
+        return 'Matlab R2014b';
     }
 
+    
     public function compile() {
         $this->setPath();
-	$filename = basename($this->sourceFileName); // Strip any path bits
-	$dotpos = strpos($filename, '.');
-	if ($dotpos !== FALSE) { // Strip trailing .matlab if given
+        $filename = basename($this->sourceFileName); // Strip any path bits
+        $dotpos = strpos($filename, '.');
+        if ($dotpos !== FALSE) { // Strip trailing .matlab if given
             $filename = substr($filename, 0, $dotpos);
         }
         $this->executableFileName =  $filename; // Matlab's idea of the executable filename doesn't include .m
@@ -34,59 +39,62 @@ class Matlab_Task extends Task {
         }
     }
 
-    public function getRunCommand() {
-         return array(
-             '/usr/local/bin/matlab_exec_cli',
-             '-nojvm',
-             '-r',
-             $this->executableFileName
-         );
-     }
+
+    // Matlab throws in backspaces (grrr). There's also an extra BEL char
+    // at the end of any abort error message (presumably introduced at some
+    // point due to the EOF on stdin, which shuts down matlab).
+    public function filteredStderr() {
+        $out = '';
+        for ($i = 0; $i < strlen($this->stderr); $i++) {
+            $c = $this->stderr[$i];
+            if ($c === "\x07") {
+                // pass
+            } elseif ($c === "\x08" && strlen($out) > 0) {
+                $out = substr($out, 0, -1);
+            } else {
+                $out .= $c;
+            }
+        }
+        return $out;
+    }
 
 
-     // Matlab throws in backspaces (grrr). There's also an extra BEL char
-     // at the end of any abort error message (presumably introduced at some
-     // point due to the EOF on stdin, which shuts down matlab).
-     public function filteredStderr() {
-         $out = '';
-         for ($i = 0; $i < strlen($this->stderr); $i++) {
-             $c = $this->stderr[$i];
-             if ($c === "\x07") {
-                 // pass
-             } elseif ($c === "\x08" && strlen($out) > 0) {
-                 $out = substr($out, 0, -1);
-             } else {
-                 $out .= $c;
-             }
-         }
-         return $out;
-     }
+    public function filteredStdout() {
+        $lines = explode("\n", $this->stdout);
+        $outlines = array();
+        $headerEnded = FALSE;
+
+        foreach ($lines as $line) {
+            $line = rtrim($line);
+            if ($headerEnded) {
+                $outlines[] = $line;
+            }
+            if (strpos($line, 'Research and commercial use is prohibited.') !== FALSE) {
+                $headerEnded = TRUE;
+            }
+        }
+
+        // Remove blank lines at the start and end
+        while (count($outlines) > 0 && strlen($outlines[0]) == 0) {
+            array_shift($outlines);
+        }
+        while(count($outlines) > 0 && strlen(end($outlines)) == 0) {
+            array_pop($outlines);
+        }
+
+        return implode("\n", $outlines) . "\n";
+    }
+     
+     
+    // The Matlab CLI program is the executable
+    public function getExecutablePath() {
+        return '/usr/local/bin/matlab_exec_cli';
+    }
 
 
-     public function filteredStdout() {
-         $lines = explode("\n", $this->stdout);
-         $outlines = array();
-         $headerEnded = FALSE;
-
-         foreach ($lines as $line) {
-             $line = rtrim($line);
-             if ($headerEnded) {
-                 $outlines[] = $line;
-             }
-             if (strpos($line, 'Research and commercial use is prohibited.') !== FALSE) {
-                 $headerEnded = TRUE;
-             }
-         }
-
-         // Remove blank lines at the start and end
-         while (count($outlines) > 0 && strlen($outlines[0]) == 0) {
-             array_shift($outlines);
-         }
-         while(count($outlines) > 0 && strlen(end($outlines)) == 0) {
-             array_pop($outlines);
-         }
-
-         return implode("\n", $outlines) . "\n";
-     }
+    // The target file is the matlab file without its extension
+    public function getTargetFile() {
+        return $this->executableFileName;
+    }
 };
 

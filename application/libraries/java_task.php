@@ -19,7 +19,7 @@ class Java_Task extends Task {
         $params['memorylimit'] = 0;
         Task::__construct($source, $filename, $input, $params);
         $this->default_params['interpreterargs'] = array(
-            "-Xrs",    //  reduces usage signals by java, because that generates debug
+             "-Xrs",   //  reduces usage signals by java, because that generates debug
                        //  output when program is terminated on timelimit exceeded.
              "-Xss8m",
              "-Xmx200m"

@@ -43,15 +43,12 @@ class Cpp_Task extends Task {
     }
 
 
-    // The executable is the output from the compilation.
+    // The executable is the output from the compilation
     public function getExecutablePath() {
-        return array(
-             "./" . $this->executableFileName
-         );
+        return "./" . $this->executableFileName;
     }
     
     
-    // There is no target file to be interpreted.
     public function getTargetFile() {
         return '';
     }
