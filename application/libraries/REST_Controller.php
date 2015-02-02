@@ -500,7 +500,13 @@ abstract class REST_Controller extends CI_Controller
         // the reduction, causing the browser to hang waiting for more data.
         // We'll just skip content-length in those cases.
         if ( ! $this->_zlib_oc && ! $this->config->item('compress_output')) {
-            header('Content-Length: ' . strlen($output));
+            // COMMENTED OUT THE FOLLOWING LINE as large messages weren't
+            // being delivered correctly (one character truncated at the end).
+            // Adding one to the content-length solved that particular problem but
+            // clearly not a good general solution. With the Content-Length
+            // header omitted, chunked transfer encoding is used, which solves
+            // the problem I was having.
+            // header('Content-Length: ' . strlen($output));
         }
 
         if($continue){

@@ -93,7 +93,7 @@ abstract class Task {
             $this->result = Task::RESULT_COMPILATION_ERROR;
         }
         return new ResultObject(
-            $this->workdir,     // TODO get a better ID than this
+            $this->workdir,
             $this->result,
             $this->cmpinfo,
             $this->filteredStdout(),
