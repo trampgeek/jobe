@@ -25,7 +25,6 @@ DEBUGGING = False
 # If Jobe expects an X-API-Key header, set API_KEY to a working value and set
 # USE_API_KEY to True.
 API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (100/hr) key on Jobe2
-API_KEY = '8D9BEF28614D1F7E94DA2822A3917'
 USE_API_KEY = True
 #JOBE_SERVER = 'localhost'
 JOBE_SERVER = 'jobe2.cosc.canterbury.ac.nz'
