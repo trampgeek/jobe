@@ -28,7 +28,7 @@ class Nodejs_Task extends Task {
             $this->executableFileName .= '.js';
         }
         if (!copy($this->sourceFileName, $this->executableFileName)) {
-            throw new coding_exception("Node_Task: couldn't copy source file");
+            throw new exception("Node_Task: couldn't copy source file");
         }
     }
     

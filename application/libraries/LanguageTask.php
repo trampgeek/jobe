@@ -65,7 +65,7 @@ abstract class Task {
         $this->workdir = tempnam("/home/jobe/runs", "jobe_");
         if (!unlink($this->workdir) || !mkdir($this->workdir)) {
             log_message('error', 'LanguageTask constructor: error making temp directory');
-            throw new coding_exception("Task: error making temp directory (race error?)");
+            throw new exception("Task: error making temp directory (race error?)");
         }
         $this->id = basename($this->workdir);
         $this->input = $input;

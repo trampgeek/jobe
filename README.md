@@ -403,6 +403,15 @@ Additionally the subclass may define:
 
 ### Version 1.2
 
+Fixed bug with Java when correct source file name supplied in the request 
+(rename of file to itself was failing). Thanks Paul Denny.
+Replaced uses of Moodle coding_exception with generic exception. Again thanks
+Paul Denny.
+
+Fixed bug in C++ task - invalid language type being passed to compiler.
+
+Updated CodeIgniter Rest Server to latest version.
+
 Added code to load limit data from a config file "per_method_limits.php" to
 support per-API-key limits on the number of calls that can be made to the
 restapi's POST and PUT entry points per hour. Updated the documentation to

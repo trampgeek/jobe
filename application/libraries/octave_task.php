@@ -29,7 +29,7 @@ class Octave_Task extends Task {
     public function compile() {
         $this->executableFileName = $this->sourceFileName . '.m';
         if (!copy($this->sourceFileName, $this->executableFileName)) {
-            throw new coding_exception("Octave_Task: couldn't copy source file");
+            throw new exception("Octave_Task: couldn't copy source file");
         }
     }
 

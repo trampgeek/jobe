@@ -176,11 +176,15 @@ class Restapi extends REST_Controller {
                     $this->log('debug', 'runs_post: file(s) not found');
                     $this->response('One or more of the specified files is missing/unavailable', 404);
                 } else {
-                    $this->log('debug', "runs_post: compiling job {$this->task->id}");
-                    $this->task->compile();
-                    if ($this->task->cmpinfo == '') {
-                        $this->log('debug', "runs_post: executing job {$this->task->id}");
-                        $this->task->execute();
+                    try {
+                        $this->log('debug', "runs_post: compiling job {$this->task->id}");
+                        $this->task->compile();
+                        if ($this->task->cmpinfo == '') {
+                            $this->log('debug', "runs_post: executing job {$this->task->id}");
+                            $this->task->execute();
+                        }
+                    } catch(exception $e) {
+                        $this->response("Server exception ($e)", 500);
                     }
                 }
 

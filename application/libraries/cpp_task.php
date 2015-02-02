@@ -18,8 +18,7 @@ class Cpp_Task extends Task {
         Task::__construct($source, $filename, $input, $params);
         $this->default_params['compileargs'] = array(
             '-Wall',
-            '-Werror',
-            '-x ++');
+            '-Werror');
     }
 
     public static function getVersion() {

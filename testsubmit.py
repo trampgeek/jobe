@@ -1,3 +1,8 @@
+''' A tester and demo program for jobe
+    Richard Lobb
+    2/2/2015
+'''
+
 from urllib.request import urlopen
 from urllib.parse import urlencode
 from urllib.error import HTTPError
@@ -8,25 +13,40 @@ from threading import Thread
 import copy
 from base64 import b64encode
 
+# Set VERBOSE to true to get a detailed report on each run as it is done
+VERBOSE = False
+
+# Set DEBUGGING to True to instruct Jobe to use debug mode, i.e., to
+# leave all runs (commands, input output etc) in /home/jobe/runs, rather
+# than deleting each run as soon as it is done.
+DEBUGGING = False
+
+# Set JOBE_SERVER to the Jobe server URL.
+# If Jobe expects an X-API-Key header, set API_KEY to a working value and set
+# USE_API_KEY to True.
+API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (100/hr) key on Jobe2
+USE_API_KEY = False
+JOBE_SERVER = 'localhost'
+#JOBE_SERVER = 'jobe2.cosc.canterbury.ac.nz'
+
+# Set the next line to a specific value, e.g. 'octave' to restrict to testing
+# just one language. Use 'ALL' to test all languages. 
+TEST_LANG = 'ALL'   
+
+GOOD_TEST = 0
+FAIL_TEST = 1
+EXCEPTION = 2
+
+
 # ===============================================
 #
 # Test List
 #
 # ===============================================
 
-VERBOSE = False
-DEBUGGING = False
-
-JOBE_SERVER = 'localhost'
-#JOBE_SERVER = '192.168.1.107'
-#JOBE_SERVER = "jobe.cosc.canterbury.ac.nz"
-
-GOOD_TEST = 0
-FAIL_TEST = 1
-EXCEPTION = 2
-
 TEST_SET = [
 
+# ======= PYTHON3 Tests ===============
 {
     'comment': 'Valid Python3',
     'language_id': 'python3',
@@ -101,6 +121,74 @@ for arg in sys.argv[1:]:
     'parameters': {'runargs': ['Arg1', 'Arg2'] }
 },
 
+{
+    'comment': 'Python3 program with customised timeout',
+    'language_id': 'python3',
+    'sourcecode': r'''from time import clock
+t = clock()
+while clock() < t + 10: pass  # Wait 10 seconds
+print("Hello Python")
+''',
+    'sourcefilename': 'test.py',
+    'parameters': {'cputime':15},
+    'expect': { 'outcome': 15, 'stdout': '''Hello Python
+'''}
+},
+
+{
+    'comment': 'Python3 program with support files',
+    'language_id': 'python3',
+    'files': [
+        ('randomid0129798', 'The first file\nLine 2'),
+        ('randomid0980128', 'Second file')],
+    'sourcecode': r'''print(open('file1').read())
+print(open('file2').read())
+''',
+    'file_list': [('randomid0129798', 'file1'),('randomid0980128', 'file2')],
+    'sourcefilename': 'test.py',
+    'expect': { 'outcome': 15, 'stdout': '''The first file
+Line 2
+Second file
+'''}
+},
+
+{
+    'comment': 'Valid Python3/pylint program',
+    'language_id': 'python3',
+    'sourcecode': """__student_answer__ = '''\"\"\"Doc string\"\"\"
+GLOBAL = 20
+print("GLOBAL =", GLOBAL)
+'''
+
+import subprocess
+import os
+
+def check_code(s):
+    try:
+        source = open('source.py', 'w')
+        source.write(__student_answer__)
+        source.close()
+        env = os.environ.copy()
+        os.mkdir('Home')
+        env['HOME'] = os.getcwd() + '/Home'
+        result = subprocess.check_output(['pylint', 'source.py'], stderr=subprocess.STDOUT, env=env)
+    except Exception as e:
+        result = e.output.decode('utf-8')
+
+    if result.strip():
+        print("pylint doesn't approve of your program")
+        print(result)
+        raise Exception("Submission rejected")
+
+check_code(__student_answer__)
+print("Yay!")
+""",
+    'parameters': {'memorylimit': 200000},
+    'sourcefilename': 'prog.py',
+    'expect': { 'outcome': 15, 'stdout': 'Yay!\n' }
+},
+
+# ======= C Tests ===============
 {
     'comment': 'Test good C hello world',
     'language_id': 'c',
@@ -223,37 +311,6 @@ int main() {
 },
 
 {
-    'comment': 'Python3 program with support files',
-    'language_id': 'python3',
-    'files': [
-        ('randomid0129798', 'The first file\nLine 2'),
-        ('randomid0980128', 'Second file')],
-    'sourcecode': r'''print(open('file1').read())
-print(open('file2').read())
-''',
-    'file_list': [('randomid0129798', 'file1'),('randomid0980128', 'file2')],
-    'sourcefilename': 'test.py',
-    'expect': { 'outcome': 15, 'stdout': '''The first file
-Line 2
-Second file
-'''}
-},
-
-{
-    'comment': 'Python3 program with customised timeout',
-    'language_id': 'python3',
-    'sourcecode': r'''from time import clock
-t = clock()
-while clock() < t + 10: pass  # Wait 10 seconds
-print("Hello Python")
-''',
-    'sourcefilename': 'test.py',
-    'parameters': {'cputime':15},
-    'expect': { 'outcome': 15, 'stdout': '''Hello Python
-'''}
-},
-
-{
     'comment': 'C program fork bomb',
     'language_id': 'c',
     'sourcecode': r'''#include <linux/unistd.h>
@@ -310,6 +367,7 @@ int main() {
     'expect': { 'outcome': 15, 'stdout': '9 forks succeeded, 991 failed\n' }
 },
 
+# ================= Octave tests ==================
 {
     'comment': 'Valid Octave',
     'language_id': 'octave',
@@ -345,42 +403,8 @@ fprintf('%d\n%d\n%d\n', sqr(-3), sqr(11), sqr(0));
     'expect': { 'outcome': 12 }
 },
 
-{
-    'comment': 'Valid pylint program',
-    'language_id': 'python3',
-    'sourcecode': """__student_answer__ = '''\"\"\"Doc string\"\"\"
-GLOBAL = 20
-print("GLOBAL =", GLOBAL)
-'''
 
-import subprocess
-import os
-
-def check_code(s):
-    try:
-        source = open('source.py', 'w')
-        source.write(__student_answer__)
-        source.close()
-        env = os.environ.copy()
-        os.mkdir('Home')
-        env['HOME'] = os.getcwd() + '/Home'
-        result = subprocess.check_output(['pylint', 'source.py'], stderr=subprocess.STDOUT, env=env)
-    except Exception as e:
-        result = e.output.decode('utf-8')
-
-    if result.strip():
-        print("pylint doesn't approve of your program")
-        print(result)
-        raise Exception("Submission rejected")
-
-check_code(__student_answer__)
-print("Yay!")
-""",
-    'parameters': {'memorylimit': 200000},
-    'sourcefilename': 'prog.py',
-    'expect': { 'outcome': 15, 'stdout': 'Yay!\n' }
-},
-
+# ================= NodeJS tests ==================
 {
     'comment': 'Syntactically valid Nodejs hello world',
     'language_id': 'nodejs',
@@ -402,6 +426,7 @@ console.log(s)
     'expect': { 'outcome': 12 }
 },
 
+# ================= PHP tests ==================
 {
     'comment': 'Correct Php program ',
     'language_id': 'php',
@@ -443,7 +468,89 @@ console.log(s)
     'parameters': {'cputime':15},
     'expect': { 'outcome': 11 }
 },
+
+
+{
+    'comment': 'Syntactically incorrect Php program ',
+    'language_id': 'php',
+    'sourcecode': r'''<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+<h1>Heading</h1>
+<p><?php echo "A paragraph' ?></p>
+</body>
+</html>
+''',
+    'sourcefilename': 'test.py',
+    'parameters': {'cputime':15},
+    'expect': { 'outcome': 11 }
+},
+
+# ================= Java tests ==================
+{
+    'comment': 'Correct Java program ',
+    'language_id': 'java',
+    'sourcecode': r'''
+public class Test {
+    public static void main(String[] args) {
+        System.out.println("What a lot of code I need to write.");
+    }
+}
+''',
+    'sourcefilename': 'Test.java',
+    'parameters': {'cputime':10},
+    'expect': { 'outcome': 15, 'stdout': '''What a lot of code I need to write.
+'''}
+},
+
+{
+    'comment': 'Syntactically incorrect Java program ',
+    'language_id': 'java',
+    'sourcecode': r'''
+public class Test {
+    public static void main(String[] args) {
+        System.out.println('What a lot of code I need to write.);
+}
+''',
+    'sourcefilename': 'Test.java',
+    'parameters': {'cputime':10},
+    'expect': { 'outcome': 11 }
+},
+
+#================= C++ tests ======================
+{
+    'comment': 'Test good C++ hello world',
+    'language_id': 'cpp',
+    'sourcecode': r'''#include <iostream>
+using namespace std;
+int main() {
+    cout << "Hello world\nIsn't this fun!\n";
+}
+''',
+    'sourcefilename': 'prog.cpp',
+    'expect': { 'outcome': 15, 'stdout': "Hello world\nIsn't this fun!\n" }
+},
+
+{
+    'comment': 'Test compile error C++ hello world',
+    'language_id': 'c',
+    'sourcecode': r'''#include <iostream>
+int main() {
+    cout << "Hello world\nIsn't this fun!\n";
+}
+''',
+    'sourcefilename': 'prog.c',
+    'expect': { 'outcome': 11 }
+}
+
 ]
+
+#==========================================================================
+#
+# Now the tester code
+#
+#==========================================================================
 
 
 def check_parallel_submissions():
@@ -497,6 +604,17 @@ def is_correct_result(expected, got):
 
 # =============================================================
 
+def http_request(method, resource, data, headers):
+    '''Send a request to Jobe with given HTTP method to given resource on
+       the currently configured Jobe server and given data and headers.
+       Return the connection object. '''
+    if USE_API_KEY:
+            headers["X-API-KEY"] = API_KEY
+    connect = http.client.HTTPConnection(JOBE_SERVER)
+    connect.request(method, resource, data, headers)
+    return connect
+
+
 def check_file(file_id):
     '''Checks if the given fileid exists on the server.
        Returns status: 200 denotes file exists, 404 denotes file not found.
@@ -504,9 +622,8 @@ def check_file(file_id):
 
     resource = '/jobe/index.php/restapi/files/' + file_id
     headers = {"Accept": "text/plain"}
-    connect = http.client.HTTPConnection(JOBE_SERVER)
-    connect.request('HEAD', resource, '', headers)
     try:
+        connect = http_request('HEAD', resource, '', headers)
         response = connect.getresponse()
     except HTTPError: pass
 
@@ -531,10 +648,9 @@ def put_file(file_desc):
     resource = '/jobe/index.php/restapi/files/' + file_id
     headers = {"Content-type": "application/json",
                "Accept": "text/plain"}
-    connect = http.client.HTTPConnection(JOBE_SERVER)
-    connect.request('PUT', resource, data, headers)
-    response = connect.getresponse()
+    connect = http_request('PUT', resource, data, headers)
     if VERBOSE:
+        response = connect.getresponse()
         print("Response to putting", file_id, ':')
         content = ''
         if response.status != 204:
@@ -570,8 +686,7 @@ def run_test(test):
     result = {}
     # Send the request
     try:
-        connect = http.client.HTTPConnection(JOBE_SERVER)
-        connect.request('POST', resource, data, headers)
+        connect = http_request('POST', resource, data, headers)
         response = connect.getresponse()
         if response.status != 204:
             content = response.read().decode('utf8')
@@ -605,6 +720,15 @@ def run_test(test):
         return FAIL_TEST
 
 
+def trim(s):
+    '''Return the string s limited to 10k chars'''
+    MAX_LEN = 10000
+    if len(s) > MAX_LEN:
+        return s[:MAX_LEN] + '... [etc]'
+    else:
+        return s
+
+
 def display_result(comment, ro):
     '''Display the given result object'''
     print(comment)
@@ -632,17 +756,15 @@ def display_result(comment, ro):
     else:
         if ro['stdout']:
             print("Output:")
-            print(ro['stdout'])
+            print(trim(ro['stdout']))
         else:
             print("No output")
         if ro['stderr']:
             print()
             print("Error output:")
-            print(ro['stderr'])
+            print(trim(ro['stderr']))
 
 
-#TEST_LANG = 'octave'
-TEST_LANG = 'ALL'
 
 
 

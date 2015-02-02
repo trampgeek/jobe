@@ -33,12 +33,15 @@ class Java_Task extends Task {
     public function compile() {
         $prog = file_get_contents($this->sourceFileName);
         if (($this->mainClassName = $this->getMainClass($prog)) === FALSE) {
-            $this->cmpinfo = "Error: no main class found, or multiple main classes. [Did you write a public class when asked for a non-public one?]";
+            $this->cmpinfo = "Error: no main class found, or multiple main classes, or an invalid main method. [Did you write a public class when asked for a non-public one?]";
         }
         else {
-            exec("mv {$this->sourceFileName} {$this->mainClassName}.java", $output, $returnVar);
-            if ($returnVar !== 0) {
-                throw new coding_exception("Java compile: couldn't rename source file");
+            if ($this->sourceFileName != $this->mainClassName . '.java') {
+                // Rename source file to match main class name if necessary
+                exec("mv {$this->sourceFileName} {$this->mainClassName}.java", $output, $returnVar);
+                if ($returnVar !== 0) {
+                    throw new exception("Java compile: couldn't rename source file");
+                }
             }
             $this->sourceFileName = "{$this->mainClassName}.java";
             $compileArgs = $this->getParam('compileargs');
