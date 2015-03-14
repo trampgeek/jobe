@@ -24,7 +24,7 @@ The interface is via a RESTful API, that is documented [here](./restapi.pdf).
 
 ## Implementation status
 
-The current version of Jobe (Version 1.21) implements
+The current version of Jobe (Version 1.2.1) implements
 enough of the API to provide the services needed by CodeRunner. Only 
 immediate-mode runs are supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
@@ -35,8 +35,8 @@ tested at this stage, and untested code exists to support C++ and Matlab.
 
 The Computer Science quiz server at the University of Canterbury switched to
 exclusive use of the Jobe sandbox in early July 2014. At the time of writing
-(January 2015) it has run 
-tens of thousands of Python3 and C jobs unattended since then with only a few
+(March 2015) it has run 
+tens of thousands of Python3, C and Octave jobs unattended since then with only a few
 minor bug fixes.
 
 Sandboxing is fairly basic. It uses the [domjudge](http://domjudge.org) 
@@ -416,6 +416,9 @@ Added code to load limit data from a config file "per_method_limits.php" to
 support per-API-key limits on the number of calls that can be made to the
 restapi's POST and PUT entry points per hour. Updated the documentation to
 explain how to turn on API-key authorisation and per-method limits.
+
+### Version 1.2.2 Added code to support CORS (Cross Origin Resource Sharing), i.e.,
+in-browser JavaScript requests from arbitrary domains.
 
 Good luck!
 
