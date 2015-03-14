@@ -32,9 +32,20 @@ class Restapi extends REST_Controller {
     protected $languages = array();
     protected $file_cache_base = NULL;
     
-    // Constructor loads the available languages from the libraries directory
+    // Constructor loads the available languages from the libraries directory.
+    // [But to handle CORS (Cross Origin Resource Sharing) it first issues
+    // the access-control headers, and then quits if it's an OPTIONS request,
+    // which is the "pre-flight" browser generated request to check access.]
+    // See http://stackoverflow.com/questions/15602099/http-options-error-in-phil-sturgeons-codeigniter-restserver-and-backbone-js
     public function __construct()
     {
+        header('Access-Control-Allow-Origin: *');
+        header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method");
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, HEAD, DELETE");
+        $method = $_SERVER['REQUEST_METHOD'];
+        if($method == "OPTIONS") {
+            die();
+        }
         parent::__construct();
         $this->file_cache_base = FCPATH . '/files/';
         

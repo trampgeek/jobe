@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<head>
+    <title>Checking access to Jobe from within JavaScript</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+</head>
+<body>
+
+
+<script>
+var xhr,
+    REQUEST_COMPLETE = 4,
+    OK = 200,
+    X_API_KEY = '67033pV7eUUvqo07OJDIV8UZ049aLEK1';
+
+function jobresultarrived() {
+    if (xhr.readyState  === REQUEST_COMPLETE &&
+            xhr.status  === OK) {
+        response = JSON.parse(xhr.responseText);
+        console.log(response);
+        document.write('<h1>Checking access to Jobe from within JavaScript</h1>');
+        document.write("<p>Response to Python3 'Hello Jobe' program (JSON) follows.</p>");
+        document.write('<p>' + xhr.responseText + '</p>');
+    }
+}
+
+
+function submitjob() {
+    xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = jobresultarrived;
+    resource = 'http://jobe2.cosc.canterbury.ac.nz/jobe/index.php/restapi/runs/';
+    //resource = 'http://localhost/jobe/index.php/restapi/runs';
+
+    runspec = { "run_spec":
+        {'language_id': 'python3',
+         'sourcefilename': 'test.py',
+         'sourcecode': 'print("Hello Jobe")\n'
+        }
+    };
+    json_runspec = JSON.stringify(runspec);
+    xhr.open("POST", resource, true);
+    xhr.setRequestHeader("Content-type", "application/json; charset=utf-8");
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("X-API-KEY", X_API_KEY);
+    xhr.send(json_runspec);
+}
+
+submitjob();
+
+</script>
+</body>
+</html>
