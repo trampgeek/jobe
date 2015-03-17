@@ -182,7 +182,7 @@ class Restapi extends REST_Controller {
                 if (!isset($run->sourcefilename) || $run->sourcefilename == 'prog.java') {
                     // If no sourcefilename is given or if it's 'prog.java', 
                     // ask the language task to provide a source filename.
-                    // The prog.java is a special case to support legacy
+                    // The prog.java is a special case (i.e. hack) to support legacy
                     // CodeRunner versions that left it to Jobe to come up with
                     // a name (and in Java it matters).
                     $run->sourcefilename = ''; 
