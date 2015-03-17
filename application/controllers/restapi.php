@@ -179,8 +179,13 @@ class Restapi extends REST_Controller {
                 $this->response("Language '$language' is not known", 400);
             } else {
                 $reqdTaskClass = ucwords($language) . '_Task';
-                if (!isset($run->sourcefilename)) {
-                    $run->sourcefilename = '';  // Let the LanguageTask define it
+                if (!isset($run->sourcefilename) || $run->sourcefilename == 'prog.java') {
+                    // If no sourcefilename is given or if it's 'prog.java', 
+                    // ask the language task to provide a source filename.
+                    // The prog.java is a special case to support legacy
+                    // CodeRunner versions that left it to Jobe to come up with
+                    // a name (and in Java it matters).
+                    $run->sourcefilename = ''; 
                 }
                 $this->task = new $reqdTaskClass($run->sourcecode,
                         $run->sourcefilename, $input, $params);
