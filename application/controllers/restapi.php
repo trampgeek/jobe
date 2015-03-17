@@ -179,9 +179,13 @@ class Restapi extends REST_Controller {
                 $this->response("Language '$language' is not known", 400);
             } else {
                 $reqdTaskClass = ucwords($language) . '_Task';
+                if (!isset($run->sourcefilename)) {
+                    $run->sourcefilename = '';  // Let the LanguageTask define it
+                }
                 $this->task = new $reqdTaskClass($run->sourcecode,
                         $run->sourcefilename, $input, $params);
                 $deleteFiles = !isset($run->debug) || !$run->debug;
+                $debug = !$deleteFiles;
                 if (!$this->task->load_files($files, $this->file_cache_base)) {
                     $this->task->close($deleteFiles);
                     $this->log('debug', 'runs_post: file(s) not found');
@@ -192,7 +196,7 @@ class Restapi extends REST_Controller {
                         $this->task->compile();
                         if ($this->task->cmpinfo == '') {
                             $this->log('debug', "runs_post: executing job {$this->task->id}");
-                            $this->task->execute();
+                            $this->task->execute($debug);
                         }
                     } catch(exception $e) {
                         $this->response("Server exception ($e)", 500);

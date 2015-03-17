@@ -41,7 +41,12 @@ class Cpp_Task extends Task {
         }
     }
 
-
+    // A default name for C++ programs
+    public function defaultFileName($sourcecode) {
+        return 'prog.cpp';
+    }
+    
+    
     // The executable is the output from the compilation
     public function getExecutablePath() {
         return "./" . $this->executableFileName;

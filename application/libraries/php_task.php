@@ -43,7 +43,12 @@ class Php_Task extends Task {
     }
 
 
-
+    // A default name for PHP programs
+    public function defaultFileName($sourcecode) {
+        return 'prog.php';
+    }
+    
+    
     public function getExecutablePath() {
         return '/usr/bin/php5';
      }

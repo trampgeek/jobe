@@ -33,6 +33,11 @@ class Nodejs_Task extends Task {
     }
     
     
+    // A default name forjs programs
+    public function defaultFileName($sourcecode) {
+        return 'prog.js';
+    }
+    
     public function getExecutablePath() {
          return '/usr/bin/nodejs';
      }

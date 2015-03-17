@@ -43,6 +43,11 @@ class Python3_Task extends Task {
     }
 
 
+    // A default name for Python3 programs
+    public function defaultFileName($sourcecode) {
+        return 'prog.py';
+    }
+    
 
     public function getExecutablePath() {
         return '/usr/bin/python3';

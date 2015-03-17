@@ -43,6 +43,11 @@ class C_Task extends Task {
         }
     }
 
+    // A default name for C programs
+    public function defaultFileName($sourcecode) {
+        return 'prog.c';
+    }
+    
     
     // The executable is the output from the compilation
     public function getExecutablePath() {

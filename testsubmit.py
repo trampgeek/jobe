@@ -24,7 +24,7 @@ DEBUGGING = False
 # Set JOBE_SERVER to the Jobe server URL.
 # If Jobe expects an X-API-Key header, set API_KEY to a working value and set
 # USE_API_KEY to True.
-API_KEY = 'test-api-key'  # A working (100/hr) key on Jobe2
+API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (100/hr) key on Jobe2
 USE_API_KEY = True
 JOBE_SERVER = 'localhost'
 #JOBE_SERVER = 'jobe2.cosc.canterbury.ac.nz'
@@ -499,6 +499,22 @@ public class Test {
 }
 ''',
     'sourcefilename': 'Test.java',
+    'parameters': {'cputime':10},
+    'expect': { 'outcome': 15, 'stdout': '''What a lot of code I need to write.
+'''}
+},
+
+
+{
+    'comment': 'Correct Java program without supplied sourcefilename ',
+    'language_id': 'java',
+    'sourcecode': r'''
+public class Test {
+    public static void main(String[] args) {
+        System.out.println("What a lot of code I need to write.");
+    }
+}
+''',
     'parameters': {'cputime':10},
     'expect': { 'outcome': 15, 'stdout': '''What a lot of code I need to write.
 '''}

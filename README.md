@@ -420,6 +420,14 @@ explain how to turn on API-key authorisation and per-method limits.
 ### Version 1.2.2 Added code to support CORS (Cross Origin Resource Sharing), i.e.,
 in-browser JavaScript requests from arbitrary domains.
 
+### Version 1.2.3 Fixed bug in how Java class names (and hence source file
+names) were inferred from the source code (main classes that implemented an
+interface or extended a subclass were not handled correctly). Also the filename
+field in the REST API runspec is now optional; if provided, it is trusted
+and used as-is, but if not supplied or if an empty string is supplied, Jobe
+now calls a language-specific function to provide a filename from the sourcecode.
+[Usually this is just something generic like prog.cpp, prog.py etc]
+
 Good luck!
 
 Richard

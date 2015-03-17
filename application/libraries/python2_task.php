@@ -23,6 +23,11 @@ class Python2_Task extends Task {
         return 'Python 2.7';
     }
 
+    // A default name for Python2 programs
+    public function defaultFileName($sourcecode) {
+        return 'prog.py2';
+    }
+    
     public function compile() {
         $this->executableFileName = $this->sourceFileName;
     }
