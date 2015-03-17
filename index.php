@@ -72,7 +72,12 @@ if (defined('ENVIRONMENT'))
  * NO TRAILING SLASH!
  *
  */
-	$application_folder = 'application';
+	//$application_folder = 'application';
+    // Change to an absolute APPPATH so if any exceptions occur after the
+    // chdir that's done in LanguageTask, the correct exception handler
+    // gets called. **RJL**
+    $application_folder = getcwd().'/application';
+
 
 /*
  * --------------------------------------------------------------------

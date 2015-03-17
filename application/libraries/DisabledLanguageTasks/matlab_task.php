@@ -39,6 +39,10 @@ class Matlab_Task extends Task {
         }
     }
 
+    // A default name for Matlab programs
+    public function defaultFileName($sourcecode) {
+        return 'prog.m';
+    }
 
     // Matlab throws in backspaces (grrr). There's also an extra BEL char
     // at the end of any abort error message (presumably introduced at some

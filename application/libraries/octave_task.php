@@ -33,6 +33,12 @@ class Octave_Task extends Task {
         }
     }
 
+    // A default name for Octave programs
+    public function defaultFileName($sourcecode) {
+        return 'prog.m';
+    }
+    
+    
     public function getExecutablePath() {
          return '/usr/bin/octave';
      }

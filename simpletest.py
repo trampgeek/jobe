@@ -1,5 +1,5 @@
 ''' simpletest.py - a simple demo of how to submit a program
-    to Jobe.
+    to Jobe. Demonstrates python3, C++ and Java.
 '''
 
 from urllib.error import HTTPError
@@ -27,6 +27,15 @@ using namespace std;
 
 int main() {
     cout << MESSAGE << endl;
+}
+"""
+
+
+JAVA_CODE = """
+public class Blah {
+    public static void main(String[] args) {
+        System.out.println("Farewell cruel world");
+    }
 }
 """
 
@@ -128,12 +137,15 @@ def display_result(ro):
 
 
 def main():
-    '''Demo a run of Python3 followed by a C++ run'''
+    '''Demo a run of Python3 then C++ then Java'''
     print("Running python...")
     result_obj = run_test('python3', PYTHON_CODE, 'test.py')
     display_result(result_obj)
     print("\n\nRunning C++")
     result_obj = run_test('cpp', CPP_CODE, 'test.cpp')
+    display_result(result_obj)
+    print("\n\nRunning Java")
+    result_obj = run_test('java', JAVA_CODE, 'Blah.java')
     display_result(result_obj)
 
 main()
