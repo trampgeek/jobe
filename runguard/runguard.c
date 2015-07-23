@@ -559,8 +559,11 @@ void setrestrictions()
 		verbose("setting memory limits to %d bytes",(int)memsize);
 		lim.rlim_cur = lim.rlim_max = memsize;
 		setlim(AS);
-		setlim(DATA);
-		setlim(STACK);
+		/* Commented out the next 2 lines - they cause problems
+                   for multithreaded applications and don't add much
+                   security.
+                setlim(DATA);
+		setlim(STACK);*/
 	}
 #else
 	/* Memory limits should be unlimited when using cgroups */
