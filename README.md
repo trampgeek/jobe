@@ -33,11 +33,13 @@ the server (unless *run\_spec.debug* is true; see the API), so
 and Java have been
 tested at this stage, and untested code exists to support C++ and Matlab.
 
+File PUTs are supported but not POSTs. When used by CodeRunner, file IDs are
+MD5 checksums of the file contents.
+
 The Computer Science quiz server at the University of Canterbury switched to
-exclusive use of the Jobe sandbox in early July 2014. At the time of writing
-(March 2015) it has run 
-tens of thousands of Python3, C and Octave jobs unattended since then with only a few
-minor bug fixes.
+exclusive use of the Jobe sandbox in early July 2014. In the year since then
+it has run many tens of thousands of Python3, C and Octave jobs unattended
+with only a few minor early bug fixes.
 
 Sandboxing is fairly basic. It uses the [domjudge](http://domjudge.org) 
 *runguard* program to run student jobs with restrictions on resource
@@ -66,9 +68,10 @@ as a sandbox to limit resource use by submitted jobs.
 
 ## Installation
 
-**WARNING** This current version is intended for installing on a
-server that is firewalled to allow connections ONLY from authorised client
-machines. If you install it on a machine without such firewalling,
+**WARNING** Jobe is primarily intended for use on a
+server that is firewalled to allow connections from authorised client
+machines only. If you install it on a machine without such firewalling,
+and do not control access with API keys (see later),
 anyone will be able to connect to your machine and run their own code
 on it! **CAVEAT EMPTOR!**
 
@@ -79,8 +82,8 @@ Semaphone and shared-memory functions enabled
 The Python3 and the C development system must also be
 installed.
 
-On Debian-based systems, a script to set up all the necessary web tools plus
-all currently-supported languages is something like the following
+On Ubuntu-14:04, a script to set up all the necessary web tools plus
+all currently-supported languages is the following
 (all commands as root):
 
     apt-get install php5 libapache2-mod-php5 php5-mcrypt mysql-server\
@@ -89,6 +92,9 @@ all currently-supported languages is something like the following
     pip3 install pylint
 
 [pylint is strictly optional].
+
+Similar commands should work on other Debian-based Linux distributions,
+although some differences are inevitable.
 
 The first step is to clone the project in the web root directory WEBROOT
 (usually /var/www on Debian-based systems or /var/www/html on Red Hat).
@@ -412,7 +418,7 @@ Fixed bug in C++ task - invalid language type being passed to compiler.
 
 Updated CodeIgniter Rest Server to latest version.
 
-Added code to load limit data from a config file "per_method_limits.php" to
+Added code to load limit data from a config file "per\_method\_limits.php" to
 support per-API-key limits on the number of calls that can be made to the
 restapi's POST and PUT entry points per hour. Updated the documentation to
 explain how to turn on API-key authorisation and per-method limits.
@@ -431,6 +437,10 @@ field in the REST API runspec is now optional; if provided, it is trusted
 and used as-is, but if not supplied or if an empty string is supplied, Jobe
 now calls a language-specific function to provide a filename from the sourcecode.
 [Usually this is just something generic like prog.cpp, prog.py etc]
+
+### Version 1.2.4
+
+Fixed issue with runguard that prevented use of pthreads library in C programs.
 
 Good luck!
 
