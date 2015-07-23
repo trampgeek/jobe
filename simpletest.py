@@ -55,7 +55,7 @@ def http_request(method, resource, data, headers):
 
 def run_test(language, code, filename):
     '''Execute the given code in the given language.
-       Display the output'''
+       Return the result object.'''
     runspec = {
         'language_id': language,
         'sourcefilename': filename,
