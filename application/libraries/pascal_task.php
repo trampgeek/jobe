@@ -31,7 +31,8 @@ class Pascal_Task extends Task {
         $execFileName = "$src.exe";
         $compileargs = $this->getParam('compileargs');
 //        $cmd = "gcc " . implode(' ', $compileargs) . " -o $execFileName $src -lm 2>$errorFileName";
-        $cmd = "fpc " . implode(' ', $compileargs) . " -o$execFileName $src 2>$errorFileName";
+        $cmd = "fpc " . implode(' ', $compileargs) . " -Fe$errorFileName -o$execFileName $src";
+	// -Fe[filename] - store error log in file
         exec($cmd, $output, $returnVar);
         if ($returnVar == 0) {
             $this->cmpinfo = '';
