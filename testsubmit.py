@@ -19,7 +19,7 @@ VERBOSE = False
 # Set DEBUGGING to True to instruct Jobe to use debug mode, i.e., to
 # leave all runs (commands, input output etc) in /home/jobe/runs, rather
 # than deleting each run as soon as it is done.
-DEBUGGING = False
+DEBUGGING = True
 
 # Set JOBE_SERVER to the Jobe server URL.
 # If Jobe expects an X-API-Key header, set API_KEY to a working value and set
@@ -562,7 +562,7 @@ int main() {
 
 #================ Pascal tests ====================
 {
-    'comment': 'Hello world Pascal test',
+    'comment': 'Good Hello world Pascal test',
     'language_id': 'pascal',
     'sourcecode': r'''begin
 writeln('Hello world!');
@@ -570,6 +570,17 @@ end.
 ''',
     'sourcefilename': 'prog.pas',
     'expect': { 'outcome': 15, 'stdout': "Hello world!\n" }
+},
+
+{
+    'comment': 'Fail Hello world Pascal test',
+    'language_id': 'pascal',
+    'sourcecode': r'''begin
+writeln('Hello world!);
+end.
+''',
+    'sourcefilename': 'prog.pas',
+    'expect': { 'outcome': 11 }
 }
 
 ]
