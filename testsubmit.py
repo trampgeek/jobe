@@ -31,7 +31,7 @@ JOBE_SERVER = 'localhost'
 
 # Set the next line to a specific value, e.g. 'octave' to restrict to testing
 # just one language. Use 'ALL' to test all languages.
-TEST_LANG = 'ALL'
+TEST_LANG = 'pascal'
 
 GOOD_TEST = 0
 FAIL_TEST = 1
@@ -558,6 +558,18 @@ int main() {
 ''',
     'sourcefilename': 'prog.c',
     'expect': { 'outcome': 11 }
+},
+
+#================ Pascal tests ====================
+{
+    'comment': 'Hello world Pascal test',
+    'language_id': 'pascal',
+    'sourcecode': r'''begin
+writeln('Hello world!');
+end.
+''',
+    'sourcefilename': 'prog.pas',
+    'expect': { 'outcome': 15, 'stdout': "Hello world!\n" }
 }
 
 ]

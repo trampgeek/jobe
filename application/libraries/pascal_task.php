@@ -12,7 +12,7 @@
 
 require_once('application/libraries/LanguageTask.php');
 
-class C_Task extends Task {
+class Pascal_Task extends Task {
 
     public function __construct($source, $filename, $input, $params) {
         Task::__construct($source, $filename, $input, $params);
@@ -42,7 +42,7 @@ class C_Task extends Task {
         }
     }
 
-    // A default name for C programs
+    // A default name for Pascal programs
     public function defaultFileName($sourcecode) {
         return 'prog.pas';
     }
