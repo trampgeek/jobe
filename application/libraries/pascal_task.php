@@ -17,14 +17,12 @@ class C_Task extends Task {
     public function __construct($source, $filename, $input, $params) {
         Task::__construct($source, $filename, $input, $params);
         $this->default_params['compileargs'] = array(
-            '-Wall',
-            '-Werror',
-            '-std=c99',
-            '-x c');
+            '-vew', // [v]erbose, [e]rrors, [w]arnings
+            '-Se'); // stop on first error
     }
 
     public static function getVersion() {
-        return 'fpc';
+        return 'fpc-2.6.0'; // maybe something like 'fpc-' . exec('fpc -iV') to get correct version?
     }
 
     public function compile() {
@@ -33,7 +31,7 @@ class C_Task extends Task {
         $execFileName = "$src.exe";
         $compileargs = $this->getParam('compileargs');
 //        $cmd = "gcc " . implode(' ', $compileargs) . " -o $execFileName $src -lm 2>$errorFileName";
-        $cmd = "fpc " . implode(' ', $compileargs) . " -o $execFileName $src -lm 2>$errorFileName";
+        $cmd = "fpc " . implode(' ', $compileargs) . " -o$execFileName $src 2>$errorFileName";
         exec($cmd, $output, $returnVar);
         if ($returnVar == 0) {
             $this->cmpinfo = '';
@@ -46,7 +44,7 @@ class C_Task extends Task {
 
     // A default name for C programs
     public function defaultFileName($sourcecode) {
-        return 'prog.c';
+        return 'prog.pas';
     }
     
     
