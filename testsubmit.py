@@ -19,7 +19,7 @@ VERBOSE = False
 # Set DEBUGGING to True to instruct Jobe to use debug mode, i.e., to
 # leave all runs (commands, input output etc) in /home/jobe/runs, rather
 # than deleting each run as soon as it is done.
-DEBUGGING = True
+DEBUGGING = False
 
 # Set JOBE_SERVER to the Jobe server URL.
 # If Jobe expects an X-API-Key header, set API_KEY to a working value and set
@@ -31,7 +31,7 @@ JOBE_SERVER = 'localhost'
 
 # Set the next line to a specific value, e.g. 'octave' to restrict to testing
 # just one language. Use 'ALL' to test all languages.
-TEST_LANG = 'pascal'
+TEST_LANG = 'ALL'
 
 GOOD_TEST = 0
 FAIL_TEST = 1

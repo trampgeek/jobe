@@ -330,6 +330,9 @@ An empty default means the global default is used.
 <tr>
   <td>php</td><td>PHP5</td><td></td><td>['--no-php-ini']</td>
 </tr>
+<tr>
+  <td>pascal</td><td>Free Pascal</td><td>['-vew', '-Se']</td><td></td>
+</tr>
 
 </table>
 ## Configuration
