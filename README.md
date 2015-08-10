@@ -1,8 +1,10 @@
 # JOBE
 
-Version: 1.2 January 2015
+Version: 1.3 August 2015
 
-Author: Richard Lobb, University of Canterbury, New Zealand.
+Author: Richard Lobb, University of Canterbury, New Zealand
+
+Contributors: Fedor Lyanguzov
 
 ## Introduction
 
@@ -24,7 +26,7 @@ The interface is via a RESTful API, that is documented [here](./restapi.pdf).
 
 ## Implementation status
 
-The current version of Jobe (Version 1.2.1) implements
+The current version of Jobe (Version 1.3) implements
 enough of the API to provide the services needed by CodeRunner. Only 
 immediate-mode runs are supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
@@ -444,7 +446,11 @@ now calls a language-specific function to provide a filename from the sourcecode
 
 ### Version 1.2.4
 
-Fixed issue with runguard that prevented use of pthreads library in C programs.
+Fixed issue with runguard that prevented use of pthreads library in C programs.,
+
+### Version 1.3
+
+Pascal support added by Fedor Lyanguzov (thanks Fedor)
 
 Good luck!
 
