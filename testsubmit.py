@@ -606,6 +606,29 @@ int main() {
 ''',
     'sourcefilename': 'prog.c',
     'expect': { 'outcome': 11 }
+},
+
+#================ Pascal tests ====================
+{
+    'comment': 'Good Hello world Pascal test',
+    'language_id': 'pascal',
+    'sourcecode': r'''begin
+writeln('Hello world!');
+end.
+''',
+    'sourcefilename': 'prog.pas',
+    'expect': { 'outcome': 15, 'stdout': "Hello world!\n" }
+},
+
+{
+    'comment': 'Fail Hello world Pascal test',
+    'language_id': 'pascal',
+    'sourcecode': r'''begin
+writeln('Hello world!);
+end.
+''',
+    'sourcefilename': 'prog.pas',
+    'expect': { 'outcome': 11 }
 }
 
 ]
