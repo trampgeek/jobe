@@ -371,6 +371,7 @@ $config['proxy_ips'] = '';
 |
 */
 $config['jobe_max_users'] = 10;
+$config['debugging'] = FALSE;
 
 
 /* End of file config.php */
