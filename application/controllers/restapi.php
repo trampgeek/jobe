@@ -27,6 +27,7 @@ define('MAX_READ', 4096);  // Max bytes to read in popen
 define ('MIN_FILE_IDENTIFIER_SIZE', 8);
 
 
+
 class Restapi extends REST_Controller {
     
     protected $languages = array();
@@ -189,8 +190,13 @@ class Restapi extends REST_Controller {
                 }
                 $this->task = new $reqdTaskClass($run->sourcecode,
                         $run->sourcefilename, $input, $params);
-                $deleteFiles = !isset($run->debug) || !$run->debug;
-                $debug = !$deleteFiles;
+                
+                // Debugging is set either via a config parameter or, for a
+                // specific run, by the run's debug attribute.
+                // When debugging, files are not deleted after the run.
+                $debug = $this->config->item('debugging') ||
+                        (isset($run->debug) && $run->debug);
+                $deleteFiles = !$debug;
                 if (!$this->task->load_files($files, $this->file_cache_base)) {
                     $this->task->close($deleteFiles);
                     $this->log('debug', 'runs_post: file(s) not found');
