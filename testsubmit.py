@@ -182,7 +182,7 @@ def check_code(s):
 
     lines = result.strip().split('\\n')
     for line in lines:
-        if not line.startswith('Warning: option'):
+        if line.strip() and not line.startswith('Warning: option'):
             print(line)
             return False
 
@@ -582,6 +582,36 @@ public class Test {
     'expect': { 'outcome': 11 }
 },
 
+{
+    'comment': 'Java program with a support class (.java)',
+    'language_id': 'java',
+    'sourcecode': r"""
+// A Java program with a support class
+public class Blah {
+    public static void main(String[] args) {
+        Thing thing = new Thing("Farewell cruel world");
+        thing.printme();
+    }
+}
+""",
+    'files': [
+        ('randomid0379799', """public class Thing {
+    private String message;
+    public Thing(String message) {
+        this.message = message;
+    }
+    public void printme() {
+        System.out.println(message);
+    }
+}
+""")
+    ],
+    'file_list': [('randomid0379799', 'Thing.java')],
+    'parameters': {'cputime':10},
+    'expect': { 'outcome': 15, 'stdout': '''Farewell cruel world
+'''}
+},
+
 #================= C++ tests ======================
 {
     'comment': 'Test good C++ hello world',
@@ -644,7 +674,7 @@ def check_parallel_submissions():
     '''Check that we can submit several jobs at once to Jobe with
        the process limit set to 1 and still have no conflicts.
 
-       NUM_SUBMITS temporarily reduced 6/8/2015 to avoid occasional 
+       NUM_SUBMITS temporarily reduced 6/8/2015 to avoid occasional
        errors (yet to be investigated, although even with NUM_SUBMITS = 10
        it's a fairly brutal test).
     '''
@@ -744,14 +774,13 @@ def put_file(file_desc):
     headers = {"Content-type": "application/json",
                "Accept": "text/plain"}
     connect = http_request('PUT', resource, data, headers)
-    if VERBOSE:
-        response = connect.getresponse()
+    response = connect.getresponse()
+    if VERBOSE or response.status != 204:
         print("Response to putting", file_id, ':')
         content = ''
         if response.status != 204:
             content =  response.read(4096)
         print(response.status, response.reason, content)
-
     connect.close()
 
 
