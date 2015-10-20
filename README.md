@@ -90,7 +90,8 @@ all currently-supported languages is the following
 
     apt-get install php5 libapache2-mod-php5 php5-mcrypt mysql-server\
           libapache2-mod-auth-mysql php5-mysql php5-cli octave nodejs\
-          git python3 build-essential openjdk-7-jre openjdk-7-jdk python3-pip
+          git python3 build-essential openjdk-7-jre openjdk-7-jdk python3-pip\
+          fp-compiler
     pip3 install pylint
     pylint --reports=no --generate-rcfile > /etc/pylintrc
 
