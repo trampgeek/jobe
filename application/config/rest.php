@@ -260,7 +260,7 @@ $config['rest_keys_table'] = 'keys';
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 |
 */
-$config['rest_enable_keys'] = FALSE;
+$config['rest_enable_keys'] = TRUE;
 
 /*
 |--------------------------------------------------------------------------
@@ -424,7 +424,8 @@ $config['rest_limits_table'] = 'limits';
  
 | See application/controllers/api/example.php for examples. 
 */
-$config['rest_enable_limits'] = TRUE;
+//$config['rest_enable_limits'] = TRUE;
+$config['rest_enable_limits'] = FALSE;
 
 /*
 |--------------------------------------------------------------------------
