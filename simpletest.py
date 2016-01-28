@@ -9,6 +9,7 @@ import http.client
 API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (100/hr) key on Jobe2
 USE_API_KEY = True
 JOBE_SERVER = 'jobe2.cosc.canterbury.ac.nz'
+#JOBE_SERVER = 'localhost'
 
 PYTHON_CODE = """
 MESSAGE = 'Hello Jobe!'

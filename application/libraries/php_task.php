@@ -25,7 +25,7 @@ class Php_Task extends Task {
     public function compile() {
         $outputLines = array();
         $returnVar = 0;
-        exec("/usr/bin/php5 -l {$this->sourceFileName} 2>compile.out", 
+        exec("/usr/bin/php -l {$this->sourceFileName} 2>compile.out", 
                 $outputLines, $returnVar);
         if ($returnVar == 0) {
             $this->cmpinfo = '';
@@ -50,7 +50,7 @@ class Php_Task extends Task {
     
     
     public function getExecutablePath() {
-        return '/usr/bin/php5';
+        return '/usr/bin/php';
      }
      
      

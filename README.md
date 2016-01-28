@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.3 August 2015
+Version: 1.3.1 January 2016
 
 Author: Richard Lobb, University of Canterbury, New Zealand
 
@@ -210,29 +210,20 @@ the form
 
 To set up Jobe to run in this way, proceed as follows:
 
+ 1. Install a mysql server on the jobe machine or elsewhere.
+
+ 1. Create a database called *jobe* and define a user with full access to it.
+
+ 1. Edit *application/config/database.php* to access your mysql server and
+    the jobe database with the user credentials you defined in the previous
+    step.
+
  1. Edit the file *application/config/rest.php* and set the configuration
     parameter *rest_enable_keys* to 1.
 
- 1. Install a mysql server on the jobe machine or elsewhere.
-
- 1. Create a database called *jobe*
-
- 1. In the *jobe* database create a table *keys* with the mysql command
-
-    CREATE TABLE  `keys` (
-     `id` INT( 11 ) NOT NULL AUTO_INCREMENT,
-     `key` VARCHAR( 40 ) NOT NULL,
-     `level` INT( 2 ) NOT NULL,
-     `ignore_limits` TINYINT( 1 ) NOT NULL DEFAULT  '0',
-     `date_created` INT( 11 ) NOT NULL,
-    PRIMARY KEY (  `id` )
-    ) ENGINE = INNODB DEFAULT CHARSET = utf8;
-
-    Populate the table with any keys you wish to issue to clients.
-    *level* will normally be 0.
-
- 1. Edit *application/config/database.php* to access your mysql server and
-    the jobe database.
+ 1. Set up tables `keys` and `limits` as explained in *rest.php*. Populate
+    the `keys` table with one or more API keys, which must then be used by
+    any requests to the Jobe server.
 
 If running in API-Key mode, you should still firewall the Jobe server to
 prevent it opening any sockets to other machines.
@@ -454,6 +445,11 @@ Fixed issue with runguard that prevented use of pthreads library in C programs.,
 Pascal support added by Fedor Lyanguzov (thanks Fedor)
 
 Good luck!
+
+### Version 1.3.1
+
+Minor patches to ensure PHP7 compability. Install instruction in readme.md
+still relate to PHP5, however.
 
 Richard
 
