@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 ''' simpletest.py - a simple demo of how to submit a program
     to Jobe. Demonstrates python3, C++ and Java.
 '''
@@ -8,8 +9,8 @@ import http.client
 
 API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (100/hr) key on Jobe2
 USE_API_KEY = True
-JOBE_SERVER = 'jobe2.cosc.canterbury.ac.nz'
-#JOBE_SERVER = 'localhost'
+#JOBE_SERVER = 'jobe2.cosc.canterbury.ac.nz'
+JOBE_SERVER = 'localhost'
 
 PYTHON_CODE = """
 MESSAGE = 'Hello Jobe!'

@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 ''' A tester and demo program for jobe
     Richard Lobb
     2/2/2015
