@@ -2,7 +2,7 @@
 
 /* ==============================================================
  *
- * Octabe
+ * Java
  *
  * ==============================================================
  *
@@ -14,9 +14,8 @@ require_once('application/libraries/LanguageTask.php');
 
 class Java_Task extends Task {
     public function __construct($source, $filename, $input, $params) {
-        // TODO: find out why java won't work with memory limit set to
-        // more plausible values.
-        $params['memorylimit'] = 0;
+        $params['memorylimit'] = 2500; // 2.5GB - JVM is greedy!
+        $params['numprocs'] = 256;     // And Java 8 wants lots of processes
         Task::__construct($source, $filename, $input, $params);
         $this->default_params['interpreterargs'] = array(
              "-Xrs",   //  reduces usage signals by java, because that generates debug
