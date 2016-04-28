@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.3.1 January 2016
+Version: 1.3.2 April 2016
 
 Author: Richard Lobb, University of Canterbury, New Zealand
 
@@ -450,6 +450,11 @@ Good luck!
 
 Minor patches to ensure PHP7 compability. Install instruction in readme.md
 still relate to PHP5, however.
+
+### Version 1.3.2
+
+Change Java config parameters to allow Java 8 to run (more memory and
+more processes).
 
 Richard
 
