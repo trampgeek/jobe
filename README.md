@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.3.2 April 2016
+Version: 1.3.3 July 2016
 
 Author: Richard Lobb, University of Canterbury, New Zealand
 
@@ -84,18 +84,18 @@ Semaphone and shared-memory functions enabled
 The Python3 and the C development system must also be
 installed.
 
-On Ubuntu-14:04, a script to set up all the necessary web tools plus
+On Ubuntu-16.04, a script to set up all the necessary web tools plus
 all currently-supported languages is the following
 (all commands as root):
 
-    apt-get install php5 libapache2-mod-php5 php5-mcrypt mysql-server\
-          libapache2-mod-auth-mysql php5-mysql php5-cli octave nodejs\
-          git python3 build-essential openjdk-7-jre openjdk-7-jdk python3-pip\
-          fp-compiler
-    pip3 install pylint
+    apt-get install php libapache2-mod-php php-mcrypt mysql-server\
+          php-mysql php-cli octave nodejs\
+          git python3 build-essential openjdk-8-jre openjdk-8-jdk python3-pip\
+          fp-compiler pylint3
     pylint --reports=no --generate-rcfile > /etc/pylintrc
 
-[pylint is strictly optional].
+[octave, fp and pylint3 are required only if you need to run Octave or Pascal
+programs or test Python programs with pylint, respectively.].
 
 Similar commands should work on other Debian-based Linux distributions,
 although some differences are inevitable.
@@ -455,6 +455,11 @@ still relate to PHP5, however.
 
 Change Java config parameters to allow Java 8 to run (more memory and
 more processes).
+
+### Version 1.3.3
+
+Remove inline declaration of readoptarg in runguard.c (causing compile errors
+with most recent gcc versions). Documentation tweaks.
 
 Richard
 

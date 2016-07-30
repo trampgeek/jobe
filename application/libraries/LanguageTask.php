@@ -32,6 +32,8 @@ abstract class Task {
     const RESULT_ILLEGAL_SYSCALL = 19;
     const RESULT_INTERNAL_ERR = 20;
     const RESULT_SERVER_OVERLOAD = 21;
+    
+    const PROJECT_KEY = 'j';  // For ftok function. Irrelevant (?)
 
     // Global default parameter values. Can be overridden by subclasses,
     // and then further overridden by the individual run requests.
@@ -149,9 +151,9 @@ abstract class Task {
     // returns an integer in the range 0 to jobe_max_users - 1 inclusive.
     private function getFreeUser() {
         global $CI;
-
+        
         $numUsers = $CI->config->item('jobe_max_users');
-        $key = ftok(__FILE__, 'j');
+        $key = ftok(__FILE__,  TASK::PROJECT_KEY);
         $sem = sem_get($key);
         $user = -1;
         $retries = 0;

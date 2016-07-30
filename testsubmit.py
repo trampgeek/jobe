@@ -30,13 +30,21 @@ DEBUGGING = False
 # If Jobe expects an X-API-Key header, set API_KEY to a working value and set
 # USE_API_KEY to True.
 API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (100/hr) key on Jobe2
+
 USE_API_KEY = True
 JOBE_SERVER = 'localhost'
+
 #JOBE_SERVER = 'jobe2.cosc.canterbury.ac.nz'
 
 # Set the next line to a specific value, e.g. 'octave' to restrict to testing
 # just one language. Use 'ALL' to test all languages.
 TEST_LANG = 'ALL'
+
+# The next constant controls the maximum number of parallel submissions to
+# throw at Jobe at once. Numbers less than or equal to the number of Jobe
+# users (currently 10) should be safe. Larger numbers might cause
+# Overload responses.
+NUM_PARALLEL_SUBMITS = 10
 
 GOOD_TEST = 0
 FAIL_TEST = 1
@@ -674,12 +682,7 @@ end.
 def check_parallel_submissions():
     '''Check that we can submit several jobs at once to Jobe with
        the process limit set to 1 and still have no conflicts.
-
-       NUM_SUBMITS temporarily reduced 6/8/2015 to avoid occasional
-       errors (yet to be investigated, although even with NUM_SUBMITS = 10
-       it's a fairly brutal test).
     '''
-    NUM_SUBMITS = 10
 
     job = {
         'comment': 'C program to check parallel submissions',
@@ -698,7 +701,7 @@ int main() {
 
     threads = []
     print("\nChecking parallel submissions")
-    for child_num in range(NUM_SUBMITS):
+    for child_num in range(NUM_PARALLEL_SUBMITS):
         print("Doing child", child_num)
         def run_job():
             this_job = copy.deepcopy(job)
@@ -871,7 +874,8 @@ def display_result(comment, ro):
         15: 'Successful run',
         17: 'Memory limit exceeded',
         19: 'Illegal system call',
-        20: 'Internal error, please report'}
+        20: 'Internal error, please report',
+        21: 'Server overload. Excessive parallelism?'}
 
     code = ro['outcome']
     print("{}".format(outcomes[code]))
@@ -917,4 +921,5 @@ def main():
 
 
 main()
+
 
