@@ -2,9 +2,24 @@
 ''' A tester and demo program for jobe
     Richard Lobb
     2/2/2015
+
     Modified 6/8/2015 to include --verbose command line parameter, to do
     better file upload and pylint testing and to improve error messages
     in some cases.
+
+    Modified 7/11/2016 by Tim Hunt. Allow selection of languages to run
+    from the command line, and use a non-zero exit code (number of
+    failures + number of exceptions) if not all tests pass.
+
+    Usage:
+    To run all tests:
+        ./testsubmit.py
+    or
+        ./testsubmit.py --verbose
+
+    To run selected tests by language:
+        ./testsubmit.py python3 octave --verbose
+    (Use of --verbose is optional here.)
 '''
 
 from urllib.request import urlopen
@@ -35,10 +50,6 @@ USE_API_KEY = True
 JOBE_SERVER = 'localhost'
 
 #JOBE_SERVER = 'jobe2.cosc.canterbury.ac.nz'
-
-# Set the next line to a specific value, e.g. 'octave' to restrict to testing
-# just one language. Use 'ALL' to test all languages.
-TEST_LANG = 'ALL'
 
 # The next constant controls the maximum number of parallel submissions to
 # throw at Jobe at once. Numbers less than or equal to the number of Jobe
@@ -902,11 +913,17 @@ def display_result(comment, ro):
 def main():
     '''Every home should have one'''
     global VERBOSE
-    if '--verbose' in sys.argv:
+    langs_to_run = set(sys.argv[1:]) # Get rid of the program name
+    if '--verbose' in langs_to_run:
         VERBOSE = True
+        langs_to_run.remove('--verbose')
+    if len(langs_to_run) == 0:
+        langs_to_run = set([testcase['language_id'] for testcase in TEST_SET])
     counters = [0, 0, 0]  # Passes, fails, exceptions
+    tests_run = 0;
     for test in TEST_SET:
-        if TEST_LANG == 'ALL' or test['language_id'] == TEST_LANG:
+        if test['language_id'] in langs_to_run:
+            tests_run += 1
             result = run_test(test)
             counters[result] += 1
             if VERBOSE:
@@ -914,12 +931,14 @@ def main():
 
     print()
     print("{} tests, {} passed, {} failed, {} exceptions".format(
-        len(TEST_SET), counters[0], counters[1], counters[2]))
+        tests_run, counters[0], counters[1], counters[2]))
 
-    if TEST_LANG == 'ALL':
+    if 'c' in langs_to_run:
         check_parallel_submissions()
 
+    return counters[1] + counters[2]
 
-main()
+
+sys.exit(main())
 
 
