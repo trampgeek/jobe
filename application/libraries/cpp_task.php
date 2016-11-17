@@ -30,7 +30,8 @@ class Cpp_Task extends Task {
         $errorFileName = "$src.err";
         $execFileName = "$src.exe";
         $compileargs = $this->getParam('compileargs');
-        $cmd = "g++ " . implode(' ', $compileargs) . " -o $execFileName $src -lm 2>$errorFileName";
+        $linkargs = $this->getParam('linkargs');
+        $cmd = "g++ " . implode(' ', $compileargs) . " -o $execFileName $src "  . implode(' ', $linkargs) . "  2>$errorFileName";
         exec($cmd, $output, $returnVar);
         if ($returnVar == 0) {
             $this->cmpinfo = '';
