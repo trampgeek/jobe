@@ -286,7 +286,11 @@ this is exceeded the *fork* system call will fail with, again, somewhat
 unpredictable outcomes.
  1. compileargs ([]): a list of string option values to pass to the compiler,
 such as ["-Wall", "-std=c99"] for the C compiler. Meaningful only for compiled
-languages.
+languages. These arguments precede the name of the file to be compiled.
+ 1. linkargs ([]): a list of string option values to pass to the compiler,
+such as ["-lm"] for the C compiler. These arguments follow the name of the file
+to be compiled. Meaningful only for some compiled
+languages, notably C and C++.
  1. interpreterargs ([]): a list of string option values to pass to the 
 language interpreter or Java VM etc when the program is executed. Meaningful
 only for languages like Python, PHP and Java where the output from the compiler
