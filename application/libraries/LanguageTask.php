@@ -44,6 +44,7 @@ abstract class Task {
         'memorylimit'   => 200,     // MB
         'numprocs'      => 20,
         'compileargs'   => array(),
+        'linkargs'      => array(),
         'interpreterargs' => array(),
         'runargs'       => array()
     );
