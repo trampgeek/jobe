@@ -22,7 +22,7 @@ class Octave_Task extends Task {
              '-H');
     }
 
-    public static function getVersionCommand() {
+    public function getVersionCommand() {
         return array('octave --version', '/GNU Octave, version ([0-9._]*)/');
     }
 

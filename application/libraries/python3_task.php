@@ -18,7 +18,7 @@ class Python3_Task extends Task {
         $this->default_params['interpreterargs'] = array('-BE');
     }
 
-    public static function getVersionCommand() {
+    public function getVersionCommand() {
         return array('python3 --version', '/Python ([0-9._]*)/');
     }
 

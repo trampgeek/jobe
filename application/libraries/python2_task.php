@@ -19,7 +19,7 @@ class Python2_Task extends Task {
         $this->default_params['interpreterargs'] = array('-BESs');
     }
 
-    public static function getVersionCommand() {
+    public function getVersionCommand() {
         return array('python2 --version', '/Python ([0-9._]*)/');
     }
 

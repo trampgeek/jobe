@@ -31,7 +31,6 @@ define('LANGUAGE_CACHE_FILE', '/tmp/jobe_language_cache_file');
 
 class Restapi extends REST_Controller {
 
-    protected $languages = array();
     protected $file_cache_base = NULL;
 
     // Constructor loads the available languages from the libraries directory.
@@ -50,21 +49,6 @@ class Restapi extends REST_Controller {
         }
         parent::__construct();
         $this->file_cache_base = FCPATH . '/files/';
-
-        $library_files = scandir('application/libraries');
-        foreach ($library_files as $file) {
-            $end = '_task.php';
-            $pos = strpos($file, $end);
-            if ($pos == strlen($file) - strlen($end)) {
-                $lang = substr($file, 0, $pos);
-                require_once("application/libraries/$file");
-                $class = $lang . '_Task';
-                $version = $class::getVersion();
-                if ($version) {
-                    $this->languages[$lang] = $version;
-                }
-            }
-        }
 
         if ($this->config->item('rest_enable_limits')) {
             $this->load->config('per_method_limits');
@@ -248,12 +232,25 @@ class Restapi extends REST_Controller {
             $langsJson = @file_get_contents(LANGUAGE_CACHE_FILE);
             $langs = json_decode($langsJson);
         }
-        if ($langs === NULL) {
+        if (!$langs) {
+
             $this->log('debug', 'Missing or corrupt languages cache file ... rebuilding it.');
             $langs = array();
-            foreach ($this->languages as $id => $version) {
-                $langs[] = array($id, $version);
+            $library_files = scandir('application/libraries');
+            foreach ($library_files as $file) {
+                $end = '_task.php';
+                $pos = strpos($file, $end);
+                if ($pos == strlen($file) - strlen($end)) {
+                    $lang = substr($file, 0, $pos);
+                    require_once("application/libraries/$file");
+                    $class = $lang . '_Task';
+                    $version = $class::getVersion();
+                    if ($version) {
+                        $langs[] = array($lang, $version);
+                    }
+                }
             }
+
             $langsJson = json_encode($langs);
             file_put_contents(LANGUAGE_CACHE_FILE, $langsJson);
         }

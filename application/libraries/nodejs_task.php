@@ -18,7 +18,7 @@ class Nodejs_Task extends Task {
         $this->default_params['interpreterargs'] = array('--use_strict');
     }
 
-    public static function getVersionCommand() {
+    public function getVersionCommand() {
         return array('nodejs --version', '/v([0-9._]*)/');
     }
 

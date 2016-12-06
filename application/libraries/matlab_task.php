@@ -21,7 +21,7 @@ class Matlab_Task extends Task {
         );
     }
 
-    public static function getVersionCommand() {
+    public function getVersionCommand() {
         return array('/usr/local/bin/matlab_exec_cli -nodisplay -nojvm -nosplash -r exit', '/\(([0-9.]*)\)/');
     }
 

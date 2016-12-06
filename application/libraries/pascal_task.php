@@ -21,7 +21,7 @@ class Pascal_Task extends Task {
             '-Se'); // stop on first error
     }
 
-    public static function getVersionCommand() {
+    public function getVersionCommand() {
         return array('fpc -iV', '/([0-9._]*)/');
     }
 

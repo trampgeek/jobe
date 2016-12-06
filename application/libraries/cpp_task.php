@@ -21,7 +21,7 @@ class Cpp_Task extends Task {
             '-Werror');
     }
 
-    public static function getVersionCommand() {
+    public function getVersionCommand() {
         return array('gcc --version', '/gcc \(.*\) ([0-9.]*) /');
     }
 

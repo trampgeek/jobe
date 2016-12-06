@@ -331,7 +331,7 @@ abstract class Task {
     // group so that $matches[1] is the required string after a call to
     // preg_match. See getVersion below for details.
     // Should be implemented by all subclasses.
-    public abstract static function getVersionCommand();
+    public abstract function getVersionCommand();
 
 
     // Return a string giving the version of language supported by this
@@ -340,8 +340,8 @@ abstract class Task {
     // getVersionCommand) fails. This can be interpreted as a non-existent
     // language and should be removed from the list of languages handled by
     // this Jobe server.
-    public static function getVersion() {
-        list($command, $pattern) = static::getVersionCommand();
+    public function getVersion() {
+        list($command, $pattern) = $this->getVersionCommand();
         $output = `$command 2>&1`;
         if ($output === NULL) {
             return NULL;

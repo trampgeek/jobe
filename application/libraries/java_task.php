@@ -29,7 +29,7 @@ class Java_Task extends Task {
         $this->mainClassName = substr($this->sourceFileName, 0, $extStart);
     }
 
-    public static function getVersionCommand() {
+    public function getVersionCommand() {
         return array('java -version', '/openjdk version "([0-9._]*)"/');
     }
 

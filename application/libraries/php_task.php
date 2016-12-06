@@ -18,7 +18,7 @@ class Php_Task extends Task {
         $this->default_params['interpreterargs'] = array('--no-php-ini');
     }
 
-    public static function getVersionCommand() {
+    public function getVersionCommand() {
         return array('php --version', '/PHP ([0-9._]*)/');
     }
 
