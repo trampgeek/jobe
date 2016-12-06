@@ -32,7 +32,7 @@ abstract class Task {
     const RESULT_ILLEGAL_SYSCALL = 19;
     const RESULT_INTERNAL_ERR = 20;
     const RESULT_SERVER_OVERLOAD = 21;
-    
+
     const PROJECT_KEY = 'j';  // For ftok function. Irrelevant (?)
 
     // Global default parameter values. Can be overridden by subclasses,
@@ -87,7 +87,7 @@ abstract class Task {
         }
         $this->sourceFileName = $filename;
         $this->params = $params;
-        $this->cmpinfo = '';  // Optimism (always look on the bright side of life_
+        $this->cmpinfo = '';  // Optimism (always look on the bright side of life).
         chdir($this->workdir);
         $handle = fopen($this->sourceFileName, "w");
         fwrite($handle, $sourceCode);
@@ -152,7 +152,7 @@ abstract class Task {
     // returns an integer in the range 0 to jobe_max_users - 1 inclusive.
     private function getFreeUser() {
         global $CI;
-        
+
         $numUsers = $CI->config->item('jobe_max_users');
         $key = ftok(__FILE__,  TASK::PROJECT_KEY);
         $sem = sem_get($key);
@@ -325,9 +325,32 @@ abstract class Task {
     public abstract function getTargetFile();
 
 
-    // Return the version of language supported by this particular Language/Task
+    // Return a two-element array of the shell command to be run to obtain
+    // a version number and the RE pattern with which to extract the version
+    // string from the output. This should have a capturing parenthesised
+    // group so that $matches[1] is the required string after a call to
+    // preg_match. See getVersion below for details.
+    // Should be implemented by all subclasses. [Older versions of PHP
+    // don't allow me to declare this abstract. But it is!!]
+    public static function getVersionCommand() {}
+
+
+    // Return a string giving the version of language supported by this
+    // particular Language/Task.
+    // Return false if the version command (supplied by the subclass's
+    // getVersionCommand) fails. This can be interpreted as a non-existent
+    // language and should be removed from the list of languages handled by
+    // this Jobe server.
     public static function getVersion() {
-        return '';  // To be overridden by subclass
+        list($command, $pattern) = static::getVersionCommand();
+        $output = `$command 2>&1`;
+        if ($output === NULL) {
+            return NULL;
+        } else {
+            $matches = array();
+            $isMatch = preg_match($pattern, $output, $matches);
+            return $isMatch ? $matches[1] : NULL;
+        }
     }
 
 

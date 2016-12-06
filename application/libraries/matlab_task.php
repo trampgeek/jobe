@@ -21,11 +21,11 @@ class Matlab_Task extends Task {
         );
     }
 
-    public static function getVersion() {
-        return 'Matlab R2014b';
+    public static function getVersionCommand() {
+        return array('/usr/local/bin/matlab_exec_cli -nodisplay -nojvm -nosplash -r exit', '/\(([0-9.]*)\)/');
     }
 
-    
+
     public function compile() {
         $this->setPath();
         $filename = basename($this->sourceFileName); // Strip any path bits
@@ -88,8 +88,8 @@ class Matlab_Task extends Task {
 
         return implode("\n", $outlines) . "\n";
     }
-     
-     
+
+
     // The Matlab CLI program is the executable
     public function getExecutablePath() {
         return '/usr/local/bin/matlab_exec_cli';
