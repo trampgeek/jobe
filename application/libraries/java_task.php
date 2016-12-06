@@ -29,8 +29,8 @@ class Java_Task extends Task {
         $this->mainClassName = substr($this->sourceFileName, 0, $extStart);
     }
 
-    public static function getVersion() {
-        return 'Java 1.7';
+    public static function getVersionCommand() {
+        return array('java -version', '/openjdk version "([0-9._]*)"/');
     }
 
     public function compile() {
@@ -52,7 +52,7 @@ class Java_Task extends Task {
         $main = $this->getMainClass($sourcecode);
         if ($main === FALSE) {
             $this->cmpinfo .= "WARNING: can't determine main class, so source file has been named 'prog.java', which probably won't compile.";
-            return 'prog.java'; // This will probably fail            
+            return 'prog.java'; // This will probably fail
         } else {
             return $main.'.java';
         }
@@ -61,9 +61,9 @@ class Java_Task extends Task {
     public function getExecutablePath() {
         return '/usr/bin/java';
     }
-    
-    
-     
+
+
+
     public function getTargetFile() {
         return $this->mainClassName;
     }
@@ -84,7 +84,7 @@ class Java_Task extends Task {
         }
     }
 
-    // Get rid of the tab characters at the start of indented lines in 
+    // Get rid of the tab characters at the start of indented lines in
     // traceback output.
     public function filteredStderr() {
         return str_replace("\n\t", "\n        ", $this->stderr);

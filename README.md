@@ -288,7 +288,9 @@ unpredictable outcomes.
 such as ["-Wall", "-std=c99"] for the C compiler. Meaningful only for compiled
 languages. These arguments precede the name of the file to be compiled.
  1. linkargs ([]): a list of string option values to pass to the compiler,
-such as ["-lm"] for the C compiler. These arguments follow the name of the file
+such as ["-lm"]
+for the C compiler (although recent versions of gcc no longer require this
+argument). These arguments follow the name of the file
 to be compiled. Meaningful only for some compiled
 languages, notably C and C++.
  1. interpreterargs ([]): a list of string option values to pass to the 

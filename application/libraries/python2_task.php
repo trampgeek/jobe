@@ -19,15 +19,15 @@ class Python2_Task extends Task {
         $this->default_params['interpreterargs'] = array('-BESs');
     }
 
-    public static function getVersion() {
-        return 'Python 2.7';
+    public static function getVersionCommand() {
+        return array('python2 --version', '/Python ([0-9._]*)/');
     }
 
     // A default name for Python2 programs
     public function defaultFileName($sourcecode) {
         return 'prog.py2';
     }
-    
+
     public function compile() {
         $this->executableFileName = $this->sourceFileName;
     }
@@ -36,8 +36,8 @@ class Python2_Task extends Task {
     public function getExecutablePath() {
         return '/usr/bin/python2';
      }
-     
-     
+
+
      public function getTargetFile() {
          return $this->sourceFileName;
      }

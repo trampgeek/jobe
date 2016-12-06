@@ -18,14 +18,14 @@ class Python3_Task extends Task {
         $this->default_params['interpreterargs'] = array('-BE');
     }
 
-    public static function getVersion() {
-        return 'Python 3.2';
+    public static function getVersionCommand() {
+        return array('python3 --version', '/Python ([0-9._]*)/');
     }
 
     public function compile() {
         $outputLines = array();
         $returnVar = 0;
-        exec("python3 -m py_compile {$this->sourceFileName} 2>compile.out", 
+        exec("python3 -m py_compile {$this->sourceFileName} 2>compile.out",
                 $outputLines, $returnVar);
         if ($returnVar == 0) {
             $this->cmpinfo = '';
@@ -47,13 +47,13 @@ class Python3_Task extends Task {
     public function defaultFileName($sourcecode) {
         return 'prog.py';
     }
-    
+
 
     public function getExecutablePath() {
         return '/usr/bin/python3';
      }
 
-     
+
      public function getTargetFile() {
          return $this->sourceFileName;
      }

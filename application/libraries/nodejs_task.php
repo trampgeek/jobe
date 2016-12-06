@@ -18,8 +18,8 @@ class Nodejs_Task extends Task {
         $this->default_params['interpreterargs'] = array('--use_strict');
     }
 
-    public static function getVersion() {
-        return 'Nodejs 0.10.15';
+    public static function getVersionCommand() {
+        return array('nodejs --version', '/v([0-9._]*)/');
     }
 
     public function compile() {
@@ -31,18 +31,18 @@ class Nodejs_Task extends Task {
             throw new exception("Node_Task: couldn't copy source file");
         }
     }
-    
-    
+
+
     // A default name forjs programs
     public function defaultFileName($sourcecode) {
         return 'prog.js';
     }
-    
+
     public function getExecutablePath() {
          return '/usr/bin/nodejs';
      }
-     
-     
+
+
      public function getTargetFile() {
          return $this->sourceFileName;
      }

@@ -21,8 +21,8 @@ class Pascal_Task extends Task {
             '-Se'); // stop on first error
     }
 
-    public static function getVersion() {
-        return 'fpc-2.6.0'; // maybe something like 'fpc-' . exec('fpc -iV') to get correct version?
+    public static function getVersionCommand() {
+        return array('fpc -iV', '/([0-9._]*)/');
     }
 
     public function compile() {
@@ -47,14 +47,14 @@ class Pascal_Task extends Task {
     public function defaultFileName($sourcecode) {
         return 'prog.pas';
     }
-    
-    
+
+
     // The executable is the output from the compilation
     public function getExecutablePath() {
         return "./" . $this->executableFileName;
     }
-    
-    
+
+
     public function getTargetFile() {
         return '';
     }

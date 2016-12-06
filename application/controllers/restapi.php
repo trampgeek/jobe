@@ -1,6 +1,6 @@
 <?php
 
-/* 
+/*
  * Copyright (C) 2014 Richard Lobb
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,14 +25,15 @@ require_once('application/libraries/LanguageTask.php');
 
 define('MAX_READ', 4096);  // Max bytes to read in popen
 define ('MIN_FILE_IDENTIFIER_SIZE', 8);
+define('LANGUAGE_CACHE_FILE', '/tmp/jobe_language_cache_file');
 
 
 
 class Restapi extends REST_Controller {
-    
+
     protected $languages = array();
     protected $file_cache_base = NULL;
-    
+
     // Constructor loads the available languages from the libraries directory.
     // [But to handle CORS (Cross Origin Resource Sharing) it first issues
     // the access-control headers, and then quits if it's an OPTIONS request,
@@ -49,7 +50,7 @@ class Restapi extends REST_Controller {
         }
         parent::__construct();
         $this->file_cache_base = FCPATH . '/files/';
-        
+
         $library_files = scandir('application/libraries');
         foreach ($library_files as $file) {
             $end = '_task.php';
@@ -59,10 +60,12 @@ class Restapi extends REST_Controller {
                 require_once("application/libraries/$file");
                 $class = $lang . '_Task';
                 $version = $class::getVersion();
-                $this->languages[$lang] = $version;
+                if ($version) {
+                    $this->languages[$lang] = $version;
+                }
             }
         }
-        
+
         if ($this->config->item('rest_enable_limits')) {
             $this->load->config('per_method_limits');
             $limits = $this->config->item('per_method_limits');
@@ -71,27 +74,27 @@ class Restapi extends REST_Controller {
             }
         }
     }
-    
-    
+
+
     protected function log($type, $message) {
         // Call log_message with the same parameters, but prefix the message
         // by *jobe* for easy identification.
         log_message($type, '*jobe* ' . $message);
     }
-    
-    
+
+
     protected function error($message, $httpCode=400) {
         // Generate the http response containing the given message with the given
         // HTTP response code. Log the error first.
         $this->log('error', $message);
         $this->response($message, $httpCode);
     }
-    
-    
+
+
     public function index_get() {
         $this->response('Please access this API via the runs, runresults, files or languages collections');
     }
-    
+
     // ****************************
     //         FILES
     // ****************************
@@ -119,8 +122,8 @@ class Restapi extends REST_Controller {
         $this->log('debug', "Put file $fileId, size $len");
         $this->response(NULL, 204);
     }
-    
-    
+
+
     // Check file
     public function files_head($fileId) {
         if (!$fileId) {
@@ -133,22 +136,22 @@ class Restapi extends REST_Controller {
             $this->response(NULL, 404);
         }
     }
-    
+
     // Post file
     public function files_post() {
         $this->error('file_post: not implemented on this server', 403);
     }
- 
+
     // ****************************
     //        RUNS
     // ****************************
-    
+
     public function runs_get() {
         $id = $this->get('runId');
         $this->error('runs_get: no such run or run result discarded', 200);
     }
-    
-    
+
+
     public function runs_post() {
         if (!$run = $this->post('run_spec', FALSE)) {
             $this->error('runs_post: missing or invalid run_spec parameter', 400);
@@ -159,9 +162,9 @@ class Restapi extends REST_Controller {
             // REST_Controller has called to_array on the JSON decoded
             // object, so we must first turn it back into an object
             $run = (object) $run;
-            
+
             // Now we can process the run request
-            
+
             if (isset($run->file_list)) {
                 $files = $run->file_list;
                 foreach ($files as $file) {
@@ -181,16 +184,16 @@ class Restapi extends REST_Controller {
             } else {
                 $reqdTaskClass = ucwords($language) . '_Task';
                 if (!isset($run->sourcefilename) || $run->sourcefilename == 'prog.java') {
-                    // If no sourcefilename is given or if it's 'prog.java', 
+                    // If no sourcefilename is given or if it's 'prog.java',
                     // ask the language task to provide a source filename.
                     // The prog.java is a special case (i.e. hack) to support legacy
                     // CodeRunner versions that left it to Jobe to come up with
                     // a name (and in Java it matters).
-                    $run->sourcefilename = ''; 
+                    $run->sourcefilename = '';
                 }
                 $this->task = new $reqdTaskClass($run->sourcecode,
                         $run->sourcefilename, $input, $params);
-                
+
                 // Debugging is set either via a config parameter or, for a
                 // specific run, by the run's debug attribute.
                 // When debugging, files are not deleted after the run.
@@ -216,15 +219,15 @@ class Restapi extends REST_Controller {
 
                 // Delete files unless it's a debug run
 
-                $this->task->close($deleteFiles); 
+                $this->task->close($deleteFiles);
             }
         }
-        
+
         $this->log('debug', "runs_post: returning 200 OK for task {$this->task->id}");
         $this->response($this->task->resultObject(), 200);
 
     }
-    
+
     // **********************
     //      RUN_RESULTS
     // **********************
@@ -232,32 +235,42 @@ class Restapi extends REST_Controller {
     {
         $this->error('runresults_get: unimplemented, as all submissions run immediately.', 404);
     }
-    
-    
+
+
     // **********************
     //      LANGUAGES
     // **********************
     public function languages_get()
     {
+        $langs = NULL;
         $this->log('debug', 'languages_get called');
-        $langs = array();
-        foreach ($this->languages as $id => $version) {
-            $langs[] = array($id, $version);
+        if (file_exists(LANGUAGE_CACHE_FILE)) {
+            $langsJson = @file_get_contents(LANGUAGE_CACHE_FILE);
+            $langs = json_decode($langsJson);
+        }
+        if ($langs === NULL) {
+            $this->log('debug', 'Missing or corrupt languages cache file ... rebuilding it.');
+            $langs = array();
+            foreach ($this->languages as $id => $version) {
+                $langs[] = array($id, $version);
+            }
+            $langsJson = json_encode($langs);
+            file_put_contents(LANGUAGE_CACHE_FILE, $langsJson);
         }
         $this->response($langs);
     }
-    
+
     // **********************
     // Support functions
     // **********************
     private function is_valid_filespec($file) {
         return (count($file) == 2 || count($file) == 3) &&
              is_string($file[0]) &&
-             is_string($file[1]) &&             
+             is_string($file[1]) &&
              strlen($file[0]) >= MIN_FILE_IDENTIFIER_SIZE &&
              ctype_alnum($file[0]) &&
              strlen($file[1]) > 0 &&
              ctype_alnum(str_replace(array('-', '_', '.'), '', $file[1]));
-    }    
+    }
 
 }

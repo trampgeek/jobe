@@ -22,8 +22,8 @@ class Octave_Task extends Task {
              '-H');
     }
 
-    public static function getVersion() {
-        return 'Octave 3.6.4';
+    public static function getVersionCommand() {
+        return array('octave --version', '/GNU Octave, version ([0-9._]*)/');
     }
 
     public function compile() {
@@ -37,13 +37,13 @@ class Octave_Task extends Task {
     public function defaultFileName($sourcecode) {
         return 'prog.m';
     }
-    
-    
+
+
     public function getExecutablePath() {
          return '/usr/bin/octave';
      }
-     
-     
+
+
      public function getTargetFile() {
          return $this->sourceFileName;
      }
@@ -56,16 +56,16 @@ class Octave_Task extends Task {
          while (count($lines) > 0 && trim($lines[count($lines) - 1]) === '') {
              array_pop($lines);
          }
-         if (count($lines) > 0 && 
+         if (count($lines) > 0 &&
                  strpos($lines[count($lines) - 1],
                          'error: ignoring octave_execution_exception') === 0) {
              array_pop($lines);
          }
-         
+
          // A bug in octave results in some errors lines at the end due to the
          // non-existence of some environment variables that we can't set up
          // in jobe. So trim them off.
-         if (count($lines) >= 1 && 
+         if (count($lines) >= 1 &&
                     $lines[count($lines) - 1] == 'error: No such file or directory') {
              array_pop($lines);
          }
