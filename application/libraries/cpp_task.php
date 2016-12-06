@@ -21,8 +21,8 @@ class Cpp_Task extends Task {
             '-Werror');
     }
 
-    public static function getVersionCommand() {
-        return array('gcc --version', '/gcc \(.*\) ([0-9.]*) /');
+    public static function getVersion() {
+        return 'gcc-4.6.3';
     }
 
     public function compile() {
@@ -46,14 +46,14 @@ class Cpp_Task extends Task {
     public function defaultFileName($sourcecode) {
         return 'prog.cpp';
     }
-
-
+    
+    
     // The executable is the output from the compilation
     public function getExecutablePath() {
         return "./" . $this->executableFileName;
     }
-
-
+    
+    
     public function getTargetFile() {
         return '';
     }
