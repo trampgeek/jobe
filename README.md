@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.3.3 July 2016
+Version: 1.3.4 December 2016
 
 Author: Richard Lobb, University of Canterbury, New Zealand
 
@@ -464,6 +464,10 @@ more processes).
 
 Remove inline declaration of readoptarg in runguard.c (causing compile errors
 with most recent gcc versions). Documentation tweaks.
+
+### Version 1.3.4
+
+Fix serious security flaw in runguard + my use of it.
 
 Richard
 

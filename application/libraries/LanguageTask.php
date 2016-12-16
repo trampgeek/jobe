@@ -223,6 +223,7 @@ abstract class Task {
             $sandboxCmdBits = array(
                  "sudo " . dirname(__FILE__)  . "/../../runguard/runguard",
                  "--user=$user",
+                 "--group=jobe",
                  "--time=$cputime",         // Seconds of execution time allowed
                  "--filesize=$filesize",    // Max file sizes
                  "--nproc=$numProcs",       // Max num processes/threads for this *user*

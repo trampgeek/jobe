@@ -627,6 +627,8 @@ void setrestrictions()
 	if ( use_group ) {
 		if ( setgid(rungid) ) error(errno,"cannot set group ID to `%d'",rungid);
 		verbose("using group ID `%d'",rungid);
+                gid_t aux_groups[] = {rungid};
+                if (setgroups(1, aux_groups)) error(errno, "cannot clear auxiliary groups");
 	}
 	/* Set user-id (must be root for this). */
 	if ( use_user ) {
@@ -641,6 +643,7 @@ void setrestrictions()
 		if ( setuid(getuid()) ) error(errno,"cannot reset real user ID");
 		verbose("reset user ID to `%d' for command",getuid());
 	}
+
 	if ( geteuid()==0 || getuid()==0 ) error(0,"root privileges not dropped. Do not run judgedaemon as root.");
 }
 
