@@ -91,14 +91,14 @@ all currently-supported languages is the following
     apt-get install apache2 php libapache2-mod-php php-mcrypt mysql-server\
           php-mysql php-cli octave nodejs\
           git python3 build-essential openjdk-8-jre openjdk-8-jdk python3-pip\
-          fp-compiler pylint
+          fp-compiler pylint acl
     pylint --reports=no --generate-rcfile > /etc/pylintrc
 
 [octave, fp and pylint are required only if you need to run Octave or Pascal
 programs or test Python programs with pylint, respectively.].
 
 Similar commands should work on other Debian-based Linux distributions,
-although some differences are inevitable.
+although some differences are inevitable (e.g.: acl was preinstalled in ubuntu, whereas in debian it must be installed).
 
 The first step is to clone the project in the web root directory WEBROOT
 (usually /var/www/html).
