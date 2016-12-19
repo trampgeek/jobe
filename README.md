@@ -80,7 +80,7 @@ on it! **CAVEAT EMPTOR!**
 Jobe runs only on Linux, which must have the Apache web server
 installed and running. PHP must have been compiled with the System V
 Semaphone and shared-memory functions enabled
-(see here)[http://www.php.net/manual/en/sem.setup.php].
+(see here)[http://www.php.net/manual/en/sem.setup.php], but that's the norm.
 The Python3 and the C development system must also be
 installed.
 
@@ -88,20 +88,20 @@ On Ubuntu-16.04, a script to set up all the necessary web tools plus
 all currently-supported languages is the following
 (all commands as root):
 
-    apt-get install php libapache2-mod-php php-mcrypt mysql-server\
+    apt-get install apache2 php libapache2-mod-php php-mcrypt mysql-server\
           php-mysql php-cli octave nodejs\
           git python3 build-essential openjdk-8-jre openjdk-8-jdk python3-pip\
-          fp-compiler pylint3
+          fp-compiler pylint
     pylint --reports=no --generate-rcfile > /etc/pylintrc
 
-[octave, fp and pylint3 are required only if you need to run Octave or Pascal
+[octave, fp and pylint are required only if you need to run Octave or Pascal
 programs or test Python programs with pylint, respectively.].
 
 Similar commands should work on other Debian-based Linux distributions,
 although some differences are inevitable.
 
 The first step is to clone the project in the web root directory WEBROOT
-(usually /var/www on Debian-based systems or /var/www/html on Red Hat).
+(usually /var/www/html).
 Do not clone the project elsewhere and attempt to add it to web root with
 symbolic links. That breaks this installer. In what follows, replace
 WEBROOT with either /var/www or /var/www/html as appropriate.
