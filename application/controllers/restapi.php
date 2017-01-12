@@ -260,7 +260,7 @@ class Restapi extends REST_Controller {
             $langsJson = @file_get_contents(LANGUAGE_CACHE_FILE);
             $langs = json_decode($langsJson);
         }
-        if (empty($langs)) {
+        if (empty($langs) || (is_array($langs) && isset($langs[0]))) {
             $this->log('debug', 'Missing or corrupt languages cache file ... rebuilding it.');
             $langs = array();
             $library_files = scandir('application/libraries');
