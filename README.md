@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.3.4 December 2016
+Version: 1.3.5, 12 January 12 2017
 
 Author: Richard Lobb, University of Canterbury, New Zealand
 
@@ -468,6 +468,17 @@ with most recent gcc versions). Documentation tweaks.
 ### Version 1.3.4
 
 Fix serious security flaw in runguard + my use of it.
+
+### Version 1.3.5
+
+1. Fix broken caching of language versions (wasting time on each submission).
+1. Improve identification of language versions; 'Unknown' is now given as the
+language version if a language get-version command runs but produces output
+in an unexpected format. Formerly such languages were deemed invalid.
+1. Change Java task so supplied memlimit is ignored, leaving JVM to manage its
+own memory. 
+1. Add 'getLanguages' to simpletest.py and testsubmit.py.
+
 
 Richard
 

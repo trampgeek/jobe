@@ -824,28 +824,13 @@ def run_test(test):
                "Accept": "application/json"}
     response = None
     content = ''
-    result = {}
-    # Send the request
-    try:
-        connect = http_request('POST', resource, data, headers)
-        response = connect.getresponse()
-        if response.status != 204:
-            content = response.read().decode('utf8')
-            if content:
-                result = json.loads(content)
-        connect.close()
-        #print(response.status, response.reason, content)
 
-    except (HTTPError, ValueError) as e:
-        print("\n***************** HTTP ERROR ******************\n")
-        print(test['comment'], end='')
-        if response:
-            print(' Response:', response.status, response.reason, content)
-        else:
-            print(e)
+    # Do the request, returning EXCEPTION if it broke
+    ok, result = do_http('POST', resource, data)
+    if not ok:
         return EXCEPTION
-
-   # Lastly, check the response is as specified
+    
+   # If not an exception, check the response is as specified
 
     if is_correct_result(test['expect'], result):
         if VERBOSE:
@@ -859,6 +844,35 @@ def run_test(test):
         display_result(test['comment'], result)
         print("\n************************************************\n")
         return FAIL_TEST
+
+
+def do_http(method, resource, data=None):
+    """Send the given HTTP request to Jobe, return a pair (ok result) where
+       ok is true if no exception was thrown, false otherwise and 
+       result is a dictionary of the JSON decoded response (or an empty
+       dictionary in the case of a 204 response.
+    """
+    result = {}
+    ok = True
+    headers = {"Content-type": "application/json; charset=utf-8",
+               "Accept": "application/json"}
+    try:
+        connect = http_request(method, resource, data, headers)
+        response = connect.getresponse()
+        if response.status != 204:
+            content = response.read().decode('utf8')
+            if content:
+                result = json.loads(content)
+        connect.close()
+
+    except (HTTPError, ValueError) as e:
+        print("\n***************** HTTP ERROR ******************\n")
+        if response:
+            print(' Response:', response.status, response.reason, content)
+        else:
+            print(e)
+        ok = False
+    return (ok, result)
 
 
 def trim(s):
@@ -907,12 +921,23 @@ def display_result(comment, ro):
             print(trim(ro['stderr']))
 
 
-
+def do_get_languages():
+    """List all languages available on the jobe server"""
+    print("Supported languages:")
+    resource = '/jobe/index.php/restapi/languages'
+    ok, lang_versions = do_http('GET', resource)
+    if not ok:
+        print("**** An exception occurred when getting languages ****")
+    else:
+        for lang, version in lang_versions:
+            print("    {}: {}".format(lang, version))
+    print()
 
 
 def main():
     '''Every home should have one'''
     global VERBOSE
+    do_get_languages()
     langs_to_run = set(sys.argv[1:]) # Get rid of the program name
     if '--verbose' in langs_to_run:
         VERBOSE = True

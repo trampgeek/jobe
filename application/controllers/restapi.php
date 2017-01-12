@@ -51,20 +51,7 @@ class Restapi extends REST_Controller {
         parent::__construct();
         $this->file_cache_base = FCPATH . '/files/';
 
-        $library_files = scandir('application/libraries');
-        foreach ($library_files as $file) {
-            $end = '_task.php';
-            $pos = strpos($file, $end);
-            if ($pos == strlen($file) - strlen($end)) {
-                $lang = substr($file, 0, $pos);
-                require_once("application/libraries/$file");
-                $class = $lang . '_Task';
-                $version = $class::getVersion();
-                if ($version) {
-                    $this->languages[$lang] = $version;
-                }
-            }
-        }
+        $this->languages = $this->supported_languages();
 
         if ($this->config->item('rest_enable_limits')) {
             $this->load->config('per_method_limits');
@@ -191,6 +178,7 @@ class Restapi extends REST_Controller {
                     // a name (and in Java it matters).
                     $run->sourcefilename = '';
                 }
+                require_once("./application/libraries/{$language}_task.php");
                 $this->task = new $reqdTaskClass($run->sourcecode,
                         $run->sourcefilename, $input, $params);
 
@@ -243,18 +231,10 @@ class Restapi extends REST_Controller {
     public function languages_get()
     {
         $this->log('debug', 'languages_get called');
-        if (file_exists(LANGUAGE_CACHE_FILE)) {
-            $langsJson = @file_get_contents(LANGUAGE_CACHE_FILE);
-            $langs = json_decode($langsJson);
-        }
-        if (empty($langs)) {
-            $this->log('debug', 'Missing or corrupt languages cache file ... rebuilding it.');
-            $langs = array();
-            foreach ($this->languages as $lang=>$version) {
-                $langs[] = array($lang, $version);
-            }
-            $langsJson = json_encode($langs);
-            file_put_contents(LANGUAGE_CACHE_FILE, $langsJson);
+        $languages = $this->supported_languages();
+        $langs = array();
+        foreach($languages as $lang => $version) {
+            $langs[] = array($lang, $version);
         }
         $this->response($langs);
     }
@@ -272,4 +252,35 @@ class Restapi extends REST_Controller {
              ctype_alnum(str_replace(array('-', '_', '.'), '', $file[1]));
     }
 
+
+    // Return an associative array mapping language name to language version
+    // string for all supported languages (and only supported languages).
+    private function supported_languages() {
+        if (file_exists(LANGUAGE_CACHE_FILE)) {
+            $langsJson = @file_get_contents(LANGUAGE_CACHE_FILE);
+            $langs = json_decode($langsJson);
+        }
+        if (empty($langs) || (is_array($langs) && isset($langs[0]))) {
+            $this->log('debug', 'Missing or corrupt languages cache file ... rebuilding it.');
+            $langs = array();
+            $library_files = scandir('application/libraries');
+            foreach ($library_files as $file) {
+                $end = '_task.php';
+                $pos = strpos($file, $end);
+                if ($pos == strlen($file) - strlen($end)) {
+                    $lang = substr($file, 0, $pos);
+                    require_once("application/libraries/$file");
+                    $class = $lang . '_Task';
+                    $version = $class::getVersion();
+                    if ($version) {
+                        $langs[$lang] = $version;
+                    }
+                }
+            }
+
+            $langsJson = json_encode($langs);
+            file_put_contents(LANGUAGE_CACHE_FILE, $langsJson);
+        }
+        return $langs;
+    }
 }

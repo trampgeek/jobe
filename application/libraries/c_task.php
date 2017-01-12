@@ -24,7 +24,7 @@ class C_Task extends Task {
     }
 
     public static function getVersionCommand() {
-        return array('gcc --version', '/gcc \(.*\) ([0-9.]*) /');
+        return array('gcc --version', '/gcc \(.*\) ([0-9.]*)/');
     }
 
     public function compile() {

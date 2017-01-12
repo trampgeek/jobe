@@ -23,7 +23,7 @@ class Octave_Task extends Task {
     }
 
     public static function getVersionCommand() {
-        return array('octave --version', '/GNU Octave, version ([0-9._]*)/');
+        return array('octave --version --norc --no-window-system --silent', '/GNU Octave, version ([0-9._]*)/');
     }
 
     public function compile() {
