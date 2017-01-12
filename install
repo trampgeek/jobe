@@ -84,7 +84,7 @@ def make_user(username, comment, make_home_dir=False, group='jobe'):
             group_opt = ''
         else:
             group_opt = ' -g ' + group
-        do_command('useradd {} -s "/bin/false"{} -c "{}" {}'.format(opt, group_opt, comment, username))
+        do_command('useradd -r {} -s "/bin/false"{} -c "{}" {}'.format(opt, group_opt, comment, username))
 
 
 def make_directory(dirpath, webuser):
