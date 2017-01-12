@@ -353,7 +353,8 @@ abstract class Task {
             return NULL;
         } else {
             $matches = array();
-            $isMatch = preg_match($pattern, $output[0], $matches);
+            $allOutput = implode("\n", $output);
+            $isMatch = preg_match($pattern, $allOutput, $matches);
             return $isMatch ? $matches[1] : "Unknown";
         }
     }
