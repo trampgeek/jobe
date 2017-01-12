@@ -14,6 +14,7 @@ import sys
 
 
 JOBE_DIRS = ['/var/www/jobe', '/var/www/html/jobe']
+LANGUAGE_CACHE_FILE = '/tmp/jobe_language_cache_file'
 
 def get_config(param_name, install_dir):
     '''Get a config parameter from <<install_dir>>/application/config/config.php.
@@ -160,6 +161,11 @@ def main():
             do_command(cmd)
             print('Setting up sudo permissions for webserver')
             make_sudoers(install_dir, webserver_user, num_jobe_users)
+            try:
+                os.remove(LANGUAGE_CACHE_FILE)
+            except:
+                pass
+            
             print("Runguard installation complete")
 
         except Exception as e:
