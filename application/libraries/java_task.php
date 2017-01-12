@@ -36,7 +36,7 @@ class Java_Task extends Task {
     }
 
     public static function getVersionCommand() {
-        return array('java -version', '/openjdk version "([0-9._]*)"/');
+        return array('java -version', '/version "?([0-9._]*)/');
     }
 
     public function compile() {
