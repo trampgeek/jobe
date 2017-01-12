@@ -338,19 +338,23 @@ abstract class Task {
 
     // Return a string giving the version of language supported by this
     // particular Language/Task.
-    // Return false if the version command (supplied by the subclass's
-    // getVersionCommand) fails. This can be interpreted as a non-existent
-    // language and should be removed from the list of languages handled by
-    // this Jobe server.
+    // Return NULL if the version command (supplied by the subclass's
+    // getVersionCommand) fails or produces no output. This can be interpreted
+    // as a non-existent language that should be removed from the list of
+    // languages handled by this Jobe server.
+    // If the version command runs but yields a result in
+    // an unexpected format, returns the string "Unknown".
     public static function getVersion() {
         list($command, $pattern) = static::getVersionCommand();
-        $output = `$command 2>&1`;
-        if ($output === NULL) {
+        $output = array();
+        $retvalue;
+        exec($command . ' 2>&1', $output, $retvalue);
+    if ($retvalue != 0 || count($output) == 0) {
             return NULL;
         } else {
             $matches = array();
-            $isMatch = preg_match($pattern, $output, $matches);
-            return $isMatch ? $matches[1] : NULL;
+            $isMatch = preg_match($pattern, $output[0], $matches);
+            return $isMatch ? $matches[1] : "Unknown";
         }
     }
 
