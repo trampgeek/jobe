@@ -139,8 +139,11 @@ def main():
             make_user('jobe', 'Jobe user. Provides home for runs.', True, None)
             print("Setting up file cache")
             make_directory('{}/files'.format(install_dir), webserver_user);
-            do_command('chgrp {} {}/files'.format(webserver_user, install_dir))
+
+            do_command('chgrp {} {}/*'.format(webserver_user, install_dir))
+            do_command('chmod -R g+rX {}/*'.format(install_dir))
             do_command('chmod g+rwX {}/files'.format(install_dir))
+
             print("Making required job-runner users")
             for i in range(num_jobe_users):
                 username = 'jobe{:02d}'.format(i)
@@ -155,11 +158,11 @@ def main():
             runguard_commands = [
                 "cd {0}".format(install_dir + '/runguard'),
                 "gcc -o runguard runguard.c", # TODO Add -lcgroups  if using cgroups
-                "chmod 750 runguard"
+                "chmod 700 runguard"
             ]
             cmd = ';'.join(runguard_commands)
             do_command(cmd)
-            print('Setting up sudo permissions for webserver')
+
             make_sudoers(install_dir, webserver_user, num_jobe_users)
             try:
                 os.remove(LANGUAGE_CACHE_FILE)
