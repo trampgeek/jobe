@@ -333,7 +333,7 @@ An empty default means the global default is used.
   <td>octave</td><td>Octave (matlab variant)</td><td></td><td>['--norc', '--no-window-system', '--silent', '-H']</td>
 </tr>
 <tr>
-  <td>php</td><td>PHP5</td><td></td><td>['--no-php-ini']</td>
+  <td>php</td><td>PHP</td><td></td><td>['--no-php-ini']</td>
 </tr>
 <tr>
   <td>pascal</td><td>Free Pascal</td><td>['-vew', '-Se']</td><td></td>
