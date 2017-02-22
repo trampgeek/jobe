@@ -67,13 +67,16 @@ class Matlab_Task extends Task {
         $lines = explode("\n", $this->stdout);
         $outlines = array();
         $headerEnded = FALSE;
+        $endOfHeader = 'Research and commercial use is prohibited.';
 
         foreach ($lines as $line) {
             $line = rtrim($line);
             if ($headerEnded) {
                 $outlines[] = $line;
-            }
-            if (strpos($line, 'Research and commercial use is prohibited.') !== FALSE) {
+            } else if (strpos($line, 'R2016b') !== FALSE) {
+                // For R2016b, need a different end-of-header line
+                $endOfHeader = 'Classroom License -- for classroom instructional use only.';
+            } else if (strpos($line, $endOfHeader) !== FALSE) {
                 $headerEnded = TRUE;
             }
         }
