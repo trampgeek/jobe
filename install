@@ -138,7 +138,7 @@ def main():
             print("Make user jobe")
             make_user('jobe', 'Jobe user. Provides home for runs.', True, None)
             # make sure www-data can reach /home/jobe/runs despite it is not in jobe group
-            do_command("chmod 755 /home/jobe")
+            do_command("chmod 751 /home/jobe")
             print("Setting up file cache")
             make_directory('{}/files'.format(install_dir), webserver_user);
 
