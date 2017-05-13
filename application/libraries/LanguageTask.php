@@ -72,7 +72,7 @@ abstract class Task {
     // If you change that directory for some reason, make sure the directory
     // exists, is owned by jobe, with group www-data (or whatever your web
     // server user is) and has access rights of 771. If it's readable by
-    // the webserver or any of the jobe<n> users, running programs will be able
+    // any of the jobe<n> users, running programs will be able
     // to hoover up other students' submissions.
     public function __construct($sourceCode, $filename, $input, $params) {
         $this->workdir = tempnam("/home/jobe/runs", "jobe_");
