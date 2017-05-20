@@ -147,7 +147,7 @@ def main():
             make_directory('{}/files'.format(install_dir), webserver_user)
 
             do_command('chmod 755 {}'.format(install_dir))
-            do_command('chgrp {} {}/*'.format(webserver_user, install_dir))
+            do_command('chgrp -R {} {}/*'.format(webserver_user, install_dir))
             do_command('chmod -R g+rX {}/*'.format(install_dir))
             do_command('chmod g+rwX {}/files'.format(install_dir))
 
