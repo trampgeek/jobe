@@ -144,8 +144,9 @@ def main():
             # make sure www-data can reach /home/jobe/runs despite it is not in jobe group
             do_command("chmod 751 /home/jobe")
             print("Setting up file cache")
-            make_directory('{}/files'.format(install_dir), webserver_user);
+            make_directory('{}/files'.format(install_dir), webserver_user)
 
+            do_command('chmod 755 {}'.format(install_dir))
             do_command('chgrp {} {}/*'.format(webserver_user, install_dir))
             do_command('chmod -R g+rX {}/*'.format(install_dir))
             do_command('chmod g+rwX {}/files'.format(install_dir))
