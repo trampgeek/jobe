@@ -98,16 +98,20 @@ def make_directory(dirpath, webuser):
 
 def do_purge(install_dir, num_runners):
     '''Purge existing users and extra files set up by a previous install'''
-
-    try:
-        for i in range(num_runners):
+    for i in range(num_runners):
+        try:
             do_command('userdel jobe{:02d}'.format(i))
+        except:
+            # if no such account, continue
+            pass
+    try:
         do_command('userdel jobe')
     except:
+        # if no such account, continue
         pass
-    do_command('rm -r /home/jobe')
-    do_command('rm -r {}/files'.format(install_dir))
-    do_command('rm -r /var/log/jobe')
+    do_command('rm -rf /home/jobe')
+    do_command('rm -rf {}/files'.format(install_dir))
+    do_command('rm -rf /var/log/jobe')
 
     
 def main():
