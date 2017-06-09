@@ -194,10 +194,16 @@ following:
     ufw allow in proto tcp to any port 80 from <your_client_ip>
     ufw enable
 
+In the above, <your\_client\_ip> is the host that is permitted to send jobs
+to Jobe (e.g. a Moodle server with CodeRunner). <some\_useful\_ip> is
+any server to which Jobe might need to connect in order to run/grade
+student code. In the absence of such a server, that line should be omitted.
+
 ### Securing with API keys
 
 If you wish Jobe to serve multiple clients and do not wish to open a
-specific port for each one you should instead configure the rest-server
+specific port for each one you will need to configure the firewall to allow
+incoming connections from anywhere but you should then also configure the rest-server
 to require some form of authentication and authorisation. The various
 ways of achieving this are discussed in the documentation of the
 [rest-server plugin](https://github.com/chriskacerguis/codeigniter-restserver).
