@@ -64,6 +64,7 @@ def make_sudoers(install_dir, webserver_user, num_jobe_users):
     commands.append('/bin/rm -R /home/jobe/runs/*')
     for i in range(num_jobe_users):
         commands.append('/usr/bin/pkill -9 -u jobe{:02d}'.format(i))
+        commands.append('/usr/bin/find /tmp/ -user jobe{:02d} -delete'.format(i))
     
     sudoers_file_name = '/etc/sudoers.d/jobe-sudoers'
     with open(sudoers_file_name, 'w') as sudoers:
