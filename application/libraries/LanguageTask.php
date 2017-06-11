@@ -209,7 +209,7 @@ abstract class Task {
 
     // Execute this task, which must already have been compiled if necessary
     public function execute() {
-
+        $user = "";
         try {
             // Establish all the parameters for the job run
 
@@ -275,7 +275,7 @@ abstract class Task {
             $this->result = Task::RESULT_INTERNAL_ERR;
             $this->stderr = $e->getMessage();
         }
-
+        exec("sudo /usr/bin/find /tmp/ -user $user -delete");
         if (isset($userId)) {
             exec("sudo /usr/bin/pkill -9 -u $user"); // Kill any remaining processes
             $this->freeUser($userId);
