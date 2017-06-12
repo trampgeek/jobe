@@ -1,10 +1,10 @@
 # JOBE
 
-Version: 1.3.5, 12 January 12 2017
+Version: 1.3.5+, 12 June 2017
 
 Author: Richard Lobb, University of Canterbury, New Zealand
 
-Contributors: Fedor Lyanguzov
+Contributors: Fedor Lyanguzov, Kai-Cheung Leung
 
 ## Introduction
 
@@ -98,7 +98,8 @@ all currently-supported languages is the following
 programs or test Python programs with pylint, respectively.].
 
 Similar commands should work on other Debian-based Linux distributions,
-although some differences are inevitable (e.g.: acl was preinstalled in ubuntu, whereas in debian it must be installed).
+although some differences are inevitable (e.g.: acl was preinstalled in ubuntu,
+whereas in debian it must be installed).
 
 The first step is to clone the project in the web root directory WEBROOT
 (usually /var/www/html).
@@ -119,6 +120,8 @@ processes from the run.
 
     cd WEBROOT/jobe
     sudo ./install
+
+## Testing the install
 
 To test the installation, first try running the tester with the command
 
@@ -169,6 +172,45 @@ If the install appears OK but testsubmit.py fails:
 
 If you still can't figure it out, email me (Richard Lobb; my gmail name is
 trampgeek).
+
+## An optional extra installation step
+
+[For paranoid sysadmins only].
+
+Submitted jobs can generally write files only into the temporary directory
+created for their run within the '/home/jobe/runs'
+directory. Exceptions to this rule are the /tmp, /var/tmp, /var/crash and
+/run/lock directories all of which
+conventionally can be written into by any Linux process.
+
+The temporary working directory and any files in the writable directories
+mentioned above are deleted on the termination of the run. However, depending on
+the size of the various partitions and 
+the allowed maximum run time, it might in principle be
+possible for a rogue process, or a deliberate attacker, to run the system
+out of disk space in a particular partition (probably /tmp, which is usually
+relatively small),
+before the job terminates. That could in turn impact upon other jobs in
+progress.
+
+This possibility is considered very remote under normal circumstances. With typical
+run times of a few seconds, jobs
+time out long before they can fill up a main partition such as that housing
+/home/jobe. Filling up /tmp is easier but jobs shouldn't generally be using
+that directory, so a rogue process that fills it up shouldn't affect other users. In
+either case, the space is freed as soon as the job terminates. Certainly this
+is not a problem we have ever observed in
+practice. However, it should be possible to protect against such an outcome by
+setting disk quotas for the users jobe00, jobe01, ... jobe09 [The number
+of such user accounts is defined by the parameter `jobe_max_users` in 
+`application/config/config.php`. The default value is 10.]
+Instructions for installing the quota
+management system and setting quotas are given in various places on the web, e.g.
+[here](https://www.digitalocean.com/community/tutorials/how-to-enable-user-and-group-quotas).
+The precise details will vary from system to system according to how the disk
+partitions are set up; quotas should be
+set for all jobe users on whatever partitions contain /home/jobe, /tmp, /var/tmp,
+/var/crash and /run/lock.
 
 ## Securing the site
 
@@ -479,6 +521,14 @@ in an unexpected format. Formerly such languages were deemed invalid.
 own memory. 
 1. Add 'getLanguages' to simpletest.py and testsubmit.py.
 
+### Version 1.3.5+ 12 June 2017
+
+ 1. Improve installer to handle installation on servers with less permissive
+    access rights than Ubuntu 16.04.
+ 1. Delete any files created in /tmp, /var/tmp, /run/lock and /var/crash
+    on completion of a run.
+
+Thanks Kai-Cheung Leung for these additions.
 
 Richard
 

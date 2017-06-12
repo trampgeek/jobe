@@ -369,8 +369,12 @@ $config['proxy_ips'] = '';
 | one time. It *must* agree with the number of users with names jobe01,
 | jobe02, jobe03 etc.
 |
+| Clean up path is a semicolon-separated list of directories that are
+| writable by all, to be cleaned on completion of a job.
+|
 */
 $config['jobe_max_users'] = 10;
+$config['clean_up_path'] = '/tmp;/var/tmp;/var/crash;/run/lock';
 $config['debugging'] = FALSE;
 
 

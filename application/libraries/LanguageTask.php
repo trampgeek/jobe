@@ -278,7 +278,7 @@ abstract class Task {
 
         if (isset($userId)) {
             exec("sudo /usr/bin/pkill -9 -u $user"); // Kill any remaining processes
-            exec("sudo /usr/bin/find /tmp/ -user $user -delete");
+            $this->removeTemporaryFiles($user);
             $this->freeUser($userId);
         }
 
@@ -429,6 +429,18 @@ abstract class Task {
         }
         if (!$hasPath) {
             putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin");
+        }
+    }
+
+
+    // Remove any temporary files created by the given user on completion
+    // of a run
+    protected function removeTemporaryFiles($user) {
+        global $CI;
+        $path = $CI->config->item('clean_up_path');
+        $dirs = explode(';', $path);
+        foreach($dirs as $dir) {
+            exec("sudo /usr/bin/find $dir/ -user $user -delete");
         }
     }
 
