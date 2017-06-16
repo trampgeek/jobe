@@ -529,6 +529,8 @@ own memory.
     on completion of a run.
  1. Limit maximum CPU time for any one Jobe to 30 secs (config constant).
  1. Minimum PHP version is now required to be 5.5. (This is now checked in the installer.)
+ 1. Compilation of the Student's code is now also done in the runguard sandbox.
+    This provides an additional layer of security.
 
 Thanks Kai-Cheung Leung for the first two of those additions.
 

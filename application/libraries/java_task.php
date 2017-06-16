@@ -13,7 +13,7 @@
 require_once('application/libraries/LanguageTask.php');
 
 class Java_Task extends Task {
-    public function __construct($source, $filename, $input, $params) {
+    public function __construct($filename, $input, $params) {
         $params['memorylimit'] = 0;    // Disregard memory limit - let JVM manage memory
         $this->default_params['numprocs'] = 256;     // Java 8 wants lots of processes
         $this->default_params['interpreterargs'] = array(
@@ -27,7 +27,7 @@ class Java_Task extends Task {
             $params['numprocs'] = 256;  // Minimum for Java 8 JVM
         }
 
-        Task::__construct($source, $filename, $input, $params);
+        parent::__construct($filename, $input, $params);
 
         // Superclass constructor calls subclasses to get filename if it's
         // not provided, so $this->sourceFileName should now be set correctly.
@@ -43,7 +43,7 @@ class Java_Task extends Task {
         $prog = file_get_contents($this->sourceFileName);
         $compileArgs = $this->getParam('compileargs');
         $cmd = '/usr/bin/javac ' . implode(' ', $compileArgs) . " {$this->sourceFileName} 2>compile.out";
-        exec($cmd, $output, $returnVar);
+        exec($this->getSandboxCommand() . $cmd, $output, $returnVar);
         if ($returnVar == 0) {
             $this->executableFileName = $this->sourceFileName;
         }

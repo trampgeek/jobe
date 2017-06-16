@@ -14,8 +14,8 @@ require_once('application/libraries/LanguageTask.php');
 
 class Pascal_Task extends Task {
 
-    public function __construct($source, $filename, $input, $params) {
-        Task::__construct($source, $filename, $input, $params);
+    public function __construct($filename, $input, $params) {
+        parent::__construct($filename, $input, $params);
         $this->default_params['compileargs'] = array(
             '-vew', // [v]erbose, [e]rrors, [w]arnings
             '-Se'); // stop on first error
@@ -33,7 +33,7 @@ class Pascal_Task extends Task {
 //        $cmd = "gcc " . implode(' ', $compileargs) . " -o $execFileName $src -lm 2>$errorFileName";
         $cmd = "fpc " . implode(' ', $compileargs) . " -Fe$errorFileName -o$execFileName $src";
 	// -Fe[filename] - store error log in file
-        exec($cmd, $output, $returnVar);
+        exec($this->getSandboxCommand() . $cmd, $output, $returnVar);
         if ($returnVar == 0) {
             $this->cmpinfo = '';
             $this->executableFileName = $execFileName;

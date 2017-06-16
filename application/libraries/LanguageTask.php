@@ -54,6 +54,9 @@ abstract class Task {
     public $sourceFileName; // The name to give the source file
     public $params;         // Request parameters
 
+    public $userId = null;  // The user id (number counting from 0).
+    public $user;           // The corresponding user name (e.g. jobe01).
+
     public $cmpinfo = '';   // Output from compilation
     public $time = 0;       // Execution time (secs)
     public $memory = 0;     // Memory used (MB)
@@ -90,6 +93,7 @@ abstract class Task {
     // any of the jobe<n> users, running programs will be able
     // to hoover up other students' submissions.
     public function prepare_execution_environment($sourceCode) {
+        // Create the temporary directory that will be used.
         $this->workdir = tempnam("/home/jobe/runs", "jobe_");
         if (!unlink($this->workdir) || !mkdir($this->workdir)) {
             log_message('error', 'LanguageTask constructor: error making temp directory');
@@ -99,10 +103,18 @@ abstract class Task {
 
         $this->id = basename($this->workdir);
 
+        // Save the source there.
         if (empty($this->sourceFileName)) {
             $this->sourceFileName = $this->defaultFileName($sourceCode);
         }
         file_put_contents($this->workdir . '/' . $this->sourceFileName, $sourceCode);
+
+        // Allocate one of the Jobe users.
+        $this->userId = $this->getFreeUser();
+        $this->user = sprintf("jobe%02d", $this->userId);
+
+        // Give the user RW access.
+        exec("setfacl -m u:{$this->user}:rwX {$this->workdir}");
     }
 
 
@@ -130,61 +142,59 @@ abstract class Task {
     public abstract function compile();
 
 
+    // Returns the command for running another command in the runguard sandbox.
+    // This can be prepended in front of another command.
+    public function getSandboxCommand() {
+        $filesize = 1000 * $this->getParam('disklimit'); // MB -> kB
+        $streamsize = 1000 * $this->getParam('streamsize'); // MB -> kB
+        $memsize = 1000 * $this->getParam('memorylimit');
+        $cputime = $this->getParam('cputime');
+        $numProcs = $this->getParam('numprocs');
+        $sandboxCmdBits = array(
+                "sudo " . dirname(__FILE__)  . "/../../runguard/runguard",
+                "--user={$this->user}",
+                "--group=jobe",
+                "--time=$cputime",         // Seconds of execution time allowed
+                "--filesize=$filesize",    // Max file sizes
+                "--nproc=$numProcs",       // Max num processes/threads for this *user*
+                "--no-core",
+                "--streamsize=$streamsize");   // Max stdout/stderr sizes
+
+        if ($memsize != 0) {  // Special case: Matlab won't run with a memsize set. TODO: WHY NOT!
+            $sandboxCmdBits[] = "--memsize=$memsize";
+        }
+
+        return implode(' ', $sandboxCmdBits) . ' ';
+    }
+
     // Execute this task, which must already have been compiled if necessary
     public function execute() {
-        $user = "";
         try {
             // Establish all the parameters for the job run
-
-            $userId = $this->getFreeUser();
-            $user = sprintf("jobe%02d", $userId);
-            $filesize = 1000 * $this->getParam('disklimit'); // MB -> kB
-            $streamsize = 1000 * $this->getParam('streamsize'); // MB -> kB
-            $memsize = 1000 * $this->getParam('memorylimit');
-            $cputime = $this->getParam('cputime');
-            $numProcs = $this->getParam('numprocs');
-            $sandboxCmdBits = array(
-                    "sudo " . dirname(__FILE__)  . "/../../runguard/runguard",
-                    "--user=$user",
-                    "--group=jobe",
-                    "--time=$cputime",         // Seconds of execution time allowed
-                    "--filesize=$filesize",    // Max file sizes
-                    "--nproc=$numProcs",       // Max num processes/threads for this *user*
-                    "--no-core",
-                    "--streamsize=$streamsize");   // Max stdout/stderr sizes
-
-            if ($memsize != 0) {  // Special case: Matlab won't run with a memsize set. TODO: WHY NOT!
-                $sandboxCmdBits[] = "--memsize=$memsize";
-            }
-            $allCmdBits = array_merge($sandboxCmdBits, $this->getRunCommand());
-            $cmd = implode(' ', $allCmdBits) . " >prog.out 2>prog.err";
-
-            // Set up the work directory and run the job
-            $workdir = $this->workdir;
-            exec("setfacl -m u:$user:rwX $workdir");  // Give the user RW access
-            chdir($workdir);
-            file_put_contents('prog.cmd', $cmd);
+            $cmd = implode(' ', $this->getRunCommand()) . " >prog.out 2>prog.err";
 
             if ($this->input != '') {
-                $f = fopen('prog.in', 'w');
-                fwrite($f, $this->input);
-                fclose($f);
+                file_put_contents('prog.in', $this->input);
                 $cmd .= " <prog.in";
             }
             else {
                 $cmd .= " </dev/null";
             }
 
+            $cmd = $this->getSandboxCommand() . $cmd;
+
+            // Set up the work directory and run the job
+            chdir($this->workdir);
+            file_put_contents('prog.cmd', $cmd);
             $handle = popen($cmd, 'r');
-            $result = fread($handle, MAX_READ);
+            fread($handle, MAX_READ);
             pclose($handle);
 
             // Copy results back out into this object
+            $this->stdout = file_get_contents("{$this->workdir}/prog.out");
 
-            $this->stdout = file_get_contents("$workdir/prog.out");
-
-            if (file_exists("$workdir/prog.err")) {
-                $this->stderr = file_get_contents("$workdir/prog.err");
+            if (file_exists("{$this->workdir}/prog.err")) {
+                $this->stderr = file_get_contents("{$this->workdir}/prog.err");
             }
 
             $this->stderr = $this->filteredStderr();
@@ -198,21 +208,24 @@ abstract class Task {
             $this->result = Task::RESULT_INTERNAL_ERR;
             $this->stderr = $e->getMessage();
         }
-
-        if (isset($userId)) {
-            exec("sudo /usr/bin/pkill -9 -u $user"); // Kill any remaining processes
-            $this->removeTemporaryFiles($user);
-            $this->freeUser($userId);
-        }
-
     }
 
 
     // Called to clean up task when done
-    public function close($deleteFiles=TRUE) {
-        if ($deleteFiles) {
+    public function close($deleteFiles = true) {
+
+        if ($this->userId !== null) {
+            exec("sudo /usr/bin/pkill -9 -u {$this->user}"); // Kill any remaining processes
+            $this->removeTemporaryFiles($this->user);
+            $this->freeUser($this->userId);
+            $this->userId = null;
+            $this->user = null;
+        }
+
+        if ($deleteFiles && $this->workdir) {
             $dir = $this->workdir;
             exec("sudo rm -R $dir");
+            $this->workdir = null;
         }
     }
 
@@ -390,7 +403,6 @@ abstract class Task {
         }
 
         // Refine RuntimeError if possible
-
         if (strpos($this->stderr, "warning: timelimit exceeded")) {
             $this->result = Task::RESULT_TIME_LIMIT;
             $this->signal = 9;

@@ -13,8 +13,8 @@
 require_once('application/libraries/LanguageTask.php');
 
 class Php_Task extends Task {
-    public function __construct($source, $filename, $input, $params) {
-        Task::__construct($source, $filename, $input, $params);
+    public function __construct($filename, $input, $params) {
+        parent::__construct($filename, $input, $params);
         $this->default_params['interpreterargs'] = array('--no-php-ini');
     }
 
@@ -25,7 +25,7 @@ class Php_Task extends Task {
     public function compile() {
         $outputLines = array();
         $returnVar = 0;
-        exec("/usr/bin/php -l {$this->sourceFileName} 2>compile.out",
+        exec($this->getSandboxCommand() . "/usr/bin/php -l {$this->sourceFileName} 2>compile.out",
                 $outputLines, $returnVar);
         if ($returnVar == 0) {
             $this->cmpinfo = '';

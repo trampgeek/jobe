@@ -239,7 +239,7 @@ class Restapi extends REST_Controller {
             $this->response($e->getMessage(), $e->getHttpStatusCode());
 
         } catch (Exception $e) {
-            $this->response("Server exception ($e->getMessage())", 500);
+            $this->response('Server exception (' . $e->getMessage() . ')', 500);
         }
     }
 

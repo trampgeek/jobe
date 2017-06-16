@@ -13,8 +13,8 @@
 require_once('application/libraries/LanguageTask.php');
 
 class Python3_Task extends Task {
-    public function __construct($source, $filename, $input, $params) {
-        Task::__construct($source, $filename, $input, $params);
+    public function __construct($filename, $input, $params) {
+        parent::__construct($filename, $input, $params);
         $this->default_params['interpreterargs'] = array('-BE');
     }
 
@@ -25,7 +25,7 @@ class Python3_Task extends Task {
     public function compile() {
         $outputLines = array();
         $returnVar = 0;
-        exec("python3 -m py_compile {$this->sourceFileName} 2>compile.out",
+        exec($this->getSandboxCommand() . "python3 -m py_compile {$this->sourceFileName} 2>compile.out",
                 $outputLines, $returnVar);
         if ($returnVar == 0) {
             $this->cmpinfo = '';

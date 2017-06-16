@@ -14,8 +14,8 @@ require_once('application/libraries/LanguageTask.php');
 
 class C_Task extends Task {
 
-    public function __construct($source, $filename, $input, $params) {
-        Task::__construct($source, $filename, $input, $params);
+    public function __construct($filename, $input, $params) {
+        parent::__construct($filename, $input, $params);
         $this->default_params['compileargs'] = array(
             '-Wall',
             '-Werror',
@@ -34,7 +34,7 @@ class C_Task extends Task {
         $compileargs = $this->getParam('compileargs');
         $linkargs = $this->getParam('linkargs');
         $cmd = "gcc " . implode(' ', $compileargs) . " -o $execFileName $src " . implode(' ', $linkargs) . " 2>$errorFileName";
-        exec($cmd, $output, $returnVar);
+        exec($this->getSandboxCommand() . $cmd, $output, $returnVar);
         if ($returnVar == 0) {
             $this->cmpinfo = '';
             $this->executableFileName = $execFileName;
