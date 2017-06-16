@@ -63,6 +63,9 @@ abstract class Task {
     public $result = Task::RESULT_INTERNAL_ERR;  // Should get overwritten
     public $workdir = '';   // The temporary working directory created in constructor
 
+    // ************************************************
+    //   MAIN METHODS THAT HANDLE THE FLOW OF ONE JOB
+    // ************************************************
 
     public function __construct($filename, $input, $params) {
         $this->input = $input;
@@ -103,30 +106,6 @@ abstract class Task {
     }
 
 
-    protected function getParam($key) {
-        if (isset($this->params) && array_key_exists($key, $this->params)) {
-            return $this->params[$key];
-        } else {
-            return $this->default_params[$key];
-        }
-    }
-
-
-    // Return the JobeAPI result object to describe the state of this task
-    public function resultObject() {
-        if ($this->cmpinfo) {
-            $this->result = Task::RESULT_COMPILATION_ERROR;
-        }
-        return new ResultObject(
-            $this->workdir,
-            $this->result,
-            $this->cmpinfo,
-            $this->filteredStdout(),
-            $this->filteredStderr()
-        );
-    }
-
-
     // Load the specified files into the working directory.
     // The file list is an array of (fileId, filename) pairs.
     // Throws an exception if any are not present.
@@ -150,6 +129,96 @@ abstract class Task {
     // Sets $this->cmpinfo accordingly.
     public abstract function compile();
 
+
+    // Execute this task, which must already have been compiled if necessary
+    public function execute() {
+        $user = "";
+        try {
+            // Establish all the parameters for the job run
+
+            $userId = $this->getFreeUser();
+            $user = sprintf("jobe%02d", $userId);
+            $filesize = 1000 * $this->getParam('disklimit'); // MB -> kB
+            $streamsize = 1000 * $this->getParam('streamsize'); // MB -> kB
+            $memsize = 1000 * $this->getParam('memorylimit');
+            $cputime = $this->getParam('cputime');
+            $numProcs = $this->getParam('numprocs');
+            $sandboxCmdBits = array(
+                    "sudo " . dirname(__FILE__)  . "/../../runguard/runguard",
+                    "--user=$user",
+                    "--group=jobe",
+                    "--time=$cputime",         // Seconds of execution time allowed
+                    "--filesize=$filesize",    // Max file sizes
+                    "--nproc=$numProcs",       // Max num processes/threads for this *user*
+                    "--no-core",
+                    "--streamsize=$streamsize");   // Max stdout/stderr sizes
+
+            if ($memsize != 0) {  // Special case: Matlab won't run with a memsize set. TODO: WHY NOT!
+                $sandboxCmdBits[] = "--memsize=$memsize";
+            }
+            $allCmdBits = array_merge($sandboxCmdBits, $this->getRunCommand());
+            $cmd = implode(' ', $allCmdBits) . " >prog.out 2>prog.err";
+
+            // Set up the work directory and run the job
+            $workdir = $this->workdir;
+            exec("setfacl -m u:$user:rwX $workdir");  // Give the user RW access
+            chdir($workdir);
+            file_put_contents('prog.cmd', $cmd);
+
+            if ($this->input != '') {
+                $f = fopen('prog.in', 'w');
+                fwrite($f, $this->input);
+                fclose($f);
+                $cmd .= " <prog.in";
+            }
+            else {
+                $cmd .= " </dev/null";
+            }
+
+            $handle = popen($cmd, 'r');
+            $result = fread($handle, MAX_READ);
+            pclose($handle);
+
+            // Copy results back out into this object
+
+            $this->stdout = file_get_contents("$workdir/prog.out");
+
+            if (file_exists("$workdir/prog.err")) {
+                $this->stderr = file_get_contents("$workdir/prog.err");
+            }
+
+            $this->stderr = $this->filteredStderr();
+            $this->diagnose_result();  // Analyse output and set result
+        }
+        catch (OverloadException $e) {
+            $this->result = Task::RESULT_SERVER_OVERLOAD;
+            $this->stderr = $e->getMessage();
+        }
+        catch (Exception $e) {
+            $this->result = Task::RESULT_INTERNAL_ERR;
+            $this->stderr = $e->getMessage();
+        }
+
+        if (isset($userId)) {
+            exec("sudo /usr/bin/pkill -9 -u $user"); // Kill any remaining processes
+            $this->removeTemporaryFiles($user);
+            $this->freeUser($userId);
+        }
+
+    }
+
+
+    // Called to clean up task when done
+    public function close($deleteFiles=TRUE) {
+        if ($deleteFiles) {
+            $dir = $this->workdir;
+            exec("sudo rm -R $dir");
+        }
+    }
+
+    // ************************************************
+    //    METHODS TO ALLOCATE AND FREE ONE JOBE USER
+    // ************************************************
 
     // Find a currently unused jobe user account.
     // Uses a shared memory segment containing one byte (used as a 'busy'
@@ -214,83 +283,37 @@ abstract class Task {
         sem_release($sem);
     }
 
+    // ************************************************
+    //                  HELPER METHODS
+    // ************************************************
 
-    // Execute this task, which must already have been compiled if necessary
-    public function execute() {
-        $user = "";
-        try {
-            // Establish all the parameters for the job run
-
-            $userId = $this->getFreeUser();
-            $user = sprintf("jobe%02d", $userId);
-            $filesize = 1000 * $this->getParam('disklimit'); // MB -> kB
-            $streamsize = 1000 * $this->getParam('streamsize'); // MB -> kB
-            $memsize = 1000 * $this->getParam('memorylimit');
-            $cputime = $this->getParam('cputime');
-            $numProcs = $this->getParam('numprocs');
-            $sandboxCmdBits = array(
-                 "sudo " . dirname(__FILE__)  . "/../../runguard/runguard",
-                 "--user=$user",
-                 "--group=jobe",
-                 "--time=$cputime",         // Seconds of execution time allowed
-                 "--filesize=$filesize",    // Max file sizes
-                 "--nproc=$numProcs",       // Max num processes/threads for this *user*
-                 "--no-core",
-                 "--streamsize=$streamsize");   // Max stdout/stderr sizes
-
-            if ($memsize != 0) {  // Special case: Matlab won't run with a memsize set. TODO: WHY NOT!
-                $sandboxCmdBits[] = "--memsize=$memsize";
-            }
-            $allCmdBits = array_merge($sandboxCmdBits, $this->getRunCommand());
-            $cmd = implode(' ', $allCmdBits) . " >prog.out 2>prog.err";
-
-            // Set up the work directory and run the job
-            $workdir = $this->workdir;
-            exec("setfacl -m u:$user:rwX $workdir");  // Give the user RW access
-            chdir($workdir);
-            file_put_contents('prog.cmd', $cmd);
-
-            if ($this->input != '') {
-                $f = fopen('prog.in', 'w');
-                fwrite($f, $this->input);
-                fclose($f);
-                $cmd .= " <prog.in";
-            }
-            else {
-                $cmd .= " </dev/null";
-            }
-
-            $handle = popen($cmd, 'r');
-            $result = fread($handle, MAX_READ);
-            pclose($handle);
-
-            // Copy results back out into this object
-
-            $this->stdout = file_get_contents("$workdir/prog.out");
-
-            if (file_exists("$workdir/prog.err")) {
-                $this->stderr = file_get_contents("$workdir/prog.err");
-            }
-
-            $this->stderr = $this->filteredStderr();
-            $this->diagnose_result();  // Analyse output and set result
+    protected function getParam($key) {
+        if (isset($this->params) && array_key_exists($key, $this->params)) {
+            return $this->params[$key];
+        } else {
+            return $this->default_params[$key];
         }
-        catch (OverloadException $e) {
-            $this->result = Task::RESULT_SERVER_OVERLOAD;
-            $this->stderr = $e->getMessage();
-        }
-        catch (Exception $e) {
-            $this->result = Task::RESULT_INTERNAL_ERR;
-            $this->stderr = $e->getMessage();
-        }
-
-        if (isset($userId)) {
-            exec("sudo /usr/bin/pkill -9 -u $user"); // Kill any remaining processes
-            $this->removeTemporaryFiles($user);
-            $this->freeUser($userId);
-        }
-
     }
+
+
+    // Check if PHP exec environment includes a PATH. If not, set up a
+    // default, or gcc misbehaves. [Thanks to Binoj D for this bug fix,
+    // needed on his CentOS system.]
+    protected function setPath() {
+        $envVars = array();
+        exec('printenv', $envVars);
+        $hasPath = FALSE;
+        foreach ($envVars as $var) {
+            if (strpos($var, 'PATH=') === 0) {
+                $hasPath = TRUE;
+                break;
+            }
+        }
+        if (!$hasPath) {
+            putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin");
+        }
+    }
+
 
     // Return the Linux command to use to run the current job with the given
     // standard input. It's an array of strings, which when joined with a
@@ -306,7 +329,6 @@ abstract class Task {
     // the path to the interpreter and getTargetFile() should return the
     // name of the file to be interpreted (in the current directory).
     // This design allows for commands like java -Xss256k thing -blah.
-
     public function getRunCommand() {
         $cmd = array($this->getExecutablePath());
         $cmd = array_merge($cmd, $this->getParam('interpreterargs'));
@@ -335,37 +357,19 @@ abstract class Task {
     public abstract function getTargetFile();
 
 
-    // Return a two-element array of the shell command to be run to obtain
-    // a version number and the RE pattern with which to extract the version
-    // string from the output. This should have a capturing parenthesised
-    // group so that $matches[1] is the required string after a call to
-    // preg_match. See getVersion below for details.
-    // Should be implemented by all subclasses. [Older versions of PHP
-    // don't allow me to declare this abstract. But it is!!]
-    public static function getVersionCommand() {}
+    // Override the following function if the output from executing a program
+    // in this language needs post-filtering to remove stuff like
+    // header output.
+    public function filteredStdout() {
+        return $this->stdout;
+    }
 
 
-    // Return a string giving the version of language supported by this
-    // particular Language/Task.
-    // Return NULL if the version command (supplied by the subclass's
-    // getVersionCommand) fails or produces no output. This can be interpreted
-    // as a non-existent language that should be removed from the list of
-    // languages handled by this Jobe server.
-    // If the version command runs but yields a result in
-    // an unexpected format, returns the string "Unknown".
-    public static function getVersion() {
-        list($command, $pattern) = static::getVersionCommand();
-        $output = array();
-        $retvalue = null;
-        exec($command . ' 2>&1', $output, $retvalue);
-    if ($retvalue != 0 || count($output) == 0) {
-            return NULL;
-        } else {
-            $matches = array();
-            $allOutput = implode("\n", $output);
-            $isMatch = preg_match($pattern, $allOutput, $matches);
-            return $isMatch ? $matches[1] : "Unknown";
-        }
+    // Override the following function if the stderr from executing a program
+    // in this language needs post-filtering to remove stuff like
+    // backspaces and bells.
+    public function filteredStderr() {
+        return $this->stderr;
     }
 
 
@@ -398,46 +402,18 @@ abstract class Task {
     }
 
 
-    // Override the following function if the output from executing a program
-    // in this language needs post-filtering to remove stuff like
-    // header output.
-    public function filteredStdout() {
-        return $this->stdout;
-    }
-
-
-    // Override the following function if the stderr from executing a program
-    // in this language needs post-filtering to remove stuff like
-    // backspaces and bells.
-    public function filteredStderr() {
-        return $this->stderr;
-    }
-
-
-    // Called to clean up task when done
-    public function close($deleteFiles=TRUE) {
-        if ($deleteFiles) {
-            $dir = $this->workdir;
-            exec("sudo rm -R $dir");
+    // Return the JobeAPI result object to describe the state of this task
+    public function resultObject() {
+        if ($this->cmpinfo) {
+            $this->result = Task::RESULT_COMPILATION_ERROR;
         }
-    }
-
-    // Check if PHP exec environment includes a PATH. If not, set up a
-    // default, or gcc misbehaves. [Thanks to Binoj D for this bug fix,
-    // needed on his CentOS system.]
-    protected function setPath() {
-        $envVars = array();
-        exec('printenv', $envVars);
-        $hasPath = FALSE;
-        foreach ($envVars as $var) {
-            if (strpos($var, 'PATH=') === 0) {
-                $hasPath = TRUE;
-                break;
-            }
-        }
-        if (!$hasPath) {
-            putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin");
-        }
+        return new ResultObject(
+                $this->workdir,
+                $this->result,
+                $this->cmpinfo,
+                $this->filteredStdout(),
+                $this->filteredStderr()
+        );
     }
 
 
@@ -452,7 +428,40 @@ abstract class Task {
         }
     }
 
+    // ************************************************
+    //  METHODS FOR DIAGNOSING THE AVAILABLE LANGUAGES
+    // ************************************************
+
+    // Return a two-element array of the shell command to be run to obtain
+    // a version number and the RE pattern with which to extract the version
+    // string from the output. This should have a capturing parenthesised
+    // group so that $matches[1] is the required string after a call to
+    // preg_match. See getVersion below for details.
+    // Should be implemented by all subclasses. [Older versions of PHP
+    // don't allow me to declare this abstract. But it is!!]
+    public static function getVersionCommand() {}
+
+
+    // Return a string giving the version of language supported by this
+    // particular Language/Task.
+    // Return NULL if the version command (supplied by the subclass's
+    // getVersionCommand) fails or produces no output. This can be interpreted
+    // as a non-existent language that should be removed from the list of
+    // languages handled by this Jobe server.
+    // If the version command runs but yields a result in
+    // an unexpected format, returns the string "Unknown".
+    public static function getVersion() {
+        list($command, $pattern) = static::getVersionCommand();
+        $output = array();
+        $retvalue = null;
+        exec($command . ' 2>&1', $output, $retvalue);
+        if ($retvalue != 0 || count($output) == 0) {
+            return NULL;
+        } else {
+            $matches = array();
+            $allOutput = implode("\n", $output);
+            $isMatch = preg_match($pattern, $allOutput, $matches);
+            return $isMatch ? $matches[1] : "Unknown";
+        }
+    }
 }
-
-
-?>
