@@ -528,6 +528,7 @@ own memory.
  1. Delete any files created in /tmp, /var/tmp, /run/lock and /var/crash
     on completion of a run.
  1. Limit maximum CPU time for any one Jobe to 30 secs (config constant).
+ 1. Minimum PHP version is now required to be 5.5. (This is now checked in the installer.)
 
 Thanks Kai-Cheung Leung for the first two of those additions.
 

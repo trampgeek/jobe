@@ -59,6 +59,12 @@ def do_command(cmd):
     if subprocess.call(cmd, shell=True) != 0:
         raise OSError("Command ({}) failed".format(cmd))
 
+def check_php_version():
+    '''Check that the installed PHP version is at least 5.5.
+       Raise an exception on failure.
+    '''
+    if subprocess.call("php -r 'exit(version_compare(PHP_VERSION, \"5.5.0\", \"lt\"));'", shell=True) != 0:
+            raise OSError("Jobe requires at least PHP 5.5.")
 
 def make_sudoers(install_dir, webserver_user, num_jobe_users):
     '''Build a custom jobe-sudoers file for include in /etc/sudoers.d.
@@ -138,6 +144,8 @@ def main():
             fail()
     else:
         try:
+            check_php_version()
+
             num_jobe_users = int(get_config('jobe_max_users', install_dir))
             if purging:
                 print('Purging all prior jobe users and files')
