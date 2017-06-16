@@ -140,6 +140,7 @@ class Restapi extends REST_Controller {
 
 
     public function runs_post() {
+        global $CI;
         if (!$run = $this->post('run_spec', FALSE)) {
             $this->error('runs_post: missing or invalid run_spec parameter', 400);
         } elseif (!is_array($run) || !isset($run['sourcecode']) ||
@@ -168,6 +169,9 @@ class Restapi extends REST_Controller {
             $params = isset($run->parameters) ? $run->parameters : array();
             if (!array_key_exists($language, $this->languages)) {
                 $this->response("Language '$language' is not known", 400);
+            } else if (isset($params['cputime']) &&
+                    intval($params['cputime']) > intval($CI->config->item('cputime_upper_limit_secs'))) {
+                $this->response("cputime exceeds maximum allowed on this Jobe server", 400);
             } else {
                 $reqdTaskClass = ucwords($language) . '_Task';
                 if (!isset($run->sourcefilename) || $run->sourcefilename == 'prog.java') {

@@ -374,6 +374,7 @@ $config['proxy_ips'] = '';
 |
 */
 $config['jobe_max_users'] = 10;
+$config['cputime_upper_limit_secs'] = 30;
 $config['clean_up_path'] = '/tmp;/var/tmp;/var/crash;/run/lock';
 $config['debugging'] = FALSE;
 

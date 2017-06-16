@@ -521,14 +521,16 @@ in an unexpected format. Formerly such languages were deemed invalid.
 own memory. 
 1. Add 'getLanguages' to simpletest.py and testsubmit.py.
 
-### Version 1.3.5+ 12 June 2017
+### Version 1.3.5+ 16 June 2017
 
  1. Improve installer to handle installation on servers with less permissive
     access rights than Ubuntu 16.04.
  1. Delete any files created in /tmp, /var/tmp, /run/lock and /var/crash
     on completion of a run.
+ 1. Limit maximum CPU time for any one Jobe to 30 secs (config constant).
 
-Thanks Kai-Cheung Leung for these additions.
+Thanks Kai-Cheung Leung for the first two of those additions.
+
 
 Richard
 
