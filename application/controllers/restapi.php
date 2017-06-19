@@ -165,7 +165,7 @@ class Restapi extends REST_Controller {
             $files = $run->file_list;
             foreach ($files as $file) {
                 if (!$this->is_valid_filespec($file)) {
-                    $this->error("runs_post: invalid file specifier: " . print_r($file, true));
+                    $this->error("runs_post: invalid file specifier: " . print_r($file, true), 400);
                 }
             }
         } else {
