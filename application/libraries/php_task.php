@@ -16,6 +16,7 @@ class Php_Task extends Task {
     public function __construct($filename, $input, $params) {
         parent::__construct($filename, $input, $params);
         $this->default_params['interpreterargs'] = array('--no-php-ini');
+        $this->default_params['memorylimit'] = 400; // MB (Greedy PHP)
     }
 
     public static function getVersionCommand() {
