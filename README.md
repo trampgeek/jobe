@@ -1,10 +1,10 @@
 # JOBE
 
-Version: 1.3.5+, 12 June 2017
+Version: 1.3.6, 21 June 2017
 
 Author: Richard Lobb, University of Canterbury, New Zealand
 
-Contributors: Fedor Lyanguzov, Kai-Cheung Leung
+Contributors: Tim Hunt, Fedor Lyanguzov, Kai-Cheung Leung
 
 ## Introduction
 
@@ -532,12 +532,16 @@ own memory.
  1. Delete any files created in /tmp, /var/tmp, /run/lock and /var/crash
     on completion of a run.
  1. Limit maximum CPU time for any one Jobe to 30 secs (config constant).
+
+Thanks Kai-Cheung Leung for the first two of those additions.
+
+### Version 1.3.6 21 June 2017
+
  1. Minimum PHP version is now required to be 5.5. (This is now checked in the installer.)
  1. Compilation of the Student's code is now also done in the runguard sandbox.
     This provides an additional layer of security.
 
-Thanks Kai-Cheung Leung for the first two of those additions.
-
+Thanks Tim Hunt for most of the work in this addition.
 
 Richard
 
