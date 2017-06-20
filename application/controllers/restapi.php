@@ -23,6 +23,7 @@ if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 require_once('application/libraries/REST_Controller.php');
 require_once('application/libraries/LanguageTask.php');
 require_once('application/libraries/JobException.php');
+require_once('application/libraries/resultobject.php');
 
 define('MAX_READ', 4096);  // Max bytes to read in popen
 define ('MIN_FILE_IDENTIFIER_SIZE', 8);
@@ -237,6 +238,11 @@ class Restapi extends REST_Controller {
         } catch (JobException $e) {
             $this->log('debug', 'runs_post: ' . $e->getLogMessage());
             $this->response($e->getMessage(), $e->getHttpStatusCode());
+
+        } catch (OverloadException $e) {
+            $this->log('debug', 'runs_post: overload exception occurred');
+            $resultobject = new ResultObject(0, Task::RESULT_SERVER_OVERLOAD);
+            $this->response($resultobject, 200);
 
         } catch (Exception $e) {
             $this->response('Server exception (' . $e->getMessage() . ')', 500);
