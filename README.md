@@ -169,6 +169,10 @@ If the install appears OK but testsubmit.py fails:
     from the framework; look for lines beginning *jobe*. These are all issued
     by restapi.php in application/controllers, which is the top level handler
     for all http requests.
+ 1. If you are getting Overloaded errors, then you can display the in-memory
+    locks on the Jobe users with this PHP one-liner:
+    ```php -r 'print_r(shm_get_var(shm_attach(ftok
+      ("/var/www/html/jobe/application/libraries/LanguageTask.php", "j")), 1));'
 
 If you still can't figure it out, email me (Richard Lobb; my gmail name is
 trampgeek).
@@ -528,6 +532,9 @@ own memory.
  1. Delete any files created in /tmp, /var/tmp, /run/lock and /var/crash
     on completion of a run.
  1. Limit maximum CPU time for any one Jobe to 30 secs (config constant).
+ 1. Minimum PHP version is now required to be 5.5. (This is now checked in the installer.)
+ 1. Compilation of the Student's code is now also done in the runguard sandbox.
+    This provides an additional layer of security.
 
 Thanks Kai-Cheung Leung for the first two of those additions.
 
