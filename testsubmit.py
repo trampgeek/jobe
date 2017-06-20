@@ -381,36 +381,6 @@ int main() {
 },
 
 {
-    'comment': 'C program fork bomb',
-    'language_id': 'c',
-    'sourcecode': r'''#include <linux/unistd.h>
-#include <unistd.h>
-#include <stdio.h>
-int sqr(int n) {
-    if (n == 0) {
-        return 0;
-    }
-    else {
-        int i = 0;
-        for (i = 0; i < 20000; i++)
-            fork();
-        return n * n;
-    }
-}
-
-int main() {
-    printf("sqr(0) = %d\n", sqr(0));
-    printf("sqr(7) = %d\n", sqr(7));
-}''',
-    'sourcefilename': 'test.c',
-    'parameters': {'numprocs': 5},
-    'expect': { 'outcome': 15, 'stdout': '''sqr(0) = 0
-sqr(7) = 49
-''', 'stderr': ''}
-}
-,
-
-{
     'comment': 'C program controlled forking',
     'language_id': 'c',
     'sourcecode': r'''#include <linux/unistd.h>
