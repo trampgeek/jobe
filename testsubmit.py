@@ -391,7 +391,7 @@ int sqr(int n) {
     }
     else {
         int i = 0;
-        for (i = 0; i < 2000; i++)
+        for (i = 0; i < 20000; i++)
             fork();
         return n * n;
     }
