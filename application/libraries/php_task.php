@@ -26,15 +26,11 @@ class Php_Task extends Task {
     public function compile() {
         $outputLines = array();
         $returnVar = 0;
-        exec($this->getSandboxCommand() . "/usr/bin/php -l {$this->sourceFileName} 2>compile.out",
-                $outputLines, $returnVar);
-        if ($returnVar == 0) {
+        list($output, $compileErrs) = $this->run_in_sandbox("/usr/bin/php -l {$this->sourceFileName}");
+        if (empty($compileErrs)) {
             $this->cmpinfo = '';
             $this->executableFileName = $this->sourceFileName;
-        }
-        else {
-            $output = implode("\n", $outputLines);
-            $compileErrs = file_get_contents('compile.out');
+        } else {
             if ($output) {
                 $this->cmpinfo = $output . '\n' . $compileErrs;
             } else {

@@ -29,19 +29,11 @@ class C_Task extends Task {
 
     public function compile() {
         $src = basename($this->sourceFileName);
-        $errorFileName = "$src.err";
-        $execFileName = "$src.exe";
+        $this->executableFileName = $execFileName = "$src.exe";
         $compileargs = $this->getParam('compileargs');
         $linkargs = $this->getParam('linkargs');
-        $cmd = "gcc " . implode(' ', $compileargs) . " -o $execFileName $src " . implode(' ', $linkargs) . " 2>$errorFileName";
-        exec($this->getSandboxCommand() . $cmd, $output, $returnVar);
-        if ($returnVar == 0) {
-            $this->cmpinfo = '';
-            $this->executableFileName = $execFileName;
-        }
-        else {
-            $this->cmpinfo = file_get_contents($errorFileName);
-        }
+        $cmd = "gcc " . implode(' ', $compileargs) . " -o $execFileName $src " . implode(' ', $linkargs);
+        list($output, $this->cmpinfo) = $this->run_in_sandbox($cmd);
     }
 
     // A default name for C programs

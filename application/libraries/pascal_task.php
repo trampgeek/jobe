@@ -30,16 +30,13 @@ class Pascal_Task extends Task {
         $errorFileName = "$src.err";
         $execFileName = "$src.exe";
         $compileargs = $this->getParam('compileargs');
-//        $cmd = "gcc " . implode(' ', $compileargs) . " -o $execFileName $src -lm 2>$errorFileName";
         $cmd = "fpc " . implode(' ', $compileargs) . " -Fe$errorFileName -o$execFileName $src";
-	// -Fe[filename] - store error log in file
-        exec($this->getSandboxCommand() . $cmd, $output, $returnVar);
-        if ($returnVar == 0) {
+        list($output, $stderr) = $this->run_in_sandbox($cmd);
+        if (!file_exists($execFileName)) {
+            $this->cmpinfo = file_get_contents($errorFileName);
+        } else {
             $this->cmpinfo = '';
             $this->executableFileName = $execFileName;
-        }
-        else {
-            $this->cmpinfo = file_get_contents($errorFileName);
         }
     }
 

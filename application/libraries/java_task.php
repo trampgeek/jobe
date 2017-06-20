@@ -42,24 +42,22 @@ class Java_Task extends Task {
     public function compile() {
         $prog = file_get_contents($this->sourceFileName);
         $compileArgs = $this->getParam('compileargs');
-        $cmd = '/usr/bin/javac ' . implode(' ', $compileArgs) . " {$this->sourceFileName} 2>compile.out";
-        exec($this->getSandboxCommand() . $cmd, $output, $returnVar);
-        if ($returnVar == 0) {
+        $cmd = '/usr/bin/javac ' . implode(' ', $compileArgs) . " {$this->sourceFileName}";
+        list($output, $this->cmpinfo) = $this->run_in_sandbox($cmd);
+        if (empty($this->cmpinfo)) {
             $this->executableFileName = $this->sourceFileName;
-        }
-        else {
-            $this->cmpinfo .= file_get_contents('compile.out');
         }
     }
 
     // A default name for Java programs. [Called only if API-call does
-    // not provide a filename]
+    // not provide a filename. As a side effect, also set the mainClassName.
     public function defaultFileName($sourcecode) {
         $main = $this->getMainClass($sourcecode);
         if ($main === FALSE) {
             $this->cmpinfo .= "WARNING: can't determine main class, so source file has been named 'prog.java', which probably won't compile.";
             return 'prog.java'; // This will probably fail
         } else {
+            $this->mainClassName = $main;  // HACK. TODO - find a nicer solution
             return $main.'.java';
         }
     }

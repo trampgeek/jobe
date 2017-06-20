@@ -23,22 +23,11 @@ class Python3_Task extends Task {
     }
 
     public function compile() {
-        $outputLines = array();
-        $returnVar = 0;
-        exec($this->getSandboxCommand() . "python3 -m py_compile {$this->sourceFileName} 2>compile.out",
-                $outputLines, $returnVar);
-        if ($returnVar == 0) {
-            $this->cmpinfo = '';
-            $this->executableFileName = $this->sourceFileName;
-        }
-        else {
-            $output = implode("\n", $outputLines);
-            $compileErrs = file_get_contents('compile.out');
-            if ($output) {
-                $this->cmpinfo = $output . '\n' . $compileErrs;
-            } else {
-                $this->cmpinfo = $compileErrs;
-            }
+        $cmd = "python3 -m py_compile {$this->sourceFileName}";
+        $this->executableFileName = $this->sourceFileName;
+        list($output, $this->cmpinfo) = $this->run_in_sandbox($cmd);
+        if (!empty($this->cmpinfo) && !empty($output)) {
+            $this->cmpinfo = $output . '\n' . $this->cmpinfo;
         }
     }
 

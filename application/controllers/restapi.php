@@ -219,9 +219,9 @@ class Restapi extends REST_Controller {
                 $this->log('debug', "runs_post: compiling job {$this->task->id}");
                 $this->task->compile();
 
-                if ($this->task->cmpinfo == '') {
+                if (empty($this->task->cmpinfo)) {
                     $this->log('debug', "runs_post: executing job {$this->task->id}");
-                    $this->task->execute($debug);
+                    $this->task->execute();
                 }
 
             } finally {

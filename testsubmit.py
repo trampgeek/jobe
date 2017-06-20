@@ -81,6 +81,7 @@ TEST_SET = [
     'expect': { 'outcome': 15, 'stdout': 'Hello world!\n' }
 },
 
+
 {
     'comment': 'Python3 with stdin',
     'language_id': 'python3',
@@ -402,7 +403,7 @@ int main() {
     printf("sqr(7) = %d\n", sqr(7));
 }''',
     'sourcefilename': 'test.c',
-    'parameters': {'numprocs': 1},
+    'parameters': {'numprocs': 5},
     'expect': { 'outcome': 15, 'stdout': '''sqr(0) = 0
 sqr(7) = 49
 ''', 'stderr': ''}
@@ -707,7 +708,7 @@ int main() {
     printf("Hello 2\n");
 }''',
         'sourcefilename': 'test.c',
-        'parameters': { 'numprocs': 1 },
+        'parameters': { 'numprocs': 5 },
         'expect': { 'outcome': 15, 'stdout': 'Hello 1\nHello 2\n' }
     }
 
@@ -833,7 +834,7 @@ def run_test(test):
     ok, result = do_http('POST', RUNS_RESOURCE, data)
     if not ok:
         return EXCEPTION
-    
+
    # If not an exception, check the response is as specified
 
     if is_correct_result(test['expect'], result):
@@ -852,7 +853,7 @@ def run_test(test):
 
 def do_http(method, resource, data=None):
     """Send the given HTTP request to Jobe, return a pair (ok result) where
-       ok is true if no exception was thrown, false otherwise and 
+       ok is true if no exception was thrown, false otherwise and
        result is a dictionary of the JSON decoded response (or an empty
        dictionary in the case of a 204 response.
        As a special-case hack for testing 400 error conditions, if the
@@ -969,7 +970,7 @@ int main() {
     else:
         print("********** TEST FAILED **************")
         print("Return value from do_http was ", (ok, result))
- 
+
 
 def main():
     '''Every home should have one'''
