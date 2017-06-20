@@ -28,8 +28,12 @@ class Java_Task extends Task {
         }
 
         parent::__construct($filename, $input, $params);
+    }
 
-        // Superclass constructor calls subclasses to get filename if it's
+    public function prepare_execution_environment($sourceCode) {
+        parent::prepare_execution_environment($sourceCode);
+
+        // Superclass calls subclasses to get filename if it's
         // not provided, so $this->sourceFileName should now be set correctly.
         $extStart = strpos($this->sourceFileName, '.');  // Start of extension
         $this->mainClassName = substr($this->sourceFileName, 0, $extStart);
@@ -57,7 +61,6 @@ class Java_Task extends Task {
             $this->cmpinfo .= "WARNING: can't determine main class, so source file has been named 'prog.java', which probably won't compile.";
             return 'prog.java'; // This will probably fail
         } else {
-            $this->mainClassName = $main;  // HACK. TODO - find a nicer solution
             return $main.'.java';
         }
     }
