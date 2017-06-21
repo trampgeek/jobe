@@ -49,6 +49,18 @@ abstract class Task {
         'runargs'       => array()
     );
 
+
+    // Global minima settings for runguard sandbox when compiling.
+    // These override the default and task specific settings when a task
+    // is compiling in the sense that the parameter value used cannot be
+    // less than the one specified here.
+    public $min_params_compile = array(
+        'disklimit'     => 20,      // MB
+        'cputime'       => 2,       // secs
+        'memorylimit'   => 200,     // MB
+        'numprocs'      => 5        // processes
+    );
+
     public $id;             // The task id - use the workdir basename
     public $input;          // Stdin for this task
     public $sourceFileName; // The name to give the source file
@@ -146,7 +158,7 @@ abstract class Task {
     public function execute() {
         try {
             $cmd = implode(' ', $this->getRunCommand());
-            list($this->stdout, $this->stderr) = $this->run_in_sandbox($cmd, $this->input);
+            list($this->stdout, $this->stderr) = $this->run_in_sandbox($cmd, false, $this->input);
             $this->stderr = $this->filteredStderr();
             $this->diagnose_result();  // Analyse output and set result
         }
@@ -254,16 +266,18 @@ abstract class Task {
      * Run the given shell command in the runguard sandbox, using the given
      * string for stdin (if given).
      * @param string $cmd The shell command to execute
+     * @param boolean $iscompile true if this is a compilation (in which case
+     * parameter values must be greater than or equal to those in $min_params_compile.
      * @param string $stdin The string to use as standard input. If not given use /dev/null
      * @return array a two element array of the standard output and the standard error
      * from running the given command.
      */
-    public function run_in_sandbox($cmd, $stdin=null) {
-        $filesize = 1000 * $this->getParam('disklimit'); // MB -> kB
-        $streamsize = 1000 * $this->getParam('streamsize'); // MB -> kB
-        $memsize = 1000 * $this->getParam('memorylimit');
-        $cputime = $this->getParam('cputime');
-        $numProcs = $this->getParam('numprocs');
+    public function run_in_sandbox($cmd, $iscompile=true, $stdin=null) {
+        $filesize = 1000 * $this->getParam('disklimit', $iscompile); // MB -> kB
+        $streamsize = 1000 * $this->getParam('streamsize', $iscompile); // MB -> kB
+        $memsize = 1000 * $this->getParam('memorylimit', $iscompile);
+        $cputime = $this->getParam('cputime', $iscompile);
+        $numProcs = $this->getParam('numprocs', $iscompile);
         $commandBits = array(
                 "sudo " . dirname(__FILE__)  . "/../../runguard/runguard",
                 "--user={$this->user}",
@@ -311,12 +325,25 @@ abstract class Task {
     }
 
 
-    protected function getParam($key) {
+    /*
+     * Get the value of the job parameter $key, which is taken from the
+     * value copied into $this from the run request if present of from the
+     * system defaults otherwise.
+     * If $iscompile is true and the parameter value is less than that specified
+     * in $min_params_compile (except if it's 0 meaning no limit), the minimum
+     * value is used instead.
+     */
+    protected function getParam($key, $iscompile=false) {
         if (isset($this->params) && array_key_exists($key, $this->params)) {
-            return $this->params[$key];
+            $param = $this->params[$key];
         } else {
-            return $this->default_params[$key];
+            $param = $this->default_params[$key];
         }
+        if ($param != 0 && array_key_exists($key, $this->min_params_compile) &&
+                $this->min_params_compile[$key] > $param) {
+            $param = $this->min_params_compile[$key];
+        }
+        return $param;
     }
 
 

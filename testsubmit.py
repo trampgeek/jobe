@@ -678,7 +678,7 @@ int main() {
     printf("Hello 2\n");
 }''',
         'sourcefilename': 'test.c',
-        'parameters': { 'numprocs': 5 },
+        'parameters': { 'numprocs': 1 },
         'expect': { 'outcome': 15, 'stdout': 'Hello 1\nHello 2\n' }
     }
 
