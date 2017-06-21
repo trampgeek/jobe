@@ -277,7 +277,7 @@ abstract class Task {
         $streamsize = 1000 * $this->getParam('streamsize', $iscompile); // MB -> kB
         $memsize = 1000 * $this->getParam('memorylimit', $iscompile);
         $cputime = $this->getParam('cputime', $iscompile);
-        $numProcs = $this->getParam('numprocs', $iscompile);
+        $numProcs = $this->getParam('numprocs', $iscompile) + 1; // The + 1 allows for the sh command below.
         $commandBits = array(
                 "sudo " . dirname(__FILE__)  . "/../../runguard/runguard",
                 "--user={$this->user}",
@@ -291,7 +291,7 @@ abstract class Task {
         if ($memsize != 0) {  // Special case: Matlab won't run with a memsize set. TODO: WHY NOT!
             $commandBits[] = "--memsize=$memsize";
         }
-        $commandBits[] = $cmd;
+        $commandBits[] = 'sh -c ' . escapeshellarg($cmd);
         $cmd = implode(' ', $commandBits) . " >prog.out 2>prog.err";
 
         // Set up the work directory and run the job
