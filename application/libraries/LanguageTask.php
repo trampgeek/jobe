@@ -265,20 +265,20 @@ abstract class Task {
     /**
      * Run the given shell command in the runguard sandbox, using the given
      * string for stdin (if given).
-     * @param string $cmd The shell command to execute
+     * @param string $wrappedCmd The shell command to execute
      * @param boolean $iscompile true if this is a compilation (in which case
      * parameter values must be greater than or equal to those in $min_params_compile.
      * @param string $stdin The string to use as standard input. If not given use /dev/null
      * @return array a two element array of the standard output and the standard error
      * from running the given command.
      */
-    public function run_in_sandbox($cmd, $iscompile=true, $stdin=null) {
+    public function run_in_sandbox($wrappedCmd, $iscompile=true, $stdin=null) {
         $filesize = 1000 * $this->getParam('disklimit', $iscompile); // MB -> kB
         $streamsize = 1000 * $this->getParam('streamsize', $iscompile); // MB -> kB
         $memsize = 1000 * $this->getParam('memorylimit', $iscompile);
         $cputime = $this->getParam('cputime', $iscompile);
         $numProcs = $this->getParam('numprocs', $iscompile) + 1; // The + 1 allows for the sh command below.
-        $commandBits = array(
+        $sandboxCommandBits = array(
                 "sudo " . dirname(__FILE__)  . "/../../runguard/runguard",
                 "--user={$this->user}",
                 "--group=jobe",
@@ -289,10 +289,10 @@ abstract class Task {
                 "--streamsize=$streamsize");   // Max stdout/stderr sizes
 
         if ($memsize != 0) {  // Special case: Matlab won't run with a memsize set. TODO: WHY NOT!
-            $commandBits[] = "--memsize=$memsize";
+            $sandboxCommandBits[] = "--memsize=$memsize";
         }
-        $commandBits[] = 'sh -c ' . escapeshellarg($cmd);
-        $cmd = implode(' ', $commandBits) . " >prog.out 2>prog.err";
+        $sandboxCmd = implode(' ', $sandboxCommandBits) .
+                ' sh -c ' . escapeshellarg($wrappedCmd) . ' >prog.out 2>prog.err';
 
         // Set up the work directory and run the job
         $workdir = $this->workdir;
@@ -303,15 +303,15 @@ abstract class Task {
             $f = fopen('prog.in', 'w');
             fwrite($f, $stdin);
             fclose($f);
-            $cmd .= " <prog.in\n";
+            $sandboxCmd .= " <prog.in\n";
         }
         else {
-            $cmd .= " </dev/null\n";
+            $sandboxCmd .= " </dev/null\n";
         }
 
-        file_put_contents('prog.cmd', $cmd);
+        file_put_contents('prog.cmd', $sandboxCmd);
 
-        $handle = popen($cmd, 'r');
+        $handle = popen($sandboxCmd, 'r');
         $result = fread($handle, MAX_READ);
         pclose($handle);
 
