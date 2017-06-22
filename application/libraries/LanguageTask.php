@@ -294,9 +294,8 @@ abstract class Task {
         $sandboxCmd = implode(' ', $sandboxCommandBits) .
                 ' sh -c ' . escapeshellarg($wrappedCmd) . ' >prog.out 2>prog.err';
 
-        // Set up the work directory and run the job
+        // CD into the work directory and run the job
         $workdir = $this->workdir;
-        exec("setfacl -m u:{$this->user}:rwX $workdir");  // Give the user RW access
         chdir($workdir);
 
         if ($stdin) {
