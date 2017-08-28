@@ -90,8 +90,8 @@ all currently-supported languages is the following
 
     apt-get install apache2 php libapache2-mod-php php-mcrypt mysql-server\
           php-mysql php-cli octave nodejs\
-          git python3 build-essential openjdk-8-jre openjdk-8-jdk python3-pip\
-          fp-compiler pylint acl
+          git python3 build-essential openjdk-9-jre openjdk-9-jdk python3-pip\
+          fp-compiler pylint3 acl
     pylint --reports=no --generate-rcfile > /etc/pylintrc
 
 [octave, fp and pylint are required only if you need to run Octave or Pascal
@@ -540,6 +540,10 @@ Thanks Kai-Cheung Leung for the first two of those additions.
  1. Minimum PHP version is now required to be 5.5. (This is now checked in the installer.)
  1. Compilation of the Student's code is now also done in the runguard sandbox.
     This provides an additional layer of security.
+
+### 1.3.6+
+
+ 1. Tune retry count for better performance under overload.
 
 Thanks Tim Hunt for most of the work in this addition.
 

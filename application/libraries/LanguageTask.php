@@ -14,7 +14,7 @@
 require_once('application/libraries/resultobject.php');
 
 define('ACTIVE_USERS', 1);  // The key for the shared memory active users array
-define('MAX_RETRIES', 5);   // Maximum retries (1 secs per retry), waiting for free user account
+define('MAX_RETRIES', 8);   // Maximum retries (1 secs per retry), waiting for free user account
 
 class OverloadException extends Exception {
 }
@@ -199,7 +199,7 @@ abstract class Task {
     // Uses a shared memory segment containing one byte (used as a 'busy'
     // boolean) for each of the possible user accounts.
     // If no free accounts exist at present, the function sleeps for a
-    // second then retries, up to a maximum of 10 retries.
+    // second then retries, up to a maximum of MAX_RETRIES retries.
     // Throws OverloadException if a free user cannot be found, otherwise
     // returns an integer in the range 0 to jobe_max_users - 1 inclusive.
     private function getFreeUser() {
@@ -234,7 +234,7 @@ abstract class Task {
             if ($user == $numUsers) {
                 $user = -1;
                 $retries += 1;
-                if ($retries < MAX_RETRIES) {
+                if ($retries <= MAX_RETRIES) {
                     sleep(1);
                 } else {
                     throw new OverloadException();
