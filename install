@@ -43,7 +43,7 @@ def fail():
 
 def get_webserver():
     '''Find the user name used to run the Apache web server'''
-    ps_cmd = "ps aux | grep /usr/sbin/apache2"
+    ps_cmd = "ps aux | egrep /usr/sbin/(apache2|httpd)"
     ps_lines = subprocess.check_output(ps_cmd, shell=True).decode('utf8').split('\n')
     names = {ps_line.split(' ')[0] for ps_line in ps_lines}
     candidates = names.intersection(set(['apache', 'www-data']))
@@ -179,7 +179,7 @@ def main():
             print("Building runguard")
             runguard_commands = [
                 "cd {0}".format(install_dir + '/runguard'),
-                "gcc -o runguard runguard.c", # TODO Add -lcgroups  if using cgroups
+                "gcc -o runguard runguard.c -lm -lcgroup", # TODO Add -lcgroups  if using cgroups
                 "chmod 700 runguard"
             ]
             cmd = ';'.join(runguard_commands)
