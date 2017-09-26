@@ -187,7 +187,7 @@ class Restapi extends REST_Controller {
             // a name (and in Java it matters).
             $run->sourcefilename = '';
         }
-        require_once("./application/libraries/{$language}_task.php");
+        require_once($this->get_path_for_langauge_task($language));
 
         // Get any input.
         $input = isset($run->input) ? $run->input : '';
@@ -292,6 +292,18 @@ class Restapi extends REST_Controller {
         if (file_exists(LANGUAGE_CACHE_FILE)) {
             $langsJson = @file_get_contents(LANGUAGE_CACHE_FILE);
             $langs = json_decode($langsJson);
+
+            // Security check, since this file is stored in /tmp where anyone could write it.
+            foreach ($langs as $lang => $version) {
+                if (!preg_match('/[a-z0-9]+/', $lang)) {
+                    $langs = null; // Looks like the file has been tampered with, re-compute.
+                    break;
+                }
+                if (!is_readable($this->get_path_for_langauge_task($lang))) {
+                    $langs = null; // Looks like the file has been tampered with, re-compute.
+                    break;
+                }
+            }
         }
         if (empty($langs) || (is_array($langs) && isset($langs[0]))) {
             $this->log('debug', 'Missing or corrupt languages cache file ... rebuilding it.');
@@ -302,7 +314,7 @@ class Restapi extends REST_Controller {
                 $pos = strpos($file, $end);
                 if ($pos == strlen($file) - strlen($end)) {
                     $lang = substr($file, 0, $pos);
-                    require_once("application/libraries/$file");
+                    require_once($this->get_path_for_langauge_task($lang));
                     $class = $lang . '_Task';
                     $version = $class::getVersion();
                     if ($version) {
@@ -315,5 +327,15 @@ class Restapi extends REST_Controller {
             file_put_contents(LANGUAGE_CACHE_FILE, $langsJson);
         }
         return $langs;
+    }
+
+    /**
+     * Get the path to the file that defines the language task for a given language.
+     *
+     * @param $lang the language of interest, e.g. cpp.
+     * @return string the corresponding code path.
+     */
+    private function get_path_for_langauge_task($lang) {
+        return 'application/libraries/' . $lang . '_task.php';
     }
 }
