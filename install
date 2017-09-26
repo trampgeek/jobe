@@ -46,7 +46,7 @@ def get_webserver():
     ps_cmd = "ps aux | egrep /usr/sbin/(apache2|httpd)"
     ps_lines = subprocess.check_output(ps_cmd, shell=True).decode('utf8').split('\n')
     names = {ps_line.split(' ')[0] for ps_line in ps_lines}
-    candidates = names.intersection(set(['apache', 'www-data']))
+    candidates = names.intersection(set(['apache', 'www-data', 'httpd']))
     if len(candidates) != 1:
         raise Exception("Couldn't determine web-server user id. Is the web server running?")
     return list(candidates)[0]
