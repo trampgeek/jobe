@@ -187,7 +187,7 @@ class Restapi extends REST_Controller {
             // a name (and in Java it matters).
             $run->sourcefilename = '';
         }
-        require_once($this->get_path_for_langauge_task($language));
+        require_once($this->get_path_for_language_task($language));
 
         // Get any input.
         $input = isset($run->input) ? $run->input : '';
@@ -299,7 +299,7 @@ class Restapi extends REST_Controller {
                     $langs = null; // Looks like the file has been tampered with, re-compute.
                     break;
                 }
-                if (!is_readable($this->get_path_for_langauge_task($lang))) {
+                if (!is_readable($this->get_path_for_language_task($lang))) {
                     $langs = null; // Looks like the file has been tampered with, re-compute.
                     break;
                 }
@@ -314,7 +314,7 @@ class Restapi extends REST_Controller {
                 $pos = strpos($file, $end);
                 if ($pos == strlen($file) - strlen($end)) {
                     $lang = substr($file, 0, $pos);
-                    require_once($this->get_path_for_langauge_task($lang));
+                    require_once($this->get_path_for_language_task($lang));
                     $class = $lang . '_Task';
                     $version = $class::getVersion();
                     if ($version) {
@@ -335,7 +335,7 @@ class Restapi extends REST_Controller {
      * @param $lang the language of interest, e.g. cpp.
      * @return string the corresponding code path.
      */
-    private function get_path_for_langauge_task($lang) {
+    private function get_path_for_language_task($lang) {
         return 'application/libraries/' . $lang . '_task.php';
     }
 }
