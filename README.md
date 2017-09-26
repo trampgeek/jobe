@@ -561,11 +561,13 @@ Thanks Kai-Cheung Leung for the first two of those additions.
  1. Compilation of the Student's code is now also done in the runguard sandbox.
     This provides an additional layer of security.
 
+Thanks Tim Hunt for most of the work in this addition.
+
 ### 1.3.6+
 
  1. Tune retry count for better performance under overload.
-
-Thanks Tim Hunt for most of the work in this addition.
+ 1. Documentation updates
+ 1. Tweak installer for Centos detection of web server
 
 Richard
 
