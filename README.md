@@ -24,29 +24,35 @@ various status information plus the output and error output from the run.
 
 The interface is via a RESTful API, that is documented [here](./restapi.pdf).
 
+The languages C, C++, Python3, Python2,
+Octave, Java, Pascal and PHP are all built-in. Other languages can be added
+fairly easily although if using Jobe from CodeRunner it is usually even
+easier to write a Python-based question type that scripts the execution of
+the required language. See the
+[CodeRunner documentation](http://coderunner.org.nz/mod/book/view.php?id=193&chapterid=749)
+for an example.
+
+The Computer Science quiz server at the University of Canterbury switched to
+exclusive use of the Jobe sandbox in early July 2014. Since then
+it has run many hundreds of thousands of Python3, C, Java and Octave jobs unattended
+with only a few minor bug fixes and security refinements.
+
 ## Implementation status
 
 The current version of Jobe (Version 1.3) implements
-enough of the API to provide the services needed by CodeRunner. Only 
+a subset of the documented API, sufficient for use by CodeRunner. Only 
 immediate-mode runs are supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
 the server (unless *run\_spec.debug* is true; see the API), so 
-*get\_run\_status* always returns 404 not found.  C, Python3, Python2, Octave
-and Java have been
-tested at this stage, and untested code exists to support C++ and Matlab.
+*get\_run\_status* always returns 404 not found. 
 
 File PUTs are supported but not POSTs. When used by CodeRunner, file IDs are
 MD5 checksums of the file contents.
 
-The Computer Science quiz server at the University of Canterbury switched to
-exclusive use of the Jobe sandbox in early July 2014. In the year since then
-it has run many tens of thousands of Python3, C and Octave jobs unattended
-with only a few minor early bug fixes.
-
 Sandboxing is fairly basic. It uses the [domjudge](http://domjudge.org) 
 *runguard* program to run student jobs with restrictions on resource
 allocation (memory, processes, cpu time) as a low-privileged user.
-However it does not restrict any system calls and the task is not yet run
+However it does not restrict any system calls and the task is not run
 in a chroot jail.
 
 Programs may write binary output but the results are returned to the caller
@@ -76,6 +82,17 @@ machines only. If you install it on a machine without such firewalling,
 and do not control access with API keys (see later),
 anyone will be able to connect to your machine and run their own code
 on it! **CAVEAT EMPTOR!**
+
+Installation on Ubuntu 16.04 systems should be
+straightforward but installation on other flavours of Linux or on systems
+with non-standard configurations may require
+Linux administrator skills. A possible alternative approach if things go
+wrong is to try the experimental [JobeInABox](https://hub.docker.com/r/trampgeek/jobeinabox/)
+Docker image, which should be runnable with a single terminal command
+on any Linux system that has
+docker installed. Thanks to David Bowes (UHerts) for most of the work on this.
+Please be aware that it is still experimental and hasn't been used in production
+by the author. Feedback is welcomed.  
 
 Jobe runs only on Linux, which must have the Apache web server
 installed and running. PHP must have been compiled with the System V
@@ -364,7 +381,7 @@ An empty default means the global default is used.
 </tr>
   <td>c</td><td>C</td><td>['-Wall', -Werror', '-std=c99', '-x c']</td><td></td>
 <tr>
-  <td>cpp</td><td>C++</td><td>['-Wall', '-Werror', '-x ++']</td><td></td>
+  <td>cpp</td><td>C++</td><td>['-Wall', '-Werror']</td><td></td>
 </tr>
 <tr>
   <td>python2</td><td>Python2</td><td></td><td>['-BESs']</td>
