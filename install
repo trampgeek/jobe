@@ -179,7 +179,7 @@ def main():
             print("Building runguard")
             runguard_commands = [
                 "cd {0}".format(install_dir + '/runguard'),
-                "gcc -o runguard runguard.c -lm -lcgroup", # TODO Add -lcgroups  if using cgroups
+                "gcc -o runguard runguard.c", # TODO Add -lcgroups  if using cgroups
                 "chmod 700 runguard"
             ]
             cmd = ';'.join(runguard_commands)
