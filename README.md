@@ -108,11 +108,11 @@ On Ubuntu-16.04, a script to set up all the necessary web tools plus
 all currently-supported languages is the following
 (all commands as root):
 
-    apt-get install apache2 php libapache2-mod-php php-mcrypt mysql-server\
+    apt install apache2 php libapache2-mod-php php-mcrypt mysql-server\
           php-mysql php-cli octave nodejs\
           git python3 build-essential openjdk-9-jre openjdk-9-jdk python3-pip\
-          fp-compiler pylint3 acl
-    pylint --reports=no --generate-rcfile > /etc/pylintrc
+          fp-compiler pylint3 acl sudo
+    pylint3 --reports=no --generate-rcfile > /etc/pylintrc
 
 [octave, fp and pylint are required only if you need to run Octave or Pascal
 programs or test Python programs with pylint, respectively.].
