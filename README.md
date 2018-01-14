@@ -1,6 +1,7 @@
 # JOBE
 
-Version: 1.3.6, 21 June 2017
+Version: 1.4.0, 14 January 2018
+
 
 Author: Richard Lobb, University of Canterbury, New Zealand
 
@@ -154,6 +155,35 @@ any client machine that is allowed to access the jobe server, edit the line
 
 to reference the JOBE_SERVER, e.g. by replacing *localhost* with its IP
 number, and re-run the tester with the same command from the client machine.
+
+## Setting the locale
+
+By default, Apache is configured to use the C locale. This means that programs
+generating, say, UTF-8 output will fail with an error
+
+    UnicodeEncodeError: 'ascii' codec can't encode character ...
+
+If you wish to run code in the local locale (recommended) you should
+find the line in the Apache envars file (on Ubuntu systems this is to be found
+at /etc/apache2/envars)
+
+    LANG=C
+
+and change it to either C.UTF-8 (which changes the charset to UTF-8 but leaves
+other locale settings unchanged) or to the required standard locale value, e.g.
+
+    LANG=en_NZ.UTF-8
+
+Make sure that whatever locale you use is installed on the Jobe server.
+
+Note: 
+
+1. The comment in the Apache envars file suggesting the use of the default
+locale probably won't
+work, as this will also just give you ASCII text.
+
+2. To take advantage of the UTF-8 capabilities in CodeRunner you will need
+to use Version 3.3 or later (still under development at the time of writing).
 
 ## Debugging
 

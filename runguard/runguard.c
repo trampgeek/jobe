@@ -522,16 +522,30 @@ long readoptarg(const char *desc, long minval, long maxval)
 
 void setrestrictions()
 {
-	char *path;
+        char* savedEnvironmentVariables[] = {"PATH", "LANG", "LC_ALL", "LC_COLLATE",
+            "LC_CTYPE", "LC_MESSAGES", "LC_MONETARY", "LC_NUMERIC", "LC_TIME"};
+        char* savedValues[sizeof(savedEnvironmentVariables) / sizeof(char*)];
+        int numSavedVariables = sizeof(savedEnvironmentVariables) / sizeof(char*);
 	char  cwd[PATH_MAX+1];
+        char* path = NULL;
+        int i;
 
 	struct rlimit lim;
 
 	/* Clear environment to prevent all kinds of security holes, save PATH */
-	path = getenv("PATH");
+        /* RJL: Changed to save and restore all standard locale variables */
+	//path = getenv("PATH");
+        for (i = 0; i < numSavedVariables; i++) {
+            savedValues[i] = getenv(savedEnvironmentVariables[i]);
+        }
 	environ[0] = NULL;
 	/* FIXME: Clean path before setting it again? */
-	if ( path!=NULL ) setenv("PATH",path,1);
+	//if ( path!=NULL ) setenv("PATH",path,1);
+        for (i = 0; i < numSavedVariables; i++) {
+            if (savedValues[i] != NULL) {
+                setenv(savedEnvironmentVariables[i], savedValues[i], 1);
+            }
+        }
 
 	/* Set resource limits: must be root to raise hard limits.
 	   Note that limits can thus be raised from the systems defaults! */
