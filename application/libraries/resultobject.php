@@ -12,7 +12,7 @@
  */
 
 class ResultObject {
-    
+
     public function __construct(
             $run_id,
             $outcome,
@@ -26,25 +26,28 @@ class ResultObject {
         $this->stdout = $this->clean($stdout);
         $this->stderr = $this->clean($stderr);
     }
-    
-   
+
+
     protected static function clean(&$s) {
-        // A copy of $s sanitised by replacing all control
-        // chars except newlines, tabs and returns with hex equivalents.
-        // Implemented here because non-utf8 output causes the json-encoding
-        // of the result to fail.
-        // TODO: implement this in a proper utf-8 aware manner.
-
-        $new_s = '';  // Output string
-        $n = strlen($s);
-        for ($i = 0; $i < $n; $i++) {
-            $c = $s[$i];
-            if (($c != "\n" && $c != "\r" && $c != "\t" && $c < " ") || $c > "\x7E") {
-                $c = '\\x' . sprintf("%02x", ord($c));
+        // If the given parameter string is valid utf-8, it is returned
+        // as is. Otherise, the return value is a copy of $s sanitised by
+        // replacing all control chars except newlines, tabs and returns with hex
+        // equivalents. Implemented here because non-utf8 output causes the
+        // json-encoding of the result to fail.
+        if (mb_check_encoding($s, 'UTF-8')) {
+            return $s;
+        } else {
+            $new_s = '';  // Output string
+            $n = strlen($s);
+            for ($i = 0; $i < $n; $i++) {
+                $c = $s[$i];
+                if (($c != "\n" && $c != "\r" && $c != "\t" && $c < " ") || $c > "\x7E") {
+                    $c = '\\x' . sprintf("%02x", ord($c));
+                }
+                $new_s .= $c;
             }
-            $new_s .= $c;
-        }
 
-        return $new_s;
+            return $new_s;
+        }
     }
 }

@@ -1,10 +1,11 @@
 # JOBE
 
-Version: 1.3.5, 12 January 12 2017
+Version: 1.4.0, 14 January 2018
+
 
 Author: Richard Lobb, University of Canterbury, New Zealand
 
-Contributors: Fedor Lyanguzov
+Contributors: Tim Hunt, Fedor Lyanguzov, Kai-Cheung Leung
 
 ## Introduction
 
@@ -24,29 +25,35 @@ various status information plus the output and error output from the run.
 
 The interface is via a RESTful API, that is documented [here](./restapi.pdf).
 
+The languages C, C++, Python3, Python2,
+Octave, Java, Pascal and PHP are all built-in. Other languages can be added
+fairly easily although if using Jobe from CodeRunner it is usually even
+easier to write a Python-based question type that scripts the execution of
+the required language. See the
+[CodeRunner documentation](http://coderunner.org.nz/mod/book/view.php?id=193&chapterid=749)
+for an example.
+
+The Computer Science quiz server at the University of Canterbury switched to
+exclusive use of the Jobe sandbox in early July 2014. Since then
+it has run many hundreds of thousands of Python3, C, Java and Octave jobs unattended
+with only a few minor bug fixes and security refinements.
+
 ## Implementation status
 
 The current version of Jobe (Version 1.3) implements
-enough of the API to provide the services needed by CodeRunner. Only 
+a subset of the documented API, sufficient for use by CodeRunner. Only 
 immediate-mode runs are supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
 the server (unless *run\_spec.debug* is true; see the API), so 
-*get\_run\_status* always returns 404 not found.  C, Python3, Python2, Octave
-and Java have been
-tested at this stage, and untested code exists to support C++ and Matlab.
+*get\_run\_status* always returns 404 not found. 
 
 File PUTs are supported but not POSTs. When used by CodeRunner, file IDs are
 MD5 checksums of the file contents.
 
-The Computer Science quiz server at the University of Canterbury switched to
-exclusive use of the Jobe sandbox in early July 2014. In the year since then
-it has run many tens of thousands of Python3, C and Octave jobs unattended
-with only a few minor early bug fixes.
-
 Sandboxing is fairly basic. It uses the [domjudge](http://domjudge.org) 
 *runguard* program to run student jobs with restrictions on resource
 allocation (memory, processes, cpu time) as a low-privileged user.
-However it does not restrict any system calls and the task is not yet run
+However it does not restrict any system calls and the task is not run
 in a chroot jail.
 
 Programs may write binary output but the results are returned to the caller
@@ -77,28 +84,43 @@ and do not control access with API keys (see later),
 anyone will be able to connect to your machine and run their own code
 on it! **CAVEAT EMPTOR!**
 
+Installation on Ubuntu 16.04 systems should be
+straightforward but installation on other flavours of Linux or on systems
+with non-standard configurations may require
+Linux administrator skills. A possible alternative approach if things go
+wrong is to try the experimental [JobeInABox](https://hub.docker.com/r/trampgeek/jobeinabox/)
+Docker image, which should be runnable with a single terminal command
+on any Linux system that has
+docker installed. Thanks to David Bowes (UHerts) for most of the work on this.
+Please be aware that it is still experimental and hasn't been used in production
+by the author. Feedback is welcomed.  
+
 Jobe runs only on Linux, which must have the Apache web server
 installed and running. PHP must have been compiled with the System V
 Semaphone and shared-memory functions enabled
 (see here)[http://www.php.net/manual/en/sem.setup.php], but that's the norm.
+Access Control Lists (ACLs) must be enabled; they normally are but if the 
+`/home/jobe` directory lands up on a mounted volume, you may need to
+explicitly enable ACLs in the `mount` command or in `/etc/fstab`.
 The Python3 and the C development system must also be
-installed.
+installed. 
 
 On Ubuntu-16.04, a script to set up all the necessary web tools plus
 all currently-supported languages is the following
 (all commands as root):
 
-    apt-get install apache2 php libapache2-mod-php php-mcrypt mysql-server\
-          php-mysql php-cli octave nodejs\
-          git python3 build-essential openjdk-8-jre openjdk-8-jdk python3-pip\
-          fp-compiler pylint acl
+    apt install apache2 php libapache2-mod-php php-mcrypt mysql-server\
+          php-mysql php-cli php-mbstring octave nodejs\
+          git python3 build-essential openjdk-9-jre openjdk-9-jdk python3-pip\
+          fp-compiler pylint3 acl
     pylint --reports=no --generate-rcfile > /etc/pylintrc
 
 [octave, fp and pylint are required only if you need to run Octave or Pascal
 programs or test Python programs with pylint, respectively.].
 
 Similar commands should work on other Debian-based Linux distributions,
-although some differences are inevitable (e.g.: acl was preinstalled in ubuntu, whereas in debian it must be installed).
+although some differences are inevitable (e.g.: acl was preinstalled in ubuntu,
+whereas in debian it must be installed).
 
 The first step is to clone the project in the web root directory WEBROOT
 (usually /var/www/html).
@@ -120,6 +142,8 @@ processes from the run.
     cd WEBROOT/jobe
     sudo ./install
 
+## Testing the install
+
 To test the installation, first try running the tester with the command
 
     python3 testsubmit.py
@@ -131,6 +155,35 @@ any client machine that is allowed to access the jobe server, edit the line
 
 to reference the JOBE_SERVER, e.g. by replacing *localhost* with its IP
 number, and re-run the tester with the same command from the client machine.
+
+## Setting the locale
+
+By default, Apache is configured to use the C locale. This means that programs
+generating, say, UTF-8 output will fail with an error
+
+    UnicodeEncodeError: 'ascii' codec can't encode character ...
+
+If you wish to run code in the local locale (recommended) you should
+find the line in the Apache envars file (on Ubuntu systems this is to be found
+at /etc/apache2/envars)
+
+    LANG=C
+
+and change it to either C.UTF-8 (which changes the charset to UTF-8 but leaves
+other locale settings unchanged) or to the required standard locale value, e.g.
+
+    LANG=en_NZ.UTF-8
+
+Make sure that whatever locale you use is installed on the Jobe server.
+
+Note: 
+
+1. The comment in the Apache envars file suggesting the use of the default
+locale probably won't
+work, as this will also just give you ASCII text.
+
+2. To take advantage of the UTF-8 capabilities in CodeRunner you will need
+to use Version 3.3 or later (still under development at the time of writing).
 
 ## Debugging
 
@@ -166,9 +219,52 @@ If the install appears OK but testsubmit.py fails:
     from the framework; look for lines beginning *jobe*. These are all issued
     by restapi.php in application/controllers, which is the top level handler
     for all http requests.
+ 1. If you are getting Overloaded errors, then you can display the in-memory
+    locks on the Jobe users with this PHP one-liner:
+    ```php -r 'print_r(shm_get_var(shm_attach(ftok
+      ("/var/www/html/jobe/application/libraries/LanguageTask.php", "j")), 1));'
 
 If you still can't figure it out, email me (Richard Lobb; my gmail name is
 trampgeek).
+
+## An optional extra installation step
+
+[For paranoid sysadmins only].
+
+Submitted jobs can generally write files only into the temporary directory
+created for their run within the '/home/jobe/runs'
+directory. Exceptions to this rule are the /tmp, /var/tmp, /var/crash and
+/run/lock directories all of which
+conventionally can be written into by any Linux process.
+
+The temporary working directory and any files in the writable directories
+mentioned above are deleted on the termination of the run. However, depending on
+the size of the various partitions and 
+the allowed maximum run time, it might in principle be
+possible for a rogue process, or a deliberate attacker, to run the system
+out of disk space in a particular partition (probably /tmp, which is usually
+relatively small),
+before the job terminates. That could in turn impact upon other jobs in
+progress.
+
+This possibility is considered very remote under normal circumstances. With typical
+run times of a few seconds, jobs
+time out long before they can fill up a main partition such as that housing
+/home/jobe. Filling up /tmp is easier but jobs shouldn't generally be using
+that directory, so a rogue process that fills it up shouldn't affect other users. In
+either case, the space is freed as soon as the job terminates. Certainly this
+is not a problem we have ever observed in
+practice. However, it should be possible to protect against such an outcome by
+setting disk quotas for the users jobe00, jobe01, ... jobe09 [The number
+of such user accounts is defined by the parameter `jobe_max_users` in 
+`application/config/config.php`. The default value is 10.]
+Instructions for installing the quota
+management system and setting quotas are given in various places on the web, e.g.
+[here](https://www.digitalocean.com/community/tutorials/how-to-enable-user-and-group-quotas).
+The precise details will vary from system to system according to how the disk
+partitions are set up; quotas should be
+set for all jobe users on whatever partitions contain /home/jobe, /tmp, /var/tmp,
+/var/crash and /run/lock.
 
 ## Securing the site
 
@@ -321,7 +417,7 @@ An empty default means the global default is used.
 </tr>
   <td>c</td><td>C</td><td>['-Wall', -Werror', '-std=c99', '-x c']</td><td></td>
 <tr>
-  <td>cpp</td><td>C++</td><td>['-Wall', '-Werror', '-x ++']</td><td></td>
+  <td>cpp</td><td>C++</td><td>['-Wall', '-Werror']</td><td></td>
 </tr>
 <tr>
   <td>python2</td><td>Python2</td><td></td><td>['-BESs']</td>
@@ -485,6 +581,29 @@ in an unexpected format. Formerly such languages were deemed invalid.
 own memory. 
 1. Add 'getLanguages' to simpletest.py and testsubmit.py.
 
+### Version 1.3.5+ 16 June 2017
+
+ 1. Improve installer to handle installation on servers with less permissive
+    access rights than Ubuntu 16.04.
+ 1. Delete any files created in /tmp, /var/tmp, /run/lock and /var/crash
+    on completion of a run.
+ 1. Limit maximum CPU time for any one Jobe to 30 secs (config constant).
+
+Thanks Kai-Cheung Leung for the first two of those additions.
+
+### Version 1.3.6 21 June 2017
+
+ 1. Minimum PHP version is now required to be 5.5. (This is now checked in the installer.)
+ 1. Compilation of the Student's code is now also done in the runguard sandbox.
+    This provides an additional layer of security.
+
+Thanks Tim Hunt for most of the work in this addition.
+
+### 1.3.6+
+
+ 1. Tune retry count for better performance under overload.
+ 1. Documentation updates
+ 1. Tweak installer for Centos detection of web server
 
 Richard
 

@@ -121,7 +121,8 @@ def display_result(ro):
         15: 'Successful run',
         17: 'Memory limit exceeded',
         19: 'Illegal system call',
-        20: 'Internal error, please report'}
+        20: 'Internal error, please report',
+        21: 'Server overload'}
 
     code = ro['outcome']
     print("{}".format(outcomes[code]))
