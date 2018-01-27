@@ -59,13 +59,15 @@ in a chroot jail.
 Programs may write binary output but the results are returned to the caller
 JSON-encoded, which requires UTF-8 strings. To avoid crashing the
 json-encoder, the standard output and standard error output from the program
-are taken as 8-bit character streams; characters below '\x20' (the space
+are checked to see if they're valid utf-8. If so, they're returned unchanged.
+Otherwise, they're taken as 8-bit character streams; characters below '\x20' (the space
 character) and above '\x7E' are replaced by C-style hexadecimal encodings 
 (e.g. '\x8E') except for newlines which are passed through directly, and
 tabls and returns which are replaced with '\t' and '\r' respectively.
-Also, the Runguard sandbox currently runs programs in the default C locale. 
-As a consequence of these two constraints, programs that generate utf-8 output
-cannot currently be run on Jobe. It is hoped to improve on this in the future.
+
+If Jobe is to correctly handle utf-8 output from programs, the Apache LANG
+environment variable must be set to a UTF-8 compatible value. See
+the section *Setting the locale* below.
 
 Jobe is implemented using Ellis Lab's [codeigniter](http://codeigniter.com) plus the
 [RESTserver plugin](https://github.com/chriskacerguis/codeigniter-restserver) originally
