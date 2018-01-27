@@ -605,5 +605,10 @@ Thanks Tim Hunt for most of the work in this addition.
  1. Documentation updates
  1. Tweak installer for Centos detection of web server
 
+### 1.4.0
+
+  1. Tweaks to allow full utf-8 output to be returned, provided Apache's LANG
+     variable is set to a UTF-8 compatible value.
+
 Richard
 
