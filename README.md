@@ -169,12 +169,12 @@ If you wish to run code in the local locale (recommended) you should
 find the line in the Apache envars file (on Ubuntu systems this is to be found
 at /etc/apache2/envars)
 
-    LANG=C
+    export LANG=C
 
 and change it to either C.UTF-8 (which changes the charset to UTF-8 but leaves
 other locale settings unchanged) or to the required standard locale value, e.g.
 
-    LANG=en_NZ.UTF-8
+    export LANG=en_NZ.UTF-8
 
 Make sure that whatever locale you use is installed on the Jobe server.
 
