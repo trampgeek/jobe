@@ -198,7 +198,7 @@ def check_code(s):
         env = os.environ.copy()
         os.mkdir('Home')
         env['HOME'] = os.getcwd() + '/Home'
-        result = subprocess.check_output(['pylint', '--reports=no', 'source.py'],
+        result = subprocess.check_output(['pylint3', '--reports=no', 'source.py'],
             universal_newlines=True, stderr=subprocess.STDOUT, env=env)
     except Exception as e:
         result = e.output
@@ -238,7 +238,7 @@ def check_code(s):
         env = os.environ.copy()
         os.mkdir('Home')
         env['HOME'] = os.getcwd() + '/Home'
-        result = subprocess.check_output(['pylint', '--reports=no', 'source.py'],
+        result = subprocess.check_output(['pylint3', '--reports=no', 'source.py'],
             universal_newlines=True, stderr=subprocess.STDOUT, env=env)
     except Exception as e:
         result = e.output
