@@ -166,8 +166,8 @@ generating, say, UTF-8 output will fail with an error
     UnicodeEncodeError: 'ascii' codec can't encode character ...
 
 If you wish to run code in the local locale (recommended) you should
-find the line in the Apache envars file (on Ubuntu systems this is to be found
-at /etc/apache2/envars)
+find the line in the Apache envvars file (on Ubuntu systems this is to be found
+at /etc/apache2/envvars)
 
     export LANG=C
 
