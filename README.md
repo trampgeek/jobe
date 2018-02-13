@@ -107,6 +107,8 @@ explicitly enable ACLs in the `mount` command or in `/etc/fstab`.
 The Python3 and the C development system must also be
 installed. 
 
+### Installing the necessary dependencies
+
 On Ubuntu-16.04, a script to set up all the necessary web tools plus
 all currently-supported languages is the following
 (all commands as root):
@@ -115,7 +117,7 @@ all currently-supported languages is the following
           php-mysql php-cli php-mbstring octave nodejs\
           git python3 build-essential openjdk-9-jre openjdk-9-jdk python3-pip\
           fp-compiler pylint3 acl sudo
-    pylint3 --reports=no --generate-rcfile > /etc/pylintrc
+
 
 [octave, fp and pylint are required only if you need to run Octave or Pascal
 programs or test Python programs with pylint, respectively.].
@@ -124,13 +126,31 @@ Similar commands should work on other Debian-based Linux distributions,
 although some differences are inevitable (e.g.: acl was preinstalled in ubuntu,
 whereas in debian it must be installed).
 
-The first step is to clone the project in the web root directory WEBROOT
+### Setting pylint3 options (if you want pylint)
+
+If you're going to use pylint, you also need to build the /etc/pylintrc file
+to set the default options with one of the following commands, which must be
+run as root (don't just try prefixing the command with sudo, as the output redirection
+will fail).
+
+Firstly try the command:
+
+    pylint3 --reports=no --score=n --generate-rcfile > /etc/pylintrc
+
+If that gives you an error "no such option: --score" (which happens with
+older versions of pylint3), try instead
+
+    pylint3 --reports=no --generate-rcfile > /etc/pylintr
+
+### Installing Jobe
+
+Clone the Jobe project in the web root directory WEBROOT
 (usually /var/www/html).
-Do not clone the project elsewhere and attempt to add it to web root with
+Do not clone it elsewhere and attempt to add it to web root with
 symbolic links. That breaks this installer. In what follows, replace
 WEBROOT with either /var/www or /var/www/html as appropriate.
 
-To clone the project:
+To clone Jobe:
 
     cd WEBROOT
     sudo git clone https://github.com/trampgeek/jobe.git
@@ -144,28 +164,15 @@ processes from the run.
     cd WEBROOT/jobe
     sudo ./install
 
-## Testing the install
 
-To test the installation, first try running the tester with the command
-
-    python3 testsubmit.py
-
-All going well, you should then be able to copy the *testsubmit.py* file to
-any client machine that is allowed to access the jobe server, edit the line
-
-    JOBE_SERVER = 'localhost'
-
-to reference the JOBE_SERVER, e.g. by replacing *localhost* with its IP
-number, and re-run the tester with the same command from the client machine.
-
-## Setting the locale
+### Setting the locale
 
 By default, Apache is configured to use the C locale. This means that programs
 generating, say, UTF-8 output will fail with an error
 
     UnicodeEncodeError: 'ascii' codec can't encode character ...
 
-If you wish to run code in the local locale (recommended) you should
+If you wish to run UTF-8 code (recommended) you should
 find the line in the Apache envvars file (on Ubuntu systems this is to be found
 at /etc/apache2/envvars)
 
@@ -180,12 +187,26 @@ Make sure that whatever locale you use is installed on the Jobe server.
 
 Note: 
 
-1. The comment in the Apache envars file suggesting the use of the default
+1. The comment in the Apache envvars file suggesting the use of the default
 locale probably won't
 work, as this will also just give you ASCII text.
 
 2. To take advantage of the UTF-8 capabilities in CodeRunner you will need
 to use Version 3.3 or later (still under development at the time of writing).
+
+## Testing the install
+
+To test the installation, first try running the tester with the command
+
+    python3 testsubmit.py
+
+All going well, you should then be able to copy the *testsubmit.py* file to
+any client machine that is allowed to access the jobe server, edit the line
+
+    JOBE_SERVER = 'localhost'
+
+to reference the JOBE_SERVER, e.g. by replacing *localhost* with its IP
+number, and re-run the tester with the same command from the client machine.
 
 ## Debugging
 
