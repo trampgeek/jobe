@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.4.0, 14 January 2018
+Version: 1.4.1, 13 February 2018
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -611,6 +611,10 @@ Thanks Tim Hunt for most of the work in this addition.
 
   1. Tweaks to allow full utf-8 output to be returned, provided Apache's LANG
      variable is set to a UTF-8 compatible value.
+
+### 1.4.1
+
+  1. Merged in switch to pylint3/python3 completely (thanks Garth Williamson)
 
 Richard
 
