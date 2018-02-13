@@ -309,10 +309,7 @@ abstract class Task {
         }
 
         file_put_contents('prog.cmd', $sandboxCmd);
-
-        $handle = popen($sandboxCmd, 'r');
-        $result = fread($handle, MAX_READ);
-        pclose($handle);
+        exec('bash prog.cmd');
 
         $output = file_get_contents("$workdir/prog.out");
         if (file_exists("{$this->workdir}/prog.err")) {

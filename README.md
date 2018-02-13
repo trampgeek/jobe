@@ -1,6 +1,7 @@
 # JOBE
 
-Version: 1.3.6, 21 June 2017
+Version: 1.4.0, 14 January 2018
+
 
 Author: Richard Lobb, University of Canterbury, New Zealand
 
@@ -58,13 +59,15 @@ in a chroot jail.
 Programs may write binary output but the results are returned to the caller
 JSON-encoded, which requires UTF-8 strings. To avoid crashing the
 json-encoder, the standard output and standard error output from the program
-are taken as 8-bit character streams; characters below '\x20' (the space
+are checked to see if they're valid utf-8. If so, they're returned unchanged.
+Otherwise, they're taken as 8-bit character streams; characters below '\x20' (the space
 character) and above '\x7E' are replaced by C-style hexadecimal encodings 
 (e.g. '\x8E') except for newlines which are passed through directly, and
 tabls and returns which are replaced with '\t' and '\r' respectively.
-Also, the Runguard sandbox currently runs programs in the default C locale. 
-As a consequence of these two constraints, programs that generate utf-8 output
-cannot currently be run on Jobe. It is hoped to improve on this in the future.
+
+If Jobe is to correctly handle utf-8 output from programs, the Apache LANG
+environment variable must be set to a UTF-8 compatible value. See
+the section *Setting the locale* below.
 
 Jobe is implemented using Ellis Lab's [codeigniter](http://codeigniter.com) plus the
 [RESTserver plugin](https://github.com/chriskacerguis/codeigniter-restserver) originally
@@ -109,7 +112,7 @@ all currently-supported languages is the following
 (all commands as root):
 
     apt install apache2 php libapache2-mod-php php-mcrypt mysql-server\
-          php-mysql php-cli octave nodejs\
+          php-mysql php-cli php-mbstring octave nodejs\
           git python3 build-essential openjdk-9-jre openjdk-9-jdk python3-pip\
           fp-compiler pylint3 acl sudo
     pylint3 --reports=no --generate-rcfile > /etc/pylintrc
@@ -154,6 +157,35 @@ any client machine that is allowed to access the jobe server, edit the line
 
 to reference the JOBE_SERVER, e.g. by replacing *localhost* with its IP
 number, and re-run the tester with the same command from the client machine.
+
+## Setting the locale
+
+By default, Apache is configured to use the C locale. This means that programs
+generating, say, UTF-8 output will fail with an error
+
+    UnicodeEncodeError: 'ascii' codec can't encode character ...
+
+If you wish to run code in the local locale (recommended) you should
+find the line in the Apache envars file (on Ubuntu systems this is to be found
+at /etc/apache2/envars)
+
+    export LANG=C
+
+and change it to either C.UTF-8 (which changes the charset to UTF-8 but leaves
+other locale settings unchanged) or to the required standard locale value, e.g.
+
+    export LANG=en_NZ.UTF-8
+
+Make sure that whatever locale you use is installed on the Jobe server.
+
+Note: 
+
+1. The comment in the Apache envars file suggesting the use of the default
+locale probably won't
+work, as this will also just give you ASCII text.
+
+2. To take advantage of the UTF-8 capabilities in CodeRunner you will need
+to use Version 3.3 or later (still under development at the time of writing).
 
 ## Debugging
 
@@ -260,10 +292,16 @@ following:
     ufw allow in proto tcp to any port 80 from <your_client_ip>
     ufw enable
 
+In the above, <your\_client\_ip> is the host that is permitted to send jobs
+to Jobe (e.g. a Moodle server with CodeRunner). <some\_useful\_ip> is
+any server to which Jobe might need to connect in order to run/grade
+student code. In the absence of such a server, that line should be omitted.
+
 ### Securing with API keys
 
 If you wish Jobe to serve multiple clients and do not wish to open a
-specific port for each one you should instead configure the rest-server
+specific port for each one you will need to configure the firewall to allow
+incoming connections from anywhere but you should then also configure the rest-server
 to require some form of authentication and authorisation. The various
 ways of achieving this are discussed in the documentation of the
 [rest-server plugin](https://github.com/chriskacerguis/codeigniter-restserver).
@@ -568,6 +606,11 @@ Thanks Tim Hunt for most of the work in this addition.
  1. Tune retry count for better performance under overload.
  1. Documentation updates
  1. Tweak installer for Centos detection of web server
+
+### 1.4.0
+
+  1. Tweaks to allow full utf-8 output to be returned, provided Apache's LANG
+     variable is set to a UTF-8 compatible value.
 
 Richard
 

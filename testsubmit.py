@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+# coding=utf-8
 ''' A tester and demo program for jobe
     Richard Lobb
     2/2/2015
@@ -258,6 +259,15 @@ if check_code(__student_answer__):
     'expect': { 'outcome': 15, 'stdout': "pylint doesn't approve of your program\n" }
 },
 
+{
+    'comment': 'UTF-8 output from Python3 (will fail unless Jobe set up for UTF-8)',
+    'language_id': 'python3',
+    'sourcecode': r'''print("Un rôle délétère")
+''',
+    'sourcefilename': 'test.py',
+    'expect': { 'outcome': 15, 'stdout': "Un rôle délétère\n" }
+},
+
 # ======= C Tests ===============
 {
     'comment': 'Test good C hello world',
@@ -407,11 +417,25 @@ int main() {
     'expect': { 'outcome': 15, 'stdout': '9 forks succeeded, 991 failed\n' }
 },
 
+
+{
+    'comment': 'A C program with ASCII non-UTF-8-compatible output',
+    'language_id': 'c',
+    'sourcecode': r'''#include <stdio.h>
+int main() {
+    printf("Hello world\n\01\006\300\311\n");
+}
+''',
+    'sourcefilename': 'prog.c',
+    'expect': { 'outcome': 15, 'stdout': "Hello world\n\\x01\\x06\\xc0\\xc9\n" }
+},
+
 # ================= Octave tests ==================
 {
     'comment': 'Valid Octave',
     'language_id': 'octave',
-    'sourcecode': r'''function sq = sqr(n)
+    'sourcecode': r'''_blah_ = 0;  % So octave doesn't expect just a function
+function sq = sqr(n)
     sq = n * n;
 end
 
@@ -602,6 +626,21 @@ public class Blah {
     'parameters': {'cputime':10},
     'expect': { 'outcome': 15, 'stdout': '''Farewell cruel world
 '''}
+},
+
+{
+    'comment': 'Java program with Unicode output (will fail unless Jobe set up for UTF-8) ',
+    'language_id': 'java',
+    'sourcecode': r'''
+public class Test {
+    public static void main(String[] args) {
+        System.out.println("Un rôle délétère");
+    }
+}
+''',
+    'sourcefilename': 'Test.java',
+    'parameters': {'cputime':10},
+    'expect': { 'outcome': 15, 'stdout': "Un rôle délétère\n"}
 },
 
 #================= C++ tests ======================
@@ -884,7 +923,7 @@ def display_result(comment, ro):
         21: 'Server overload. Excessive parallelism?'}
 
     code = ro['outcome']
-    print("{}".format(outcomes[code]))
+    print("Jobe result: {}".format(outcomes[code]))
     print()
     if ro['cmpinfo']:
         print("Compiler output:")
