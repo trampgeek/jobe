@@ -140,7 +140,7 @@ Firstly try the command:
 If that gives you an error "no such option: --score" (which happens with
 older versions of pylint3), try instead
 
-    pylint3 --reports=no --generate-rcfile > /etc/pylintr
+    pylint3 --reports=no --generate-rcfile > /etc/pylintrc
 
 ### Installing Jobe
 

@@ -201,7 +201,7 @@ def check_code(s):
         result = subprocess.check_output(['pylint3', '--reports=no', 'source.py'],
             universal_newlines=True, stderr=subprocess.STDOUT, env=env)
     except Exception as e:
-        result = e.output
+        result = str(e)
 
     lines = result.strip().split('\\n')
     for line in lines:
@@ -241,7 +241,7 @@ def check_code(s):
         result = subprocess.check_output(['pylint3', '--reports=no', 'source.py'],
             universal_newlines=True, stderr=subprocess.STDOUT, env=env)
     except Exception as e:
-        result = e.output
+        result = str(e)
 
     lines = result.strip().split('\\n')
     for line in lines:
