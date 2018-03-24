@@ -73,8 +73,8 @@ class Matlab_Task extends Task {
             $line = rtrim($line);
             if ($headerEnded) {
                 $outlines[] = $line;
-            } else if (strpos($line, 'R2016b') !== FALSE) {
-                // For R2016b, need a different end-of-header line
+            } else if (strpos($line, 'R2017b') !== FALSE) {
+                // For R2017b, need a different end-of-header line
                 $endOfHeader = 'Classroom License -- for classroom instructional use only.';
             } else if (strpos($line, $endOfHeader) !== FALSE) {
                 $headerEnded = TRUE;
