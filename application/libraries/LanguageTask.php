@@ -210,7 +210,7 @@ abstract class Task {
         $sem = sem_get($key);
         $user = -1;
         $retries = 0;
-        while ($user == -1 && $retries < MAX_RETRIES) {
+        while ($user == -1) {  // Loop until we have a user (or an OverloadException is thrown)
             sem_acquire($sem);
             $shm = shm_attach($key);
             if (!shm_has_var($shm, ACTIVE_USERS)) {
