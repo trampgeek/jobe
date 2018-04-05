@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.4.1, 13 February 2018
+Version: 1.4.2, 5 April 2018
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -636,6 +636,11 @@ Thanks Tim Hunt for most of the work in this addition.
 ### 1.4.1
 
   1. Merged in switch to pylint3/python3 completely (thanks Garth Williamson)
+
+### 1.4.2
+
+  1. Bug fix: Jobe server overload was being incorrectly reported as a Runguard
+     error ("No user jobe-1").
 
 Richard
 
