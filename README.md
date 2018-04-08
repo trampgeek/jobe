@@ -164,6 +164,14 @@ processes from the run.
     cd WEBROOT/jobe
     sudo ./install
 
+On Centos6 systems (and possibly early Centos7 releases) you should also
+comment out the line
+
+    Defaults requiretty
+
+in /etc/sudoers. This was
+(reported as a bug)[https://bugzilla.redhat.com/show_bug.cgi?id=1196451]
+and was fixed in later RHEL releases.
 
 ### Setting the locale
 
