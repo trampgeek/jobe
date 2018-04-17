@@ -216,6 +216,14 @@ any client machine that is allowed to access the jobe server, edit the line
 to reference the JOBE_SERVER, e.g. by replacing *localhost* with its IP
 number, and re-run the tester with the same command from the client machine.
 
+## Updating Jobe
+
+If you wish to update an existing version of Jobe to a new one, simply `cd`
+into the Jobe directory, do a `git pull` to update the code, then rerun the
+installer as before, i.e.
+
+    sudo ./install
+
 ## Debugging
 
 If you have problems installing Jobe, here are some things to check.
