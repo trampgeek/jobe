@@ -200,6 +200,9 @@ def check_code(s):
         env['HOME'] = os.getcwd() + '/Home'
         result = subprocess.check_output(['pylint3', '--reports=no', 'source.py'],
             universal_newlines=True, stderr=subprocess.STDOUT, env=env)
+        # Fix problem with versions of pylint that insist on telling you
+        # what config file they're using
+        result = result.replace('Using config file /etc/pylintrc', '')
     except Exception as e:
         result = str(e)
 
@@ -240,6 +243,9 @@ def check_code(s):
         env['HOME'] = os.getcwd() + '/Home'
         result = subprocess.check_output(['pylint3', '--reports=no', 'source.py'],
             universal_newlines=True, stderr=subprocess.STDOUT, env=env)
+        # Fix problem with versions of pylint that insist on telling you
+        # what config file they're using
+        result = result.replace('Using config file /etc/pylintrc', '')
     except Exception as e:
         result = str(e)
 
