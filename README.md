@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.4.2, 5 April 2018
+Version: 1.4.3, 20 May 2018
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -12,14 +12,14 @@ Contributors: Tim Hunt, Fedor Lyanguzov, Kai-Cheung Leung
 Jobe (short for Job Engine) is a server that supports running of small
 compile-and-run jobs in a variety of programming languages. It was
 developed as a remote sandbox for use by
-[CodeRunner](http://github.com/trampgeek/coderunner), 
+[CodeRunner](http://github.com/trampgeek/coderunner),
 a Moodle question-type plugin that asks students to write code to some
 relatively simple specification. However, Jobe servers could be useful in
 a variety of other contexts, particularly in education.
 
 A job specifies a programming language, the source code, the standard input
 to the run and an optional list of additional files. Jobe compiles the
-source code (if compilation is appropriate in the specified language) and 
+source code (if compilation is appropriate in the specified language) and
 runs it with the given input data. It returns a run_result object containing
 various status information plus the output and error output from the run.
 
@@ -41,16 +41,16 @@ with only a few minor bug fixes and security refinements.
 ## Implementation status
 
 The current version of Jobe (Version 1.3) implements
-a subset of the documented API, sufficient for use by CodeRunner. Only 
+a subset of the documented API, sufficient for use by CodeRunner. Only
 immediate-mode runs are supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
-the server (unless *run\_spec.debug* is true; see the API), so 
-*get\_run\_status* always returns 404 not found. 
+the server (unless *run\_spec.debug* is true; see the API), so
+*get\_run\_status* always returns 404 not found.
 
 File PUTs are supported but not POSTs. When used by CodeRunner, file IDs are
 MD5 checksums of the file contents.
 
-Sandboxing is fairly basic. It uses the [domjudge](http://domjudge.org) 
+Sandboxing is fairly basic. It uses the [domjudge](http://domjudge.org)
 *runguard* program to run student jobs with restrictions on resource
 allocation (memory, processes, cpu time) as a low-privileged user.
 However it does not restrict any system calls and the task is not run
@@ -61,7 +61,7 @@ JSON-encoded, which requires UTF-8 strings. To avoid crashing the
 json-encoder, the standard output and standard error output from the program
 are checked to see if they're valid utf-8. If so, they're returned unchanged.
 Otherwise, they're taken as 8-bit character streams; characters below '\x20' (the space
-character) and above '\x7E' are replaced by C-style hexadecimal encodings 
+character) and above '\x7E' are replaced by C-style hexadecimal encodings
 (e.g. '\x8E') except for newlines which are passed through directly, and
 tabls and returns which are replaced with '\t' and '\r' respectively.
 
@@ -74,7 +74,7 @@ Jobe is implemented using Ellis Lab's [codeigniter](http://codeigniter.com) plus
 written by
 Phil Sturgeon and now maintained by Chris Kacerguis. Jobe uses Jaap Eldering's
 and Keith Johnson's *Runguard*
-module from the programming contest server (DOMJudge)[http://domjudge.org] 
+module from the programming contest server (DOMJudge)[http://domjudge.org]
 as a sandbox to limit resource use by submitted jobs.
 
 ## Installation
@@ -95,17 +95,17 @@ Docker image, which should be runnable with a single terminal command
 on any Linux system that has
 docker installed. Thanks to David Bowes (UHerts) for most of the work on this.
 Please be aware that it is still experimental and hasn't been used in production
-by the author. Feedback is welcomed.  
+by the author. Feedback is welcomed.
 
 Jobe runs only on Linux, which must have the Apache web server
 installed and running. PHP must have been compiled with the System V
 Semaphone and shared-memory functions enabled
 (see here)[http://www.php.net/manual/en/sem.setup.php], but that's the norm.
-Access Control Lists (ACLs) must be enabled; they normally are but if the 
+Access Control Lists (ACLs) must be enabled; they normally are but if the
 `/home/jobe` directory lands up on a mounted volume, you may need to
 explicitly enable ACLs in the `mount` command or in `/etc/fstab`.
 The Python3 and the C development system must also be
-installed. 
+installed.
 
 ### Installing the necessary dependencies
 
@@ -115,12 +115,21 @@ all currently-supported languages is the following
 
     apt install apache2 php libapache2-mod-php php-mcrypt mysql-server\
           php-mysql php-cli php-mbstring octave nodejs\
-          git python3 build-essential openjdk-9-jre openjdk-9-jdk python3-pip\
+          git python3 build-essential openjdk-8-jre openjdk-8-jdk python3-pip\
           fp-compiler pylint3 acl sudo
-
 
 [octave, fp and pylint are required only if you need to run Octave or Pascal
 programs or test Python programs with pylint, respectively.].
+
+On Ubuntu-18.04, a script to install the necessary dependencies is as follows.
+
+**IMPORTANT** Note that at present API-key authentication cannot be used on Ubuntu 18.04
+because the PHP *mcrypt* package is not supported in php 7.2.
+
+    apt install apache2 php libapache2-mod-php mysql-server\
+          php-mysql php-cli php-mbstring octave nodejs\
+          git python3 build-essential openjdk-11-jre openjdk-11-jdk python3-pip\
+          fp-compiler pylint3 acl sudo
 
 Similar commands should work on other Debian-based Linux distributions,
 although some differences are inevitable (e.g.: acl was preinstalled in ubuntu,
@@ -193,7 +202,7 @@ other locale settings unchanged) or to the required standard locale value, e.g.
 
 Make sure that whatever locale you use is installed on the Jobe server.
 
-Note: 
+Note:
 
 1. The comment in the Apache envvars file suggesting the use of the default
 locale probably won't
@@ -278,7 +287,7 @@ conventionally can be written into by any Linux process.
 
 The temporary working directory and any files in the writable directories
 mentioned above are deleted on the termination of the run. However, depending on
-the size of the various partitions and 
+the size of the various partitions and
 the allowed maximum run time, it might in principle be
 possible for a rogue process, or a deliberate attacker, to run the system
 out of disk space in a particular partition (probably /tmp, which is usually
@@ -295,7 +304,7 @@ either case, the space is freed as soon as the job terminates. Certainly this
 is not a problem we have ever observed in
 practice. However, it should be possible to protect against such an outcome by
 setting disk quotas for the users jobe00, jobe01, ... jobe09 [The number
-of such user accounts is defined by the parameter `jobe_max_users` in 
+of such user accounts is defined by the parameter `jobe_max_users` in
 `application/config/config.php`. The default value is 10.]
 Instructions for installing the quota
 management system and setting quotas are given in various places on the web, e.g.
@@ -309,7 +318,7 @@ set for all jobe users on whatever partitions contain /home/jobe, /tmp, /var/tmp
 
 ### Securing by means of a firewall
 
-By default, Jobe is expected to run on an Intranet server 
+By default, Jobe is expected to run on an Intranet server
 that is firewalled
 to permit access only from specific authorised hosts. In this mode,
 the client is assumed to be trusted and does not need to provide any form of
@@ -377,7 +386,7 @@ setting the *rest_enable_limits* parameter
 in *application/config/rest.php* to non-zero.
 Jobe will then limit the number of requests made
 with any given key to the values set in
-*application/config/per_method_limits.php*. 
+*application/config/per_method_limits.php*.
 
 For this to work, the *jobe* database must contain an additional table *limits*,
 defined with an SQL command like
@@ -432,7 +441,7 @@ languages. These arguments precede the name of the file to be compiled.
 such as ["-lm"] for the C compiler. These arguments follow the name of the file
 to be compiled. Meaningful only for some compiled
 languages, notably C and C++.
- 1. interpreterargs ([]): a list of string option values to pass to the 
+ 1. interpreterargs ([]): a list of string option values to pass to the
 language interpreter or Java VM etc when the program is executed. Meaningful
 only for languages like Python, PHP and Java where the output from the compiler
 is not pure executable machine code.
@@ -441,7 +450,7 @@ program, e.g. to set *argc* and *argv* for a C program. Not generally useful
 from CodeRunner as there is no way to set parameters on a per-test-case basis.
 
 Individual languages will usually set their own default values for *compileargs*
-and *interpreterargs*. 
+and *interpreterargs*.
 
 If any of the above attributes are defined within the run_spec
 *parameters* field, the latter is used and the defaults are ignored.
@@ -484,7 +493,7 @@ An empty default means the global default is used.
 ## Configuration
 
 This version of jobe is configured for use by Moodle Coderunner. When using
-Jobe from CodeRunner the 
+Jobe from CodeRunner the
 various language compile and run options can be changed
 via the sandbox Parameters field in the question authoring form (using the
 advanced customisation capabilities) of either the question prototype
@@ -552,7 +561,7 @@ Additionally the subclass may define:
 
 ### Version 1.2
 
-Fixed bug with Java when correct source file name supplied in the request 
+Fixed bug with Java when correct source file name supplied in the request
 (rename of file to itself was failing). Thanks Paul Denny.
 Replaced uses of Moodle coding_exception with generic exception. Again thanks
 Paul Denny.
@@ -617,7 +626,7 @@ Fix serious security flaw in runguard + my use of it.
 language version if a language get-version command runs but produces output
 in an unexpected format. Formerly such languages were deemed invalid.
 1. Change Java task so supplied memlimit is ignored, leaving JVM to manage its
-own memory. 
+own memory.
 1. Add 'getLanguages' to simpletest.py and testsubmit.py.
 
 ### Version 1.3.5+ 16 June 2017
@@ -657,6 +666,11 @@ Thanks Tim Hunt for most of the work in this addition.
 
   1. Bug fix: Jobe server overload was being incorrectly reported as a Runguard
      error ("No user jobe-1").
+### 1.4.3
+
+  1. Fix bug in testsubmit.php when used with latest pylint3.
+  1. Document dependency script for Ubuntu 18.04 plus limitations due to missing
+     mcrypt.
 
 Richard
 
