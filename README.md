@@ -109,30 +109,28 @@ installed.
 
 ### Installing the necessary dependencies
 
-On Ubuntu-16.04, a script to set up all the necessary web tools plus
-all currently-supported languages is the following
-(all commands as root):
+On Ubuntu-16.04 or 18.04, a command to set up all the necessary web tools plus
+all currently-supported languages is the following:
 
-    apt install apache2 php libapache2-mod-php php-mcrypt mysql-server\
-          php-mysql php-cli php-mbstring octave nodejs\
-          git python3 build-essential openjdk-8-jre openjdk-8-jdk python3-pip\
-          fp-compiler pylint3 acl sudo
+    sudo apt install apache2 php libapache2-mod-php php-cli\
+        php-mbstring octave nodejs git python3 build-essential openjdk-8-jre\
+        openjdk-8-jdk python3-pip fp-compiler pylint3 acl sudo sqlite3
 
-[octave, fp and pylint are required only if you need to run Octave or Pascal
-programs or test Python programs with pylint, respectively.].
+Octave, fp and pylint are required only if you need to run Octave or Pascal
+programs or test Python programs with pylint, respectively. Newer versions of
+openjdk are available on Ubuntu 18.04, so you may wish to replace the two
+openjdk-8 packages with their openjdk-10 equivalents.
 
-On Ubuntu-18.04, a script to install the necessary dependencies is as follows.
+If you wish to use API-authentication, which is generally pointless when setting
+up a private Jobe server, you need to install further dependencies
+as follows. However, **this command does not work on Ubuntu 18.04**
+because the PHP *mcrypt* package is not supported in php 7.2. As a consequence,
+API-key authentication is not currently supported on Ubuntu 18.04.
 
-**IMPORTANT** Note that at present API-key authentication cannot be used on Ubuntu 18.04
-because the PHP *mcrypt* package is not supported in php 7.2.
-
-    apt install apache2 php libapache2-mod-php mysql-server\
-          php-mysql php-cli php-mbstring octave nodejs\
-          git python3 build-essential openjdk-11-jre openjdk-11-jdk python3-pip\
-          fp-compiler pylint3 acl sudo
+    sudo apt install mysql-server php-mysql php-mcrypt
 
 Similar commands should work on other Debian-based Linux distributions,
-although some differences are inevitable (e.g.: acl was preinstalled in ubuntu,
+although some differences are inevitable (e.g.: acl is preinstalled in Ubuntu,
 whereas in debian it must be installed).
 
 ### Setting pylint3 options (if you want pylint)
@@ -202,6 +200,10 @@ other locale settings unchanged) or to the required standard locale value, e.g.
 
 Make sure that whatever locale you use is installed on the Jobe server.
 
+Then restart apache with the command
+
+    sudo service apache2 restart
+
 Note:
 
 1. The comment in the Apache envvars file suggesting the use of the default
@@ -209,7 +211,7 @@ locale probably won't
 work, as this will also just give you ASCII text.
 
 2. To take advantage of the UTF-8 capabilities in CodeRunner you will need
-to use Version 3.3 or later (still under development at the time of writing).
+to use Version 3.3 or later.
 
 ## Testing the install
 
@@ -343,7 +345,7 @@ to Jobe (e.g. a Moodle server with CodeRunner). <some\_useful\_ip> is
 any server to which Jobe might need to connect in order to run/grade
 student code. In the absence of such a server, that line should be omitted.
 
-### Securing with API keys
+### Securing with API keys (rarely useful)
 
 If you wish Jobe to serve multiple clients and do not wish to open a
 specific port for each one you will need to configure the firewall to allow
@@ -360,7 +362,10 @@ the form
 
 To set up Jobe to run in this way, proceed as follows:
 
- 1. Install a mysql server on the jobe machine or elsewhere.
+ 1. Make sure you installed the additional dependencies for API-key authentication
+    given in the section "Installing the necessary dependencies". You need
+    to be running a PHP version prior to PHP 7.2 (like that on Ubuntu 16.04 for
+    example).
 
  1. Create a database called *jobe* and define a user with full access to it.
 
