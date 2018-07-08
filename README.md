@@ -86,6 +86,9 @@ and do not control access with API keys (see later),
 anyone will be able to connect to your machine and run their own code
 on it! **CAVEAT EMPTOR!**
 
+NOTE: a video walkthrough of the process of setting up a Jobe server
+on a DigitalOcean droplet is [here](https://www.youtube.com/watch?v=dGpnQpLnERw).
+
 Installation on Ubuntu 16.04 systems should be
 straightforward but installation on other flavours of Linux or on systems
 with non-standard configurations may require
