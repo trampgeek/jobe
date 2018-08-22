@@ -34,7 +34,7 @@ def get_config(param_name, install_dir):
             if match:
                 return match.group(1)
     raise Exception('Config param ' + param_name + ' not found')
-    
+
 
 def fail():
     print("Install failed")
@@ -80,7 +80,7 @@ def make_sudoers(install_dir, webserver_user, num_jobe_users):
         commands.append('/usr/bin/pkill -9 -u jobe{:02d}'.format(i))
         for directory in get_config('clean_up_path', install_dir).split(';'):
             commands.append('/usr/bin/find {}/ -user jobe{:02d} -delete'.format(directory, i))
-    
+
     sudoers_file_name = '/etc/sudoers.d/jobe-sudoers'
     with open(sudoers_file_name, 'w') as sudoers:
         os.chmod(sudoers_file_name, 0o440)
@@ -109,7 +109,7 @@ def make_directory(dirpath, webuser):
        jobe:webuser ownership and 770 permissions'''
     if not os.path.exists(dirpath):
         os.makedirs(dirpath)
-    do_command('chown jobe:{0} {1}; chmod 771 {1}'.format(webuser, dirpath)) 
+    do_command('chown jobe:{0} {1}; chmod 771 {1}'.format(webuser, dirpath))
 
 
 def do_purge(install_dir, num_runners):
@@ -129,14 +129,14 @@ def do_purge(install_dir, num_runners):
     do_command('rm -rf {}/files'.format(install_dir))
     do_command('rm -rf /var/log/jobe')
 
-    
+
 def main():
     if len(sys.argv) > 2 or (len(sys.argv) > 1 and sys.argv[1] != '--purge'):
         print("Usage: install [--purge]")
         sys.exit(0)
 
     purging = len(sys.argv) == 2
-        
+
     install_dir = os.getcwd()
     if install_dir not in JOBE_DIRS:
         print("WARNING: Jobe appears not to have been installed in /var/www")
@@ -153,8 +153,8 @@ def main():
             if purging:
                 print('Purging all prior jobe users and files')
                 do_purge(install_dir, num_jobe_users)
-            
-            print('Configuring for', num_jobe_users, 'simultaneous job runs') 
+
+            print('Configuring for', num_jobe_users, 'simultaneous job runs')
             webserver_user = get_webserver()
             print("Web server is", webserver_user)
             print("Make user jobe")
@@ -173,7 +173,7 @@ def main():
             for i in range(num_jobe_users):
                 username = 'jobe{:02d}'.format(i)
                 make_user(username, 'Jobe server task runner')
-           
+
             print("Set up Jobe runs directory (/home/jobe/runs)")
             make_directory('/home/jobe/runs', webserver_user)
             print("Set up Jobe log directory (/var/log/jobe)")
@@ -193,7 +193,7 @@ def main():
                 os.remove(LANGUAGE_CACHE_FILE)
             except:
                 pass
-            
+
             print("Runguard installation complete")
 
         except Exception as e:
