@@ -253,7 +253,13 @@ If the install script fails, check the error message. You should be able
 
 If the install appears OK but testsubmit.py fails:
 
- 1. It is running with Python3, right?
+ 1. If you get messages "Bad result object", something is fundamentally broken.
+    Start by rebooting your server, and make sure Apache is running, e.g.
+    by browsing to http://\<jobehost\>
+1.  Try pointing your browser at http://\<jobehost\>/jobe/index.php/restapi/languages
+    This should return a JSON list of languages. If not, you may at least get
+    a readable error message.
+ 1. You are running testsubmit.py with Python3, right?
  1. Check the apache error log.
  1. Set DEBUGGING = True in testsubmit.py (around line 19). This will result
     in all jobe runs being saved in /home/jobe/runs. [Normally a run directory
