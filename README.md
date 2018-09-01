@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.4.3, 20 May 2018
+Version: 1.5, 2 September 2018
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -676,6 +676,12 @@ Thanks Tim Hunt for most of the work in this addition.
   1. Fix bug in testsubmit.php when used with latest pylint3.
   1. Document dependency script for Ubuntu 18.04 plus limitations due to missing
      mcrypt.
+
+### 1.5.0
+
+  1. Move to latest versions of CodeIgniter and RestServer frameworks, primarily
+     to fix bug with PHP versions > 7.1 no longer supporting mcrypt library,
+     but also for improved security and error handling.
 
 Richard
 
