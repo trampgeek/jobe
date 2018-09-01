@@ -302,7 +302,14 @@ abstract class REST_Controller extends CI_Controller {
      * @var array
      */
     protected $_supported_formats = [
-        'json' => 'application/json'
+        'json' => 'application/json',
+        'array' => 'application/json',
+        'csv' => 'application/csv',
+        'html' => 'text/html',
+        'jsonp' => 'application/javascript',
+        'php' => 'text/plain',
+        'serialized' => 'application/vnd.php.serialized',
+        'xml' => 'application/xml'
     ];
 
     /**
