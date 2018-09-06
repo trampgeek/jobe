@@ -45,13 +45,14 @@ $config['rest_default_format'] = 'json';
 */
 $config['rest_supported_formats'] = [
     'json',
-    'array',
+/*    'array',
     'csv',
     'html',
     'jsonp',
     'php',
     'serialized',
     'xml',
+ */
 ];
 
 /*
