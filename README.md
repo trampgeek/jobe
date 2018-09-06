@@ -119,15 +119,12 @@ all currently-supported languages is the following:
 Octave, fp and pylint are required only if you need to run Octave or Pascal
 programs or test Python programs with pylint, respectively. Newer versions of
 openjdk are available on Ubuntu 18.04, so you may wish to replace the two
-openjdk-8 packages with their openjdk-10 equivalents.
+openjdk-8 packages with their openjdk-11 equivalents.
 
 If you wish to use API-authentication, which is generally pointless when setting
-up a private Jobe server, you need to install further dependencies
-as follows. However, **this command does not work on Ubuntu 18.04**
-because the PHP *mcrypt* package is not supported in php 7.2. As a consequence,
-API-key authentication is not currently supported on Ubuntu 18.04.
+up a private Jobe server, you also need the following:
 
-    sudo apt install mysql-server php-mysql php-mcrypt
+    sudo apt install mysql-server php-mysql
 
 Similar commands should work on other Debian-based Linux distributions,
 although some differences are inevitable (e.g.: acl is preinstalled in Ubuntu,
@@ -248,14 +245,14 @@ If the install script fails, check the error message. You should be able
  1. Make sure your webserver has write access to jobe/files
  1. Make sure there exist users jobe and jobe00 through jobe09.
  1. Make sure there is a directory /home/jobe/runs owned by jobe and writeable
-    by the webserver. [It should not be readable or writeable by all.]
+    by the webserver. It should not be readable or writeable by all.
  1. Make sure there is a directory /var/log/jobe.
 
 If the install appears OK but testsubmit.py fails:
 
  1. If you get messages "Bad result object", something is fundamentally broken.
     Start by rebooting your server, and make sure Apache is running, e.g.
-    by browsing to http://\<jobehost\>
+    by browsing to http://\<jobehost\>.
 1.  Try pointing your browser at http://\<jobehost\>/jobe/index.php/restapi/languages
     This should return a JSON list of languages. If not, you may at least get
     a readable error message.
