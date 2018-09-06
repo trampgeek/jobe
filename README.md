@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.4.4, 25 June 2018
+Version: 1.5.0, 6 September 2018
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -40,9 +40,15 @@ with only a few minor bug fixes and security refinements.
 
 ## Implementation status
 
-The current version of Jobe (Version 1.3) implements
-a subset of the documented API, sufficient for use by CodeRunner. Only
-immediate-mode runs are supported, with run results being returned with the
+The current version of Jobe (Version 1.5) implements
+a subset of the originally documented API, sufficient for use by CodeRunner.
+It has been used for many years at the University of Canterbury for several
+years, running millions of submissions. It's also used by over 500 other
+CodeRunner sites around the world. It can be considered stable and secure,
+though it should be run only on a separate appropriately-firewalled server.
+
+With reference to the original API spec, onnly immediate-mode runs are
+supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
 the server (unless *run\_spec.debug* is true; see the API), so
 *get\_run\_status* always returns 404 not found.
@@ -50,17 +56,17 @@ the server (unless *run\_spec.debug* is true; see the API), so
 File PUTs are supported but not POSTs. When used by CodeRunner, file IDs are
 MD5 checksums of the file contents.
 
-Sandboxing is fairly basic. It uses the [domjudge](http://domjudge.org)
+For sandboxing, Jobe uses the [domjudge](http://domjudge.org)
 *runguard* program to run student jobs with restrictions on resource
 allocation (memory, processes, cpu time) as a low-privileged user.
-However it does not restrict any system calls and the task is not run
-in a chroot jail.
+However it does not restrict any system calls.
 
 Programs may write binary output but the results are returned to the caller
 JSON-encoded, which requires UTF-8 strings. To avoid crashing the
 json-encoder, the standard output and standard error output from the program
 are checked to see if they're valid utf-8. If so, they're returned unchanged.
-Otherwise, they're taken as 8-bit character streams; characters below '\x20' (the space
+Otherwise, they're taken as 8-bit character streams; characters below '\x20'
+(the space
 character) and above '\x7E' are replaced by C-style hexadecimal encodings
 (e.g. '\x8E') except for newlines which are passed through directly, and
 tabls and returns which are replaced with '\t' and '\r' respectively.
@@ -71,11 +77,7 @@ the section *Setting the locale* below.
 
 Jobe is implemented using Ellis Lab's [codeigniter](http://codeigniter.com) plus the
 [RESTserver plugin](https://github.com/chriskacerguis/codeigniter-restserver) originally
-written by
-Phil Sturgeon and now maintained by Chris Kacerguis. Jobe uses Jaap Eldering's
-and Keith Johnson's *Runguard*
-module from the programming contest server (DOMJudge)[http://domjudge.org]
-as a sandbox to limit resource use by submitted jobs.
+written by Phil Sturgeon and now maintained by Chris Kacerguis.
 
 ## Installation
 
@@ -122,15 +124,12 @@ all currently-supported languages is the following:
 Octave, fp and pylint are required only if you need to run Octave or Pascal
 programs or test Python programs with pylint, respectively. Newer versions of
 openjdk are available on Ubuntu 18.04, so you may wish to replace the two
-openjdk-8 packages with their openjdk-10 equivalents.
+openjdk-8 packages with their openjdk-11 equivalents.
 
 If you wish to use API-authentication, which is generally pointless when setting
-up a private Jobe server, you need to install further dependencies
-as follows. However, **this command does not work on Ubuntu 18.04**
-because the PHP *mcrypt* package is not supported in php 7.2. As a consequence,
-API-key authentication is not currently supported on Ubuntu 18.04.
+up a private Jobe server, you also need the following:
 
-    sudo apt install mysql-server php-mysql php-mcrypt
+    sudo apt install mysql-server php-mysql
 
 Similar commands should work on other Debian-based Linux distributions,
 although some differences are inevitable (e.g.: acl is preinstalled in Ubuntu,
@@ -251,12 +250,18 @@ If the install script fails, check the error message. You should be able
  1. Make sure your webserver has write access to jobe/files
  1. Make sure there exist users jobe and jobe00 through jobe09.
  1. Make sure there is a directory /home/jobe/runs owned by jobe and writeable
-    by the webserver. [It should not be readable or writeable by all.]
+    by the webserver. It should not be readable or writeable by all.
  1. Make sure there is a directory /var/log/jobe.
 
 If the install appears OK but testsubmit.py fails:
 
- 1. It is running with Python3, right?
+ 1. If you get messages "Bad result object", something is fundamentally broken.
+    Start by rebooting your server, and make sure Apache is running, e.g.
+    by browsing to http://\<jobehost\>.
+1.  Try pointing your browser at http://\<jobehost\>/jobe/index.php/restapi/languages
+    This should return a JSON list of languages. If not, you may at least get
+    a readable error message.
+ 1. You are running testsubmit.py with Python3, right?
  1. Check the apache error log.
  1. Set DEBUGGING = True in testsubmit.py (around line 19). This will result
     in all jobe runs being saved in /home/jobe/runs. [Normally a run directory
@@ -679,6 +684,12 @@ Thanks Tim Hunt for most of the work in this addition.
   1. Fix bug in testsubmit.php when used with latest pylint3.
   1. Document dependency script for Ubuntu 18.04 plus limitations due to missing
      mcrypt.
+
+### 1.5.0
+
+  1. Move to latest versions of CodeIgniter and RestServer frameworks, primarily
+     to fix bug with PHP versions > 7.1 no longer supporting mcrypt library,
+     but also for improved security and error handling.
 
 Richard
 
