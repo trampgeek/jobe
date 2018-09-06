@@ -40,9 +40,15 @@ with only a few minor bug fixes and security refinements.
 
 ## Implementation status
 
-The current version of Jobe (Version 1.3) implements
-a subset of the documented API, sufficient for use by CodeRunner. Only
-immediate-mode runs are supported, with run results being returned with the
+The current version of Jobe (Version 1.5) implements
+a subset of the originally documented API, sufficient for use by CodeRunner.
+It has been used for many years at the University of Canterbury for several
+years, running millions of submissions. It's also used by over 500 other
+CodeRunner sites around the world. It can be considered stable and secure,
+though it should be run only on a separate appropriately-firewalled server.
+
+With reference to the original API spec, onnly immediate-mode runs are
+supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
 the server (unless *run\_spec.debug* is true; see the API), so
 *get\_run\_status* always returns 404 not found.
@@ -50,17 +56,17 @@ the server (unless *run\_spec.debug* is true; see the API), so
 File PUTs are supported but not POSTs. When used by CodeRunner, file IDs are
 MD5 checksums of the file contents.
 
-Sandboxing is fairly basic. It uses the [domjudge](http://domjudge.org)
+For sandboxing, Jobe uses the [domjudge](http://domjudge.org)
 *runguard* program to run student jobs with restrictions on resource
 allocation (memory, processes, cpu time) as a low-privileged user.
-However it does not restrict any system calls and the task is not run
-in a chroot jail.
+However it does not restrict any system calls.
 
 Programs may write binary output but the results are returned to the caller
 JSON-encoded, which requires UTF-8 strings. To avoid crashing the
 json-encoder, the standard output and standard error output from the program
 are checked to see if they're valid utf-8. If so, they're returned unchanged.
-Otherwise, they're taken as 8-bit character streams; characters below '\x20' (the space
+Otherwise, they're taken as 8-bit character streams; characters below '\x20'
+(the space
 character) and above '\x7E' are replaced by C-style hexadecimal encodings
 (e.g. '\x8E') except for newlines which are passed through directly, and
 tabls and returns which are replaced with '\t' and '\r' respectively.
@@ -71,11 +77,7 @@ the section *Setting the locale* below.
 
 Jobe is implemented using Ellis Lab's [codeigniter](http://codeigniter.com) plus the
 [RESTserver plugin](https://github.com/chriskacerguis/codeigniter-restserver) originally
-written by
-Phil Sturgeon and now maintained by Chris Kacerguis. Jobe uses Jaap Eldering's
-and Keith Johnson's *Runguard*
-module from the programming contest server (DOMJudge)[http://domjudge.org]
-as a sandbox to limit resource use by submitted jobs.
+written by Phil Sturgeon and now maintained by Chris Kacerguis.
 
 ## Installation
 
