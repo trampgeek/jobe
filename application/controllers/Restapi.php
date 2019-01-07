@@ -24,16 +24,15 @@ require_once('application/libraries/REST_Controller.php');
 require_once('application/libraries/LanguageTask.php');
 require_once('application/libraries/JobException.php');
 require_once('application/libraries/resultobject.php');
+require_once('application/libraries/filecache.php');
 
 define('MAX_READ', 4096);  // Max bytes to read in popen
-define ('MIN_FILE_IDENTIFIER_SIZE', 8);
+define('MIN_FILE_IDENTIFIER_SIZE', 8);
 define('LANGUAGE_CACHE_FILE', '/tmp/jobe_language_cache_file');
-
 
 
 class Restapi extends REST_Controller {
 
-    protected $file_cache_base = NULL;
     protected $languages = array();
 
     // Constructor loads the available languages from the libraries directory.
@@ -51,7 +50,6 @@ class Restapi extends REST_Controller {
             die();
         }
         parent::__construct();
-        $this->file_cache_base = FCPATH . '/files/';
 
         $this->languages = $this->supported_languages();
 
@@ -93,7 +91,7 @@ class Restapi extends REST_Controller {
         if ($fileId === FALSE) {
             $this->error('No file id in URL');
         }
-        $contentsb64 = $this->put('file_contents', FALSE);
+        $contentsb64 = FileCache::put('file_contents', FALSE);
         if ($contentsb64 === FALSE) {
             $this->error('put: missing file_contents parameter');
         }
@@ -102,10 +100,9 @@ class Restapi extends REST_Controller {
         if ($contents === FALSE) {
             $this->error("put: contents of file $fileId are not valid base-64");
         }
-        $destPath = $this->file_cache_base . $fileId;
 
-        if (file_put_contents($destPath, $contents) === FALSE) {
-            $this->error("put: failed to write file $destPath to cache", 500);
+        if (FileCache::file_put_contents($fileId, $contents) === FALSE) {
+            $this->error("put: failed to write file $fileId to cache", 500);
         }
         $len = strlen($contents);
         $this->log('debug', "Put file $fileId, size $len");
@@ -117,7 +114,7 @@ class Restapi extends REST_Controller {
     public function files_head($fileId) {
         if (!$fileId) {
             $this->error('head: missing file ID parameter in URL');
-        } else if (file_exists($this->file_cache_base .$fileId)) {
+        } else if (FileCache::file_exists($fileId)) {
             $this->log('debug', "head: file $fileId exists");
             $this->response(NULL, 204);
         } else {
@@ -202,7 +199,8 @@ class Restapi extends REST_Controller {
 
         // Debugging is set either via a config parameter or, for a
         // specific run, by the run's debug attribute.
-        // When debugging, files are not deleted after the run.
+        // When debugging, the task run directory and its contents
+        // are not deleted after the run.
         $debug = $this->config->item('debugging') ||
                 (isset($run->debug) && $run->debug);
 
@@ -215,7 +213,7 @@ class Restapi extends REST_Controller {
             try {
                 $this->task->prepare_execution_environment($run->sourcecode);
 
-                $this->task->load_files($files, $this->file_cache_base);
+                $this->task->load_files($files);
 
                 $this->log('debug', "runs_post: compiling job {$this->task->id}");
                 $this->task->compile();
@@ -226,7 +224,7 @@ class Restapi extends REST_Controller {
                 }
 
             } finally {
-                // Delete files unless it's a debug run
+                // Delete task run directory unless it's a debug run
                 $this->task->close(!$debug);
             }
 

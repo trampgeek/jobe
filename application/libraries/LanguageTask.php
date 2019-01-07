@@ -133,14 +133,13 @@ abstract class Task {
     // Load the specified files into the working directory.
     // The file list is an array of (fileId, filename) pairs.
     // Throws an exception if any are not present.
-    public function load_files($fileList, $filecachedir) {
+    public function load_files($fileList) {
         foreach ($fileList as $file) {
             $fileId = $file[0];
             $filename = $file[1];
-            $path = $filecachedir . $fileId;
             $destPath = $this->workdir . '/' . $filename;
-            if (!file_exists($path) ||
-               ($contents = file_get_contents($path)) === FALSE ||
+            if (!FileCache::file_exists($fileId) ||
+               ($contents = FileCache::file_get_contents($fileId)) === FALSE ||
                (file_put_contents($destPath, $contents)) === FALSE) {
                 throw new JobException('One or more of the specified files is missing/unavailable',
                         'file(s) not found', 404);

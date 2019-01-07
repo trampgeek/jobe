@@ -15,6 +15,7 @@ import sys
 
 JOBE_DIRS = ['/var/www/jobe', '/var/www/html/jobe']
 LANGUAGE_CACHE_FILE = '/tmp/jobe_language_cache_file'
+FILE_CACHE_BASE = '/home/jobe'
 
 def get_config(param_name, install_dir):
     '''Get a config parameter from <<install_dir>>/application/config/config.php.
@@ -55,12 +56,14 @@ def get_webserver():
     return list(candidates)[0]
 
 
-def do_command(cmd):
+def do_command(cmd, ignore_errors=False):
     '''Execute the given OS command user subprocess.call.
-       Raise an exception on failure.
+       Raise an exception on failure unless ignore_errors is True.
     '''
     if subprocess.call(cmd, shell=True) != 0:
-        raise OSError("Command ({}) failed".format(cmd))
+        if not ignore_errors:
+            raise OSError("Command ({}) failed".format(cmd))
+
 
 def check_php_version():
     '''Check that the installed PHP version is at least 5.5.
@@ -68,6 +71,7 @@ def check_php_version():
     '''
     if subprocess.call("php -r 'exit(version_compare(PHP_VERSION, \"5.5.0\", \"lt\"));'", shell=True) != 0:
             raise OSError("Jobe requires at least PHP 5.5.")
+
 
 def make_sudoers(install_dir, webserver_user, num_jobe_users):
     '''Build a custom jobe-sudoers file for include in /etc/sudoers.d.
@@ -104,30 +108,24 @@ def make_user(username, comment, make_home_dir=False, group='jobe'):
         do_command('useradd -r {} -s "/bin/false"{} -c "{}" {}'.format(opt, group_opt, comment, username))
 
 
-def make_directory(dirpath, webuser):
+def make_directory(dirpath, owner, group, permissions=771):
     '''If dirpath doesn't exist, make a directory and give it
-       jobe:webuser ownership and 770 permissions'''
+       the given owner, group and permissions'''
     if not os.path.exists(dirpath):
         os.makedirs(dirpath)
-    do_command('chown jobe:{0} {1}; chmod 771 {1}'.format(webuser, dirpath))
+    do_command('chown {0}:{1} {2}; chmod {3} {2}'.format(owner, group, dirpath, permissions))
 
 
 def do_purge(install_dir, num_runners):
     '''Purge existing users and extra files set up by a previous install'''
     for i in range(num_runners):
-        try:
-            do_command('userdel jobe{:02d}'.format(i))
-        except:
-            # if no such account, continue
-            pass
-    try:
-        do_command('userdel jobe')
-    except:
-        # if no such account, continue
-        pass
+        do_command('userdel jobe{:02d}'.format(i), ignore_errors=True)
+
+    do_command('userdel jobe', ignore_errors=True)
     do_command('rm -rf /home/jobe')
-    do_command('rm -rf {}/files'.format(install_dir))
     do_command('rm -rf /var/log/jobe')
+    do_command('rm -rf {}/files'.format(install_dir), ignore_errors=True)
+    do_command('rm -rf FILE_CACHE_BASE', ignore_errors=True)
 
 
 def main():
@@ -158,16 +156,15 @@ def main():
             webserver_user = get_webserver()
             print("Web server is", webserver_user)
             print("Make user jobe")
-            make_user('jobe', 'Jobe user. Provides home for runs.', True, None)
-            # make sure www-data can reach /home/jobe/runs despite it is not in jobe group
+            make_user('jobe', 'Jobe user. Provides home for runs and files.', True, None)
+            # make sure webuser can reach /home/jobe/runs despite it not being in jobe group
             do_command("chmod 751 /home/jobe")
             print("Setting up file cache")
-            make_directory('{}/files'.format(install_dir), webserver_user)
+            make_directory(FILE_CACHE_BASE, 'jobe', webserver_user)
 
-            do_command('chmod 755 {}'.format(install_dir))
-            do_command('chgrp -R {} {}/*'.format(webserver_user, install_dir))
-            do_command('chmod -R g+rX {}/*'.format(install_dir))
-            do_command('chmod g+rwX {}/files'.format(install_dir))
+            // Ensure install directory subtree owned by webuser and not readable by others
+            do_command('chown -R {0}:{0} {1}'.format(webuser, install_dir)
+            do_command('chmod -R 750 {}'.format(install_dir))
 
             print("Making required job-runner users")
             for i in range(num_jobe_users):
@@ -175,9 +172,9 @@ def main():
                 make_user(username, 'Jobe server task runner')
 
             print("Set up Jobe runs directory (/home/jobe/runs)")
-            make_directory('/home/jobe/runs', webserver_user)
+            make_directory('/home/jobe/runs', 'jobe', webserver_user)
             print("Set up Jobe log directory (/var/log/jobe)")
-            make_directory('/var/log/jobe', webserver_user)
+            make_directory('/var/log/jobe', 'jobe', webserver_user)
 
             print("Building runguard")
             runguard_commands = [
