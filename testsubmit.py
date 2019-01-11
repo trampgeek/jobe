@@ -30,6 +30,7 @@ import json
 import sys
 import http.client
 from threading import Thread
+from hashlib import md5
 import copy
 from base64 import b64encode
 
@@ -63,6 +64,18 @@ GOOD_TEST = 0
 FAIL_TEST = 1
 EXCEPTION = 2
 
+JAVA_PROGRAM = """public class Thing {
+    private String message;
+    public Thing(String message) {
+        this.message = message;
+    }
+    public void printme() {
+        System.out.println(message);
+    }
+}
+"""
+
+JAVA_PROGRAM_MD5 = md5(JAVA_PROGRAM.encode('utf-8')).hexdigest()
 
 # ===============================================
 #
@@ -617,18 +630,9 @@ public class Blah {
 }
 """,
     'files': [
-        ('randomid0379799', """public class Thing {
-    private String message;
-    public Thing(String message) {
-        this.message = message;
-    }
-    public void printme() {
-        System.out.println(message);
-    }
-}
-""")
+        (JAVA_PROGRAM_MD5, JAVA_PROGRAM)
     ],
-    'file_list': [('randomid0379799', 'Thing.java')],
+    'file_list': [(JAVA_PROGRAM_MD5, 'Thing.java')],
     'parameters': {'cputime':10},
     'expect': { 'outcome': 15, 'stdout': '''Farewell cruel world
 '''}
