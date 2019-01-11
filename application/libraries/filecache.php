@@ -34,6 +34,7 @@
  */
 
 define('FILE_CACHE_BASE', '/home/jobe/files');
+define('MD5_PATTERN', '/[0-9abcdef]{32}/');
 
 class FileCache {
     /**
@@ -52,7 +53,7 @@ class FileCache {
      * @return the contents of that file or false if no such file exists.
      */
     public static function file_get_contents($fileid) {
-        $contents = @file_get_contents(self::id_to_path);
+        $contents = @file_get_contents(self::id_to_path($fileid));
         return $contents;
     }
 
@@ -67,17 +68,17 @@ class FileCache {
      * @param string $fileid the external file id (aka filename).
      */
     public static function file_put_contents($fileid, $contents) {
-        if (strlen($fileid) < 5 || preg_match($fileid, '[0-9abcdef]*') !== 1) {
-            file_put_contents($fileid, $contents);
+        if (preg_match(MD5_PATTERN, $fileid) !== 1) {
+            file_put_contents(FILE_CACHE_BASE . '/' . $fileid, $contents);
         } else {
             $topdir = FILE_CACHE_BASE . '/' . substr($fileid, 0, 2);
             $seconddir = $topdir . '/' . substr($fileid, 2, 2);
             $fullpath = $seconddir . '/' . substr($fileid, 4);
             if (!is_dir($topdir)) {
-                mkdir($topdir, 0750);
+                mkdir($topdir, 0751);
             }
             if (!is_dir($seconddir)) {
-                mkdir($seconddir, 0750);
+                mkdir($seconddir, 0751);
             }
             file_put_contents($fullpath, $contents);
         }
@@ -86,7 +87,7 @@ class FileCache {
 
     // Return the cache file path for the given fileID.
     private static function id_to_path($fileid) {
-        if (strlen($fileid) < 5 || preg_match($fileid, '[0-9abcdef]*') !== 1) {
+        if (preg_match(MD5_PATTERN, $fileid) !== 1) {
             $relativepath = $fileid;
         } else {
             $top = substr($fileid, 0, 2);

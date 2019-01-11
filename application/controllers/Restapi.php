@@ -91,7 +91,7 @@ class Restapi extends REST_Controller {
         if ($fileId === FALSE) {
             $this->error('No file id in URL');
         }
-        $contentsb64 = FileCache::put('file_contents', FALSE);
+        $contentsb64 = $this->put('file_contents', FALSE);
         if ($contentsb64 === FALSE) {
             $this->error('put: missing file_contents parameter');
         }
