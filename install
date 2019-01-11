@@ -15,7 +15,7 @@ import sys
 
 JOBE_DIRS = ['/var/www/jobe', '/var/www/html/jobe']
 LANGUAGE_CACHE_FILE = '/tmp/jobe_language_cache_file'
-FILE_CACHE_BASE = '/home/jobe'
+FILE_CACHE_BASE = '/home/jobe/files'
 
 def get_config(param_name, install_dir):
     '''Get a config parameter from <<install_dir>>/application/config/config.php.
@@ -162,8 +162,8 @@ def main():
             print("Setting up file cache")
             make_directory(FILE_CACHE_BASE, 'jobe', webserver_user)
 
-            // Ensure install directory subtree owned by webuser and not readable by others
-            do_command('chown -R {0}:{0} {1}'.format(webuser, install_dir)
+            # Ensure install directory subtree owned by webuser and not readable by others
+            do_command('chown -R {0}:{0} {1}'.format(webserver_user, install_dir))
             do_command('chmod -R 750 {}'.format(install_dir))
 
             print("Making required job-runner users")
@@ -173,6 +173,8 @@ def main():
 
             print("Set up Jobe runs directory (/home/jobe/runs)")
             make_directory('/home/jobe/runs', 'jobe', webserver_user)
+            print("Set up Jobe files directory (/home/jobe/files)")
+            make_directory('/home/jobe/files', 'jobe', webserver_user)
             print("Set up Jobe log directory (/var/log/jobe)")
             make_directory('/var/log/jobe', 'jobe', webserver_user)
 
