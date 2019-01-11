@@ -20,6 +20,7 @@ class Octave_Task extends Task {
              '--no-window-system',
              '--silent',
              '-H');
+        $this->default_params['memorylimit'] = 500;
     }
 
     public static function getVersionCommand() {

@@ -15,6 +15,7 @@ require_once('application/libraries/LanguageTask.php');
 class Python3_Task extends Task {
     public function __construct($filename, $input, $params) {
         parent::__construct($filename, $input, $params);
+        $this->default_params['memorylimit'] = 400; // Need more for numpy
         $this->default_params['interpreterargs'] = array('-BE');
     }
 
