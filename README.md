@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.6.0, 8 January 2019
+Version: 1.6.0, 13 January 2019
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -40,10 +40,10 @@ with only a few minor bug fixes and security refinements.
 
 ## Implementation status
 
-The current version of Jobe (Version 1.5) implements
+The current version of Jobe (Version 1.6, January 2019) implements
 a subset of the originally documented API, sufficient for use by CodeRunner.
 It has been used for many years at the University of Canterbury for several
-years, running millions of submissions. It's also used by over 500 other
+years, running many millions of submissions. Jobe is also used by over 600 other
 CodeRunner sites around the world. It can be considered stable and secure,
 though it should be run only on a separate appropriately-firewalled server.
 
@@ -55,6 +55,18 @@ the server (unless *run\_spec.debug* is true; see the API), so
 
 File PUTs are supported but not POSTs. When used by CodeRunner, file IDs are
 MD5 checksums of the file contents.
+
+Since version 1.6, the Jobe server cleans the file cache whenever available
+disk space drops below 5% of the disk size. It simply deletes all files that
+haven't been used
+for 2 days or more, so the server must have enough free disk space
+to stay below 95% full for at least two whole days of running. For CodeRunner
+clients this should not be a problem unless question authors enable large
+classes of students to attach large files to their submissions. Support files
+attached by question authors are unlikely to be a problem; a Jobe server
+at the University of Canterbury
+serving a large Moodle client with many thousands of questions accumulated only
+200 MB of support files over several years.
 
 For sandboxing, Jobe uses the [domjudge](http://domjudge.org)
 *runguard* program to run student jobs with restrictions on resource
@@ -690,6 +702,19 @@ Thanks Tim Hunt for most of the work in this addition.
   1. Move to latest versions of CodeIgniter and RestServer frameworks, primarily
      to fix bug with PHP versions > 7.1 no longer supporting mcrypt library,
      but also for improved security and error handling.
+
+### 1.6.0
+
+  1. Change file cache directory from /var/www/html/jobe/files to /home/jobe/files
+  1. Change file cache to use a 3 level hierarchy, using the first 4 chars of
+     the MD5 file-id (2 pairs of 2) for the directory names to improve lookup
+     performance when there are many files.
+  1. Implement a simple cache clean mechanism that deletes all files that
+     haven't been used for 2 or more days whenever less than 5% of the disk
+     space is free.
+  1. Document in restapi that use of *check_file* to confirm existence of a
+     required file before a run is unsafe, as the file might be removed by
+     the cache cleaner between the two runs.
 
 Richard
 
