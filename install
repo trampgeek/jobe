@@ -60,9 +60,12 @@ def do_command(cmd, ignore_errors=False):
     '''Execute the given OS command user subprocess.call.
        Raise an exception on failure unless ignore_errors is True.
     '''
-    if subprocess.call(cmd, shell=True) != 0:
-        if not ignore_errors:
-            raise OSError("Command ({}) failed".format(cmd))
+    try:
+        returncode = subprocess.call(cmd, shell=True)
+    except subprocess.SubprocessError:
+        returncode = -1
+    if returncode != 0 and not ignore_errors:
+        raise OSError("Command ({}) failed".format(cmd))
 
 
 def check_php_version():
@@ -122,10 +125,11 @@ def do_purge(install_dir, num_runners):
         do_command('userdel jobe{:02d}'.format(i), ignore_errors=True)
 
     do_command('userdel jobe', ignore_errors=True)
+    do_command('groupdel jobe', ignore_errors=True)
     do_command('rm -rf /home/jobe')
     do_command('rm -rf /var/log/jobe')
     do_command('rm -rf {}/files'.format(install_dir), ignore_errors=True)
-    do_command('rm -rf FILE_CACHE_BASE', ignore_errors=True)
+    do_command('rm -rf ' + FILE_CACHE_BASE + '/*', ignore_errors=True)
 
 
 def main():
@@ -157,7 +161,7 @@ def main():
             print("Web server is", webserver_user)
             print("Make user jobe")
             make_user('jobe', 'Jobe user. Provides home for runs and files.', True, None)
-            # make sure webuser can reach /home/jobe/runs despite it not being in jobe group
+            # make sure webuser can reach /home/jobe/runs despite its not being in jobe group
             do_command("chmod 751 /home/jobe")
             print("Setting up file cache")
             make_directory(FILE_CACHE_BASE, 'jobe', webserver_user)
