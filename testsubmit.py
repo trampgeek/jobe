@@ -974,7 +974,7 @@ def check_bad_cputime():
     'language_id': 'c',
     'sourcecode': r'''#include <stdio.h>
 int main() {
-    printf("Hello world\nIsn't this fun!\n")
+    printf("Hello world\nIsn't this fun!\n");
 }
 ''',
     'sourcefilename': 'test.c',
