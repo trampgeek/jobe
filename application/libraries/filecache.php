@@ -36,6 +36,7 @@
 define('FILE_CACHE_BASE', '/home/jobe/files');
 define('MD5_PATTERN', '/[0-9abcdef]{32}/');
 define('MAX_PERCENT_FULL', 0.95);
+define('TESTING_FILE_CACHE_CLEAR', false);
 
 class FileCache {
     /**
@@ -71,8 +72,8 @@ class FileCache {
     public static function file_put_contents($fileid, $contents) {
         $freespace = disk_free_space(FILE_CACHE_BASE);
         $volumesize = disk_total_space(FILE_CACHE_BASE);
-        if ($freespace / $volumesize > MAX_PERCENT_FULL) {
-            self:: clear_cache();
+        if (TESTING_FILE_CACHE_CLEAR || $freespace / $volumesize > MAX_PERCENT_FULL) {
+            self:: clean_cache();
         }
         if (preg_match(MD5_PATTERN, $fileid) !== 1) {
             $result = @file_put_contents(FILE_CACHE_BASE . '/' . $fileid, $contents);
@@ -120,7 +121,7 @@ class FileCache {
      */
     public static function clean_cache() {
         log_message('info', '*jobe* ', 'Cleaning file cache');
-        shell_exec("find " . FILE_CACHE_BASE . " -type f -atime +1 -delete &");
+        @shell_exec("find " . FILE_CACHE_BASE . " -type f -atime +1 -delete &> /dev/null &");
     }
 
 
