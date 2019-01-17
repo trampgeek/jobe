@@ -120,7 +120,7 @@ class FileCache {
      * of a 404 Not Found.
      */
     public static function clean_cache() {
-        log_message('info', '*jobe* ', 'Cleaning file cache');
+        log_message('info', '*jobe*: cleaning file cache');
         @shell_exec("find " . FILE_CACHE_BASE . " -type f -atime +1 -delete &> /dev/null &");
     }
 
