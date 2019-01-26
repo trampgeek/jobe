@@ -966,7 +966,7 @@ def do_get_languages():
 
 def check_bad_cputime():
     """Check that setting the cputime parameter in a run request to a value
-       greater than 30 (the default configured cputime_upper_limit_secs)
+       greater than 50 (the default configured cputime_upper_limit_secs)
        the appropriate 400 response occurs
     """
     test = {
@@ -978,7 +978,7 @@ int main() {
 }
 ''',
     'sourcefilename': 'test.c',
-    'parameters': {'cputime': 31}
+    'parameters': {'cputime': 51}
 }
     runspec = runspec_from_test(test)
     data = json.dumps({ 'run_spec' : runspec })
