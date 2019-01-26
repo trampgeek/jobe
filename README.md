@@ -244,10 +244,10 @@ number, and re-run the tester with the same command from the client machine.
 ## Updating Jobe
 
 If you wish to update an existing version of Jobe to a new one, simply `cd`
-into the Jobe directory, do a `git pull` to update the code, then rerun the
-installer as before, i.e.
+into the Jobe directory, do a `git pull` to update the code, then run the
+installer with the --purge option, i.e.
 
-    sudo ./install
+    sudo ./install --purge
 
 ## Debugging
 
