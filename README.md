@@ -243,11 +243,14 @@ number, and re-run the tester with the same command from the client machine.
 
 ## Updating Jobe
 
-If you wish to update an existing version of Jobe to a new one, simply `cd`
+If you wish to update an existing version of Jobe to a new one, first put the
+the client Moodle server into maintenance mode. Reboot the Jobe server. Then `cd`
 into the Jobe directory, do a `git pull` to update the code, then run the
 installer with the --purge option, i.e.
 
     sudo ./install --purge
+
+Lastly take the Moodle server out of maintenance mode again.
 
 ## Debugging
 

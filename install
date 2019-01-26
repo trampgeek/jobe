@@ -64,8 +64,11 @@ def do_command(cmd, ignore_errors=False):
         returncode = subprocess.call(cmd, shell=True)
     except subprocess.SubprocessError:
         returncode = -1
-    if returncode != 0 and not ignore_errors:
-        raise OSError("Command ({}) failed".format(cmd))
+    if returncode != 0:
+        if ignore_errors:
+            print("Command '{}' failed. Ignoring.".format(cmd))
+        else:
+            raise OSError("Command ({}) failed".format(cmd))
 
 
 def check_php_version():
