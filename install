@@ -171,7 +171,7 @@ def main():
 
             # Ensure install directory subtree owned by webuser and not readable by others
             do_command('chown -R {0}:{0} {1}'.format(webserver_user, install_dir))
-            do_command('chmod -R o-rwx {}'.format(install_dir))
+            do_command('chmod -R o-rwx,g+w {}'.format(install_dir))
 
             print("Making required job-runner users")
             for i in range(num_jobe_users):
