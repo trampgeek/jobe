@@ -250,6 +250,7 @@ installer with the --purge option, i.e.
 
     sudo ./install --purge
 
+Check that all is well by testing as in the section "Testing the install" above.
 Lastly take the Moodle server out of maintenance mode again.
 
 ## Debugging
