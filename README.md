@@ -233,6 +233,12 @@ To test the installation, first try running the tester with the command
 
     python3 testsubmit.py
 
+The first time you run this command, the initial step of obtaining all the
+different versions of all language is slow, as it has to test-drive all compilers and
+interpreters. Be patient. Results are cached in a file
+in /tmp so subsequent runs will be much faster, at least until the next reboot,
+when the list is rebuilt.
+
 All going well, you should then be able to copy the *testsubmit.py* file to
 any client machine that is allowed to access the jobe server, edit the line
 
