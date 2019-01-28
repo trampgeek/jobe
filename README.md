@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.6.0, 13 January 2019
+Version: 1.6.0, 28 January 2019
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
