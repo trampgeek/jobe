@@ -103,16 +103,19 @@ on it! **CAVEAT EMPTOR!**
 NOTE: a video walkthrough of the process of setting up a Jobe server
 on a DigitalOcean droplet is [here](https://www.youtube.com/watch?v=dGpnQpLnERw).
 
-Installation on Ubuntu 16.04 systems should be
+Installation on Ubuntu 18.04 systems should be
 straightforward but installation on other flavours of Linux or on systems
 with non-standard configurations may require
-Linux administrator skills. A possible alternative approach if things go
-wrong is to try the experimental [JobeInABox](https://hub.docker.com/r/trampgeek/jobeinabox/)
+Linux administrator skills.
+
+An alternative approach, and probably the simplest way to get up and running,
+is to use the [JobeInABox](https://hub.docker.com/r/trampgeek/jobeinabox/)
 Docker image, which should be runnable with a single terminal command
 on any Linux system that has
-docker installed. Thanks to David Bowes (UHerts) for most of the work on this.
-Please be aware that it is still experimental and hasn't been used in production
-by the author. Feedback is welcomed.
+docker installed. Thanks to David Bowes for the initial work on this.
+Please be aware that while this Docker image has been around for a couple of years
+and no significant issues have been reported the developer has not himself
+used it in a production environment. Feedback is welcomed.
 
 Jobe runs only on Linux, which must have the Apache web server
 installed and running. PHP must have been compiled with the System V
