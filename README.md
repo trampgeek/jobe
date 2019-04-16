@@ -115,7 +115,9 @@ on any Linux system that has
 docker installed. Thanks to David Bowes for the initial work on this.
 Please be aware that while this Docker image has been around for a couple of years
 and no significant issues have been reported the developer has not himself
-used it in a production environment. Feedback is welcomed.
+used it in a production environment. Feedback is welcomed. The steps to fire
+up a Jobe Server on Digital Ocean using JobeInAbox are given below in section
+*Setting up a JobeInAbox Digital Ocean server*.
 
 Jobe runs only on Linux, which must have the Apache web server
 installed and running. PHP must have been compiled with the System V
@@ -229,6 +231,37 @@ work, as this will also just give you ASCII text.
 
 2. To take advantage of the UTF-8 capabilities in CodeRunner you will need
 to use Version 3.3 or later.
+
+## Setting up a JobeInAbox Digital Ocean server
+
+For people wanting to get a Jobe server up in hurry, the following is
+probably the simplest approach. This uses a minimal Digital Ocean virtual machine,
+costing just $US5.00 per month, to run the Docker *JobeInAbox* image.
+Other cloud servers, such as Amazon ECS, can of course also be used.
+
+ 1. Set yourself up with an account on [Digital Ocean](https://cloud.digitalocean.com).
+ 2. Create new Droplet: Ubuntu 18.04. x64, minimal config ($5 per month; 1GB CPI, 25GB disk)
+ 3. Connect to the server with an SSH client.
+ 4. Install docker (see https://phoenixnap.com/kb/how-to-install-docker-on-ubuntu-18-04): sudo apt update; sudo apt install docker.io
+ 5. Start Docker: sudo systemctl start docker; sudo systemctl enable docker
+ 6. Launch JobeInABox with Docker: sudo docker run -d -p 80:80 --name jobe trampgeek/jobeinabox:latest
+
+At this point you have a running Jobe server. You can check it's working with the command
+
+    sudo docker run -d -p 4000:80 --name jobe trampgeek/jobeinabox:latest
+
+And you can connect your CodeRunner plugin to it by setting the new JobeServer
+IP number in the Admin panel of the plugin. You're in business!
+
+All that remains is to firewall your new server so that only your Moodle server
+can use it, and so it can't itself open outgoing connections. For example:
+
+    sudo apt install ufw
+    sudo ufw default reject outgoing
+    sudo sudo ufw allow in 22/tcp
+    sudo ufw allow in proto tcp to any port 80 from <your moodle server IP>
+    sudo ufw enable
+
 
 ## Testing the install
 
