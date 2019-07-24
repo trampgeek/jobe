@@ -164,9 +164,9 @@ for arg in sys.argv[1:]:
 {
     'comment': 'Python3 program with customised timeout',
     'language_id': 'python3',
-    'sourcecode': r'''from time import clock
-t = clock()
-while clock() < t + 10: pass  # Wait 10 seconds
+    'sourcecode': r'''from time import perf_counter
+t = perf_counter()
+while perf_counter() < t + 10: pass  # Wait 10 seconds
 print("Hello Python")
 ''',
     'sourcefilename': 'test.py',
