@@ -134,14 +134,12 @@ installed.
 On Ubuntu-16.04 or 18.04, a command to set up all the necessary web tools plus
 all currently-supported languages is the following:
 
-    sudo apt install apache2 php libapache2-mod-php php-cli\
-        php-mbstring octave nodejs git python3 build-essential openjdk-8-jre\
-        openjdk-8-jdk python3-pip fp-compiler pylint3 acl sudo sqlite3
+    sudo apt-get install apache2 php libapache2-mod-php php-cli\
+        php-mbstring octave nodejs git python3 build-essential default-jdk\
+        python3-pip fp-compiler pylint3 acl sudo sqlite3
 
-Octave, fp and pylint are required only if you need to run Octave or Pascal
-programs or test Python programs with pylint, respectively. Newer versions of
-openjdk are available on Ubuntu 18.04, so you may wish to replace the two
-openjdk-8 packages with their openjdk-11 equivalents.
+Octave, fp and pylint3 are required only if you need to run Octave or Pascal
+programs or test Python3 programs with pylint3, respectively.
 
 If you wish to use API-authentication, which is generally pointless when setting
 up a private Jobe server, you also need the following:
@@ -151,6 +149,12 @@ up a private Jobe server, you also need the following:
 Similar commands should work on other Debian-based Linux distributions,
 although some differences are inevitable (e.g.: acl is preinstalled in Ubuntu,
 whereas in debian it must be installed).
+
+A Raspberry Pi user reports that they additionally had to use the command
+
+    apt-get install --fix-missing
+
+which may help with broken installs on other systems, too.
 
 ### Setting pylint3 options (if you want pylint)
 
