@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.6.0, 28 January 2019
+Version: 1.6.0+, 18 September 2019
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -286,6 +286,35 @@ any client machine that is allowed to access the jobe server, edit the line
 
 to reference the JOBE_SERVER, e.g. by replacing *localhost* with its IP
 number, and re-run the tester with the same command from the client machine.
+
+## Using Jobe
+
+Usually Jobe is used as a server for Moodle CodeRunner questions. So once jobe
+has been installed and tested with `testsubmit.py` it can be used by CodeRunner
+questions by plugging the Jobe server hostname into the CodeRunner administrator
+settings, replacing the default value of `jobe2.cosc.canterbury.ac.nz`.
+
+However, Jobe can also be used standalone. The `testsubmit.py` program shows
+how it can be invoked from a Python client. There are also two other simpler
+clients provided in this repository: `simpletest.py` and `minimaltest.py`.
+Note that the POST request
+payload must a JSON object with a *run_spec* attribute as specified in the
+document *restapi.pdf*. For example, the following POST data runs the classic
+C "Hello World" program:
+
+    {"run_spec": {"language_id": "c", "sourcefilename": "test.c", "sourcecode": "\n#include <stdio.h>\n\nint main() {\n    printf(\"Hello world\\n\");\n}\n"}}
+
+The POST request must have the header
+
+    Content-type: application/json; charset-utf-8
+
+and should be sent to a URL like
+
+    localhost/jobe/index.php/restapi/runs
+
+For example, the following Linux `curl` command runs the C Hello World program:
+
+    curl -d '{"run_spec": {"language_id": "c", "sourcefilename": "test.c", "sourcecode": "\n#include <stdio.h>\n\nint main() {\n    printf(\"Hello world\\n\");\n}\n"}}' -H "Content-type: application/json; charset-utf-8"  localhost/jobe/index.php/restapi/run
 
 ## Updating Jobe
 
