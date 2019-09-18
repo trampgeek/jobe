@@ -314,7 +314,7 @@ and should be sent to a URL like
 
 For example, the following Linux `curl` command runs the C Hello World program:
 
-    curl -d '{"run_spec": {"language_id": "c", "sourcefilename": "test.c", "sourcecode": "\n#include <stdio.h>\n\nint main() {\n    printf(\"Hello world\\n\");\n}\n"}}' -H "Content-type: application/json; charset-utf-8"  localhost/jobe/index.php/restapi/run
+    curl -d '{"run_spec": {"language_id": "c", "sourcefilename": "test.c", "sourcecode": "\n#include <stdio.h>\n\nint main() {\n    printf(\"Hello world\\n\");\n}\n"}}' -H "Content-type: application/json; charset-utf-8"  localhost/jobe/index.php/restapi/runs
 
 ## Updating Jobe
 
