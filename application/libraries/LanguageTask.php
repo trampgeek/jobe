@@ -276,12 +276,14 @@ abstract class Task {
         $streamsize = 1000 * $this->getParam('streamsize', $iscompile); // MB -> kB
         $memsize = 1000 * $this->getParam('memorylimit', $iscompile);
         $cputime = $this->getParam('cputime', $iscompile);
+        $killtime = 2 * $cputime; // Kill the job after twice the allowed cpu time
         $numProcs = $this->getParam('numprocs', $iscompile) + 1; // The + 1 allows for the sh command below.
         $sandboxCommandBits = array(
                 "sudo " . dirname(__FILE__)  . "/../../runguard/runguard",
                 "--user={$this->user}",
                 "--group=jobe",
-                "--time=$cputime",         // Seconds of execution time allowed
+                "--cputime=$cputime",      // Seconds of execution time allowed
+                "--time=$killtime",        // Wall clock kill time
                 "--filesize=$filesize",    // Max file sizes
                 "--nproc=$numProcs",       // Max num processes/threads for this *user*
                 "--no-core",
