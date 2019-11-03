@@ -336,6 +336,9 @@ abstract class Task {
         } else {
             $param = $this->default_params[$key];
         }
+        // ** BUG ** The min_params_compile value is being applied even if
+        // this is not a compile. I'm reluctant to fix, however, as it may
+        // break existing questions with inappropriately low resource settings.
         if ($param != 0 && array_key_exists($key, $this->min_params_compile) &&
                 $this->min_params_compile[$key] > $param) {
             $param = $this->min_params_compile[$key];
