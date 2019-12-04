@@ -567,30 +567,30 @@ An empty default means the global default is used.
 <tr>
    <th>language_id</th><th>language</th><th>compileargs</th><th>interpreterargs</th>
 </tr>
-  <td>c</td><td>C</td><td>['-Wall', -Werror', '-std=c99', '-x c']</td><td></td>
+  <td>c</td><td>C</td><td>["-Wall", "-Werror", "-std=c99", "-x c"]</td><td></td>
 <tr>
-  <td>cpp</td><td>C++</td><td>['-Wall', '-Werror']</td><td></td>
+  <td>cpp</td><td>C++</td><td>["-Wall", "-Werror"]</td><td></td>
 </tr>
 <tr>
-  <td>python2</td><td>Python2</td><td></td><td>['-BESs']</td>
+  <td>python2</td><td>Python2</td><td></td><td>["-BESs"]</td>
 </tr>
 <tr>
-  <td>python3</td><td>Python3</td><td></td><td>['-BE']</td>
+  <td>python3</td><td>Python3</td><td></td><td>["-BE"]</td>
 </tr>
 <tr>
-  <td>java</td><td>Java</td><td></td><td>['-Xrs', '-Xss8m', '-Xmx200m']</td>
+  <td>java</td><td>Java</td><td></td><td>["-Xrs", "-Xss8m", "-Xmx200m"]</td>
 </tr>
 <tr>
-  <td>nodejs</td><td>JavaScript (nodejs)</td><td></td><td>['--use_strict']</td>
+  <td>nodejs</td><td>JavaScript (nodejs)</td><td></td><td>["--use_strict"]</td>
 </tr>
 <tr>
-  <td>octave</td><td>Octave (matlab variant)</td><td></td><td>['--norc', '--no-window-system', '--silent', '-H']</td>
+  <td>octave</td><td>Octave (matlab variant)</td><td></td><td>["--norc", "--no-window-system", "--silent", "-H"]</td>
 </tr>
 <tr>
-  <td>php</td><td>PHP</td><td></td><td>['--no-php-ini']</td>
+  <td>php</td><td>PHP</td><td></td><td>["--no-php-ini"]</td>
 </tr>
 <tr>
-  <td>pascal</td><td>Free Pascal</td><td>['-vew', '-Se']</td><td></td>
+  <td>pascal</td><td>Free Pascal</td><td>["-vew", "-Se"]</td><td></td>
 </tr>
 
 </table>
@@ -604,7 +604,7 @@ advanced customisation capabilities) of either the question prototype
 or within a particular question as suggested by the previous
 section. For example, if the sandbox *Parameters* field is set to
 
-        { 'compileargs': ['-Wall', '-Werror', 'std=c89'] }
+        { "compileargs": ["-Wall", "-Werror", "-std=c89"] }
 
 for a C question, the code will be compiled with all warnings enabled, aborting
 if any warnings are issued and will need to be C89 compliant.
@@ -794,6 +794,10 @@ Thanks Tim Hunt for most of the work in this addition.
   1. Document in restapi that use of *check_file* to confirm existence of a
      required file before a run is unsafe, as the file might be removed by
      the cache cleaner between the two runs.
+
+### 1.6.0+ (5 December 2019)
+
+  1. Correct bad JSON in documentation (was using single quoted strings).
 
 Richard
 
