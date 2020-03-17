@@ -82,7 +82,7 @@ class Java_Task extends Task {
     // Not totally safe as it doesn't parse the file, e.g. would be fooled
     // by a commented-out main class with a different name.
     private function getMainClass($prog) {
-        $pattern = '/(^|\W)public\s+class\s+(\w+)[^{]*\{.*?public\s+static\s+void\s+main\s*\(\s*String/ms';
+        $pattern = '/(^|\W)public\s+class\s+(\w+)[^{]*\{.*?(public\s+static|static\s+public)\s+void\s+main\s*\(\s*String/ms';
         if (preg_match_all($pattern, $prog, $matches) !== 1) {
             return FALSE;
         }
