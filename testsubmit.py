@@ -211,7 +211,7 @@ def check_code(s):
         env = os.environ.copy()
         os.mkdir('Home')
         env['HOME'] = os.getcwd() + '/Home'
-        result = subprocess.check_output(['pylint3', '--reports=no', 'source.py'],
+        result = subprocess.check_output(['pylint', '--reports=no', 'source.py'],
             universal_newlines=True, stderr=subprocess.STDOUT, env=env)
         # Fix problem with versions of pylint that insist on telling you
         # what config file they're using
@@ -254,7 +254,7 @@ def check_code(s):
         env = os.environ.copy()
         os.mkdir('Home')
         env['HOME'] = os.getcwd() + '/Home'
-        result = subprocess.check_output(['pylint3', '--reports=no', 'source.py'],
+        result = subprocess.check_output(['pylint', '--reports=no', 'source.py'],
             universal_newlines=True, stderr=subprocess.STDOUT, env=env)
         # Fix problem with versions of pylint that insist on telling you
         # what config file they're using
