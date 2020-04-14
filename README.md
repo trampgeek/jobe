@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.6.0+, 18 September 2019
+Version: 1.6.1, 14 April 2020
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -136,10 +136,10 @@ all currently-supported languages is the following:
 
     sudo apt-get install apache2 php libapache2-mod-php php-cli\
         php-mbstring octave nodejs git python3 build-essential default-jdk\
-        python3-pip fp-compiler pylint3 acl sudo sqlite3
+        python3-pip fp-compiler acl sudo sqlite3
 
-Octave, fp and pylint3 are required only if you need to run Octave or Pascal
-programs or test Python3 programs with pylint3, respectively.
+Octave and fp are required only if you need to run Octave or Pascal
+programs.
 
 If you wish to use API-authentication, which is generally pointless when setting
 up a private Jobe server, you also need the following:
@@ -156,21 +156,26 @@ A Raspberry Pi user reports that they additionally had to use the command
 
 which may help with broken installs on other systems, too.
 
-### Setting pylint3 options (if you want pylint)
+### Setting up pylint (if you want it)
 
-If you're going to use pylint, you also need to build the /etc/pylintrc file
+Firstly, install pylint for your required version of python (assumed here to
+be python3) with the command:
+
+    sudo -H python3 -m pip install pylint
+
+You also need to build the /etc/pylintrc file
 to set the default options with one of the following commands, which must be
 run as root (don't just try prefixing the command with sudo, as the output redirection
 will fail).
 
 Firstly try the command:
 
-    pylint3 --reports=no --score=n --generate-rcfile > /etc/pylintrc
+    pylint --reports=no --score=n --generate-rcfile > /etc/pylintrc
 
 If that gives you an error "no such option: --score" (which happens with
-older versions of pylint3), try instead
+older versions of pylint), try instead
 
-    pylint3 --reports=no --generate-rcfile > /etc/pylintrc
+    pylint --reports=no --generate-rcfile > /etc/pylintrc
 
 ### Installing Jobe
 
@@ -798,6 +803,26 @@ Thanks Tim Hunt for most of the work in this addition.
 ### 1.6.0+ (5 December 2019)
 
   1. Correct bad JSON in documentation (was using single quoted strings).
+
+### 1.6.1 (14 April 2020)
+
+  1. Tweak handling of timeouts to kill jobs after a wall-clock time in excess
+     of twice the given max_cpu_time
+  1. Document issue with handling of resource limits. Jobe is inappropriately
+     applying the compile resource limits even for non-compile tasks.
+     However, fixing this might break existing questions and it's not a
+     serious problem.
+  1. Correct bad JSON in documentation that used single-quoted strings.
+  1. Add /var/lock to the list of directories to be cleaned on task exit.
+     While it's usually a symbolic link to /run/lock, apparently that's not
+     always the case.
+  1. Accept Java programs that use "static public" in main() declaration rather
+     than the more usual "public static".
+  1. Fix deprecation warning with PHP 7.4 (and possibly earlier) resulting from
+     loading the JSON-encoded language cache file into an object rather than an
+     associative array.
+
+
 
 Richard
 
