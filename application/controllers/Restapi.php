@@ -289,7 +289,7 @@ class Restapi extends REST_Controller {
     private function supported_languages() {
         if (file_exists(LANGUAGE_CACHE_FILE)) {
             $langsJson = @file_get_contents(LANGUAGE_CACHE_FILE);
-            $langs = json_decode($langsJson);
+            $langs = json_decode($langsJson, true);
 
             // Security check, since this file is stored in /tmp where anyone could write it.
             foreach ($langs as $lang => $version) {
