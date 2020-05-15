@@ -6,16 +6,21 @@
  *
  * ==============================================================
  *
- * @copyright  2014 Richard Lobb, University of Canterbury
+ * @copyright  2014, 2020 Richard Lobb, University of Canterbury
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once('application/libraries/LanguageTask.php');
 
 class Python3_Task extends Task {
+
+    // Raise the memory limit for python to allow for numpy, matplolib
+    // etc. Set the interpreter args to ingore all Python
+    // environment variables and to suppress writing of .pyc files
+    // on import.
     public function __construct($filename, $input, $params) {
         parent::__construct($filename, $input, $params);
-        $this->default_params['memorylimit'] = 400; // Need more for numpy
+        $this->default_params['memorylimit'] = 600; // Need more for numpy
         $this->default_params['interpreterargs'] = array('-BE');
     }
 

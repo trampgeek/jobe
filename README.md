@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.6.1, 14 April 2020
+Version: 1.6.2, 16 May 2020
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -534,8 +534,9 @@ before the job is aborted
  1. streamsize (2): the maximum number of megabytes of standard output before the
 job is aborted.
  1. cputime (5): the maximum number of seconds of CPU time before the job is aborted
- 1. memorylimit (200): the maximum number of megabytes of memory the task can
-consume. This value is used to set the Linux RLIMIT_STACK, RLIMIT_DATA and
+ 1. memorylimit (usually 200 but 600 for Python3):
+the maximum number of megabytes of memory the task can consume. This value is
+used to set the Linux RLIMIT_STACK, RLIMIT_DATA and
 RLIMIT_AS via the *setrlimit* system call. If the value is exceeded the job
 is not aborted but malloc and/or mmap calls will fail to allocate more memory
 with somewhat unpredictable results, although a segmentation fault is the most
@@ -821,6 +822,10 @@ Thanks Tim Hunt for most of the work in this addition.
   1. Fix deprecation warning with PHP 7.4 (and possibly earlier) resulting from
      loading the JSON-encoded language cache file into an object rather than an
      associative array.
+
+### 1.6.2 (16 May 2020)
+
+  1. Increase memory limit for Python3 to 600 MB. Document.
 
 
 
