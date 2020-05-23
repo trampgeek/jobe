@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.6.2, 16 May 2020
+Version: 1.6.2+, 24 May 2020
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -131,15 +131,17 @@ installed.
 
 ### Installing the necessary dependencies
 
-On Ubuntu-16.04 or 18.04, a command to set up all the necessary web tools plus
+On Ubuntu-16.04 or 18.04, the commands to set up all the necessary web tools plus
 all currently-supported languages is the following:
 
     sudo apt-get install apache2 php libapache2-mod-php php-cli\
-        php-mbstring octave nodejs git python3 build-essential default-jdk\
+        php-mbstring nodejs git python3 build-essential default-jdk\
         python3-pip fp-compiler acl sudo sqlite3
 
+    sudo apt-get install --no-install-suggests --no-install-recommends  octave
+
 Octave and fp are required only if you need to run Octave or Pascal
-programs.
+programs respectively.
 
 If you wish to use API-authentication, which is generally pointless when setting
 up a private Jobe server, you also need the following:
@@ -827,6 +829,9 @@ Thanks Tim Hunt for most of the work in this addition.
 
   1. Increase memory limit for Python3 to 600 MB. Document.
 
+### 1.6.2+ (24 May 2020)
+
+  1. Change install instructions to install non-GUI Octave.
 
 
 Richard
