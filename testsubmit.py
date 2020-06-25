@@ -700,6 +700,96 @@ end.
 ''',
     'sourcefilename': 'prog.pas',
     'expect': { 'outcome': 11 }
+},
+
+#================ VHDL tests ====================
+{
+    'comment' : 'MUX41 test bench',
+    'language_id' : 'vhdl',
+    'sourcecode' : r'''LIBRARY ieee;
+USE ieee.std_logic_1164.all;
+USE ieee.numeric_std.all;
+
+
+entity MUX41 IS
+port(
+    I : in std_logic_vector(3 downto 0);
+    SEL : in std_logic_vector(1 downto 0);
+    Y : out std_logic);
+END MUX41 ;
+
+
+architecture BEHAVIOUR of MUX41 is
+begin
+    with SEL select
+        Y <=    I(0) when "00",
+                I(1) when "01",
+                I(2) when "10",
+                I(3) when "11",
+                '-' when others;
+end BEHAVIOUR;
+
+LIBRARY ieee;
+USE ieee.std_logic_1164.all;
+USE ieee.numeric_std.all;
+
+entity TEST_BENCH IS
+
+END TEST_BENCH ;
+
+architecture BEHAVIOUR of TEST_BENCH is
+
+    signal I : std_logic_vector(3 downto 0);
+    signal SEL :  std_logic_vector(1 downto 0);
+    signal Y :  std_logic;
+
+begin
+    process
+    begin
+        SEL <= "00";
+        for j in 0 to 15 loop
+            I <= std_logic_vector(to_unsigned(j,4));
+            assert Y=I(0) report "Error on I(0)" severity warning; 
+            wait for 10 ns;
+        end loop;
+        
+        SEL <= "01";
+        for j in 0 to 15 loop
+            I <= std_logic_vector(to_unsigned(j,4));
+            assert Y=I(1) report "Error on I(1)" severity warning;
+            wait for 10 ns;
+        end loop;
+        
+        SEL <= "10";
+        for j in 0 to 15 loop
+            I <= std_logic_vector(to_unsigned(j,4));
+            assert Y=I(2) report "Error on I(2)" severity warning;
+            wait for 10 ns;
+        end loop;
+        
+        SEL <= "11";
+        for j in 0 to 15 loop
+            I <= std_logic_vector(to_unsigned(j,4));
+            assert Y=I(3) report "Error on I(3)" severity warning;
+            wait for 10 ns;
+        end loop;
+        
+        
+        report "End of test. Verify that no error was reported.";
+        wait;
+        
+    end process;
+    
+UUT : entity work.MUX41
+port map ( I      => I,
+           SEL      => SEL,
+           Y  => Y);
+		
+end BEHAVIOUR;
+''',
+    'sourcefilename' : 'prog.vhd',
+    'expect' : {'outcome' : 15 , 'stdout' : "prog.vhd:70:9:@640ns:(report note): End of test. Verify that no error was reported.\n"
+    }
 }
 
 ]
