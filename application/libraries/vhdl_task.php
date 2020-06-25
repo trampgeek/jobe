@@ -20,8 +20,7 @@ class VHDL_Task extends Task {
             // '-fsynopsys', // The use of non standard library will not produce an error -> Not recognized on command line
             '--ieee=standard',
             '--mb-comments', // Allow UTF8 or multi-bytes chars in a comment.
-			'-C', // See above
-			'-fno-caret-diagnostics' // Remove source line of error
+			'-C' // See above
             );
     }
 
