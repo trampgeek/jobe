@@ -51,4 +51,11 @@ class VHDL_Task extends Task {
     public function getTargetFile() {
         return '';
     }
+    
+    // Remove time and type of report information to leave only the message
+    public function filteredStdout() {
+	$parts = explode(':', $this->stdout);
+	array_splice($parts, 0, 5);
+	return trim(implode(':', $parts));
+    }
 };
