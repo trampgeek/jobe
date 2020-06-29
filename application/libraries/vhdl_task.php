@@ -20,7 +20,7 @@ class VHDL_Task extends Task {
             // '-fsynopsys', // The use of non standard library will not produce an error -> Not recognized on command line
             '--ieee=standard',
             '--mb-comments', // Allow UTF8 or multi-bytes chars in a comment.
-			'-C' // See above
+            '-C' // See above
             );
     }
 
@@ -54,12 +54,12 @@ class VHDL_Task extends Task {
     
     // Remove time and type of report information to leave only the message
     public function filteredStdout() {
-		$lines = explode(PHP_EOL, $this->stdout);
-		foreach($lines as &$line) {
-			$tmp = explode(':', $line);
-			array_splice($tmp, 0, 5);
-			$line = trim(implode(':', $tmp));
-		}
-		return implode(PHP_EOL, $lines);
+        $lines = explode(PHP_EOL, $this->stdout);
+        foreach($lines as &$line) {
+            $tmp = explode(':', $line);
+            array_splice($tmp, 0, 5);
+            $line = trim(implode(':', $tmp));
+        }
+        return implode(PHP_EOL, $lines);
     }
 };

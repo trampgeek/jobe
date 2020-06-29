@@ -788,7 +788,7 @@ port map ( I      => I,
 end BEHAVIOUR;
 ''',
     'sourcefilename' : 'prog.vhd',
-    'expect' : {'outcome' : 15 , 'stdout' : "End of test. Verify that no error was reported."
+    'expect' : {'outcome' : 15 , 'stdout' : "End of test. Verify that no error was reported.\n"
     }
 }
 
