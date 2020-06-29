@@ -54,8 +54,12 @@ class VHDL_Task extends Task {
     
     // Remove time and type of report information to leave only the message
     public function filteredStdout() {
-	$parts = explode(':', $this->stdout);
-	array_splice($parts, 0, 5);
-	return trim(implode(':', $parts));
+		$lines = explode(PHP_EOL, $this->stdout);
+		foreach($lines as &$line) {
+			$tmp = explode(':', $line);
+			array_splice($tmp, 0, 5);
+			$line = trim(implode(':', $tmp));
+		}
+		return implode(PHP_EOL, $lines);
     }
 };
