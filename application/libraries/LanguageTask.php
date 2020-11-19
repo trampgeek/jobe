@@ -275,9 +275,9 @@ abstract class Task {
         $filesize = 1000 * $this->getParam('disklimit', $iscompile); // MB -> kB
         $streamsize = 1000 * $this->getParam('streamsize', $iscompile); // MB -> kB
         $memsize = 1000 * $this->getParam('memorylimit', $iscompile);
-        $cputime = $this->getParam('cputime', $iscompile);
+        $cputime = $this->check_integer($this->getParam('cputime', $iscompile), $this->default_params['cputime']);
         $killtime = 2 * $cputime; // Kill the job after twice the allowed cpu time
-        $numProcs = $this->getParam('numprocs', $iscompile) + 1; // The + 1 allows for the sh command below.
+        $numProcs = $this->check_integer(($this->getParam('numprocs', $iscompile) + 1), $this->default_params['numprocs']); // The + 1 allows for the sh command below.
         $sandboxCommandBits = array(
                 "sudo " . dirname(__FILE__)  . "/../../runguard/runguard",
                 "--user={$this->user}",
@@ -319,6 +319,18 @@ abstract class Task {
             $stderr = '';
         }
         return array($output, $stderr);
+    }
+
+    /*
+     * Checks if the $key parameter is numeric and returns it,
+     * otherwise it will return the $fallbackInt parameter.
+     */
+    private function check_integer($key, $fallbackInt) {
+        if(is_numeric($key)) {
+            return $key;
+        } else {
+            return $fallbackInt;
+        }
     }
 
 
