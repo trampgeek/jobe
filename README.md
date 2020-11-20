@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.6.2+, 24 May 2020
+Version: 1.6.3, 20 November 2020
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -832,6 +832,12 @@ Thanks Tim Hunt for most of the work in this addition.
 ### 1.6.2+ (24 May 2020)
 
   1. Change install instructions to install non-GUI Octave.
+
+### 1.6.3 (20 November 2020)
+
+  1. Prevent privilege escalation attacks via cputime parameter, [issue #39](https://github.com/trampgeek/jobe/issues/39).
+  1. Change the invalid nodejs program in testsubmit.py to be even more invalid,
+     so it fails to run with all versions of nodejs.
 
 
 Richard
