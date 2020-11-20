@@ -499,9 +499,9 @@ fprintf('%d\n%d\n%d\n', sqr(-3), sqr(11), sqr(0));
 },
 
 {
-    'comment': 'Syntactically invalid (non-strict) Nodejs',
+    'comment': 'Syntactically invalid Nodejs',
     'language_id': 'nodejs',
-    'sourcecode': r'''s = 'Hello world!'
+    'sourcecode': r'''s = 'Hello world!
 console.log(s)
 ''',
     'sourcefilename': 'test.js',
