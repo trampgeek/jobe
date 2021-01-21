@@ -29,7 +29,10 @@ class Python3_Task extends Task {
     }
 
     public function compile() {
-        $cmd = "python3 -m py_compile {$this->sourceFileName}";
+        //$cmd = "python3 -m py_compile {$this->sourceFileName}";
+        // Workaround for python3 py_compile bug (https://bugs.python.org/issue38731)
+        // still apparently not fixed 18 months later?
+        $cmd = "python3 -c \"from py_compile import compile\ncompile('{$this->sourceFileName}')\"";
         $this->executableFileName = $this->sourceFileName;
         list($output, $this->cmpinfo) = $this->run_in_sandbox($cmd);
         if (!empty($this->cmpinfo) && !empty($output)) {
