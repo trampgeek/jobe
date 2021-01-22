@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.6.3, 20 November 2020
+Version: 1.6.4, 22 January 2021
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -602,6 +602,7 @@ An empty default means the global default is used.
 </tr>
 
 </table>
+
 ## Configuration
 
 This version of jobe is configured for use by Moodle Coderunner. When using
@@ -839,6 +840,7 @@ Thanks Tim Hunt for most of the work in this addition.
   1. Change the invalid nodejs program in testsubmit.py to be even more invalid,
      so it fails to run with all versions of nodejs.
 
+### 1.6.4 (22 January 2021)
 
-Richard
-
+  1. Workaround for bug in py_compile (https://bugs.python.org/issue38731)
+that results in multiple error messages when a python syntax check fails.
