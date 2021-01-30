@@ -278,7 +278,7 @@ class Restapi extends REST_Controller {
     
     // Return true unless the given filename looks dangerous, e.g. has '/' or '..'
     // substrings. Uses code from https://stackoverflow.com/questions/2021624/string-sanitizer-for-filename
-    private function is_valid_source_filename($filename) {
+    private static function is_valid_source_filename($filename) {
         $sanitised = preg_replace(
         '~
         [<>:"/\\|?*]|            # file system reserved https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words
