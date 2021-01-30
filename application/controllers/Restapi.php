@@ -149,9 +149,11 @@ class Restapi extends REST_Controller {
             $this->error('runs_post: missing or invalid run_spec parameter', 400);
         }
         if (!is_array($run) || !isset($run['sourcecode']) ||
-                !isset($run['language_id'])
-        ) {
+                !isset($run['language_id']) ) {
             $this->error('runs_post: invalid run specification', 400);
+        }
+        if (isset($run->sourcefilename) && !self::is_valid_source_filename($run->sourcefilename)) {
+            $this->error('runs_post: invalid sourcefilename');
         }
 
         // REST_Controller has called to_array on the JSON decoded
@@ -273,6 +275,24 @@ class Restapi extends REST_Controller {
     // **********************
     // Support functions
     // **********************
+    
+    // Return true unless the given filename looks dangerous, e.g. has '/' or '..'
+    // substrings. Uses code from https://stackoverflow.com/questions/2021624/string-sanitizer-for-filename
+    private function is_valid_source_filename($filename) {
+        $sanitised = preg_replace(
+        '~
+        [<>:"/\\|?*]|            # file system reserved https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words
+        [\x00-\x1F]|             # control characters http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247%28v=vs.85%29.aspx
+        [\x7F\xA0\xAD]|          # non-printing characters DEL, NO-BREAK SPACE, SOFT HYPHEN
+        [#\[\]@!$&\'()+,;=]|     # URI reserved https://tools.ietf.org/html/rfc3986#section-2.2
+        [{}^\~`]                 # URL unsafe characters https://www.ietf.org/rfc/rfc1738.txt
+        ~x',
+        '-', $filename);
+        // Avoid ".", ".." or ".hiddenFiles"
+        $sanitised = ltrim($sanitised, '.-');
+        return $sanitised === $filename;
+    }
+    
     private function is_valid_filespec($file) {
         return (count($file) == 2 || count($file) == 3) &&
              is_string($file[0]) &&

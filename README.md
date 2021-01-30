@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.6.4, 22 January 2021
+Version: 1.6.5, 31 January 2021
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -846,3 +846,8 @@ Thanks Tim Hunt for most of the work in this addition.
 
   1. Workaround for bug in py_compile (https://bugs.python.org/issue38731)
 that results in multiple error messages when a python syntax check fails.
+
+### 1.6.5 (31 January 2021)
+
+  1. Prevent privilege escalation attacks via sourcefilename [issue #46](https://github.com/trampgeek/jobe/issues/46).
+  1. Add a load tester (ad hoc, experimental), loadtester.py.
