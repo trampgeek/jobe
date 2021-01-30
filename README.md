@@ -251,15 +251,17 @@ costing just $US5.00 per month, to run the Docker *JobeInAbox* image.
 Other cloud servers, such as Amazon ECS, can of course also be used.
 
  1. Set yourself up with an account on [Digital Ocean](https://cloud.digitalocean.com).
- 2. Create new Droplet: Ubuntu 18.04. x64, minimal config ($5 per month; 1GB CPI, 25GB disk)
+ 2. Create new Droplet: Ubuntu 20.04. x64, minimal config ($5 per month; 1GB CPI, 25GB disk)
  3. Connect to the server with an SSH client.
- 4. Install docker (see https://phoenixnap.com/kb/how-to-install-docker-on-ubuntu-18-04): sudo apt update; sudo apt install docker.io
- 5. Start Docker: sudo systemctl start docker; sudo systemctl enable docker
- 6. Launch JobeInABox with Docker: sudo docker run -d -p 80:80 --name jobe trampgeek/jobeinabox:latest
+ 4. Install docker (see https://phoenixnap.com/kb/how-to-install-docker-on-ubuntu-18-04): 
+    sudo apt update; sudo apt install docker.io
+ 5. Launch JobeInABox with Docker: sudo docker run -d -p 80:80 --name jobe trampgeek/jobeinabox:latest
 
-At this point you have a running Jobe server. You can check it's working with the command
+At this point you have a running Jobe server. You can check it's working by browsing to
 
-    sudo docker run -d -p 4000:80 --name jobe trampgeek/jobeinabox:latest
+    http://<hostname>/jobe/index.php/restapi/languages
+
+You should get presented with a JSON list of installed languages.
 
 And you can connect your CodeRunner plugin to it by setting the new JobeServer
 IP number in the Admin panel of the plugin. You're in business!
