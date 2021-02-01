@@ -211,7 +211,9 @@ abstract class Task {
         $retries = 0;
         while ($user == -1) {  // Loop until we have a user (or an OverloadException is thrown)
             sem_acquire($sem);
-            $shm = shm_attach($key);
+            // Change default permission to 600 (read/write only by owner)
+            // 10000 is the default shm size
+            $shm = shm_attach($key, 10000, 0600);
             if (!shm_has_var($shm, ACTIVE_USERS)) {
                 // First time since boot -- initialise active list
                 $active = array();
