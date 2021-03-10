@@ -379,7 +379,8 @@ If the install appears OK but testsubmit.py fails:
     for all http requests.
  1. If you are getting Overloaded errors, then you can display the in-memory
     locks on the Jobe users with this PHP one-liner:
-    ```php -r 'print_r(shm_get_var(shm_attach(ftok
+    
+    php -r 'print_r(shm_get_var(shm_attach(ftok
       ("/var/www/html/jobe/application/libraries/LanguageTask.php", "j")), 1));'
 
 If you still can't figure it out, email me (Richard Lobb; my gmail name is
