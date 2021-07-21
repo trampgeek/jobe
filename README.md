@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.6.5, 31 January 2021
+Version: 1.6.6, 21 July 2021
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -851,3 +851,10 @@ that results in multiple error messages when a python syntax check fails.
 
   1. Prevent privilege escalation attacks via sourcefilename [issue #46](https://github.com/trampgeek/jobe/issues/46).
   1. Add a load tester (ad hoc, experimental), loadtester.py.
+
+### 1.6.6 (21 July 2021)
+
+  1. Add a config parameter to determine which python3 executable to use if
+     there are multiple versions installed.
+  1. Remove the temporary workaround for a bug in the python3 py_compile module
+     (now fixed).
