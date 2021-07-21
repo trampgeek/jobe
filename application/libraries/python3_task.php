@@ -11,6 +11,8 @@
  */
 
 require_once('application/libraries/LanguageTask.php');
+global $CFG, $PYTHON3_VERSION;
+$PYTHON3_VERSION = $CFG->item('python3_version');
 
 class Python3_Task extends Task {
 
@@ -25,14 +27,13 @@ class Python3_Task extends Task {
     }
 
     public static function getVersionCommand() {
-        return array('python3 --version', '/Python ([0-9._]*)/');
+        global $PYTHON3_VERSION;
+        return array("$PYTHON3_VERSION --version", '/Python ([0-9._]*)/');
     }
 
     public function compile() {
-        //$cmd = "python3 -m py_compile {$this->sourceFileName}";
-        // Workaround for python3 py_compile bug (https://bugs.python.org/issue38731)
-        // still apparently not fixed 18 months later?
-        $cmd = "python3 -c \"from py_compile import compile\ncompile('{$this->sourceFileName}')\"";
+        global $PYTHON3_VERSION;
+        $cmd = "python3 -m py_compile {$this->sourceFileName}";
         $this->executableFileName = $this->sourceFileName;
         list($output, $this->cmpinfo) = $this->run_in_sandbox($cmd);
         if (!empty($this->cmpinfo) && !empty($output)) {
@@ -48,7 +49,8 @@ class Python3_Task extends Task {
 
 
     public function getExecutablePath() {
-        return '/usr/bin/python3';
+        global $PYTHON3_VERSION;
+        return "/usr/bin/$PYTHON3_VERSION";
      }
 
 

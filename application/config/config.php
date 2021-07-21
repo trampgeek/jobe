@@ -542,8 +542,11 @@ $config['jobe_max_users'] = 10;
 $config['cputime_upper_limit_secs'] = 50;
 $config['clean_up_path'] = '/tmp;/var/tmp;/var/crash;/run/lock;/var/lock';
 $config['debugging'] = FALSE;
+$config['python3_version'] = 'python3'; # /usr/bin/<python3_version> is the python to run
+// NB: if you modify the python3_version configuration you will also need to
+// reboot the server or delete the file /tmp/jobe_language_cache_file (which
+// might be hidden away in a systemd-private directory, depending on your Linux
+// version).
 
 /* End of file config.php */
 /* Location: ./application/config/config.php */
-
-
