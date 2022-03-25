@@ -57,7 +57,7 @@ abstract class Task {
     public $min_params_compile = array(
         'disklimit'     => 20,      // MB
         'cputime'       => 2,       // secs
-        'memorylimit'   => 200,     // MB
+        'memorylimit'   => 500,     // MB
         'numprocs'      => 5        // processes
     );
 
@@ -357,7 +357,7 @@ abstract class Task {
     }
 
 
-    
+
     // Check if PHP exec environment includes a PATH. If not, set up a
     // default, or gcc misbehaves. [Thanks to Binoj D for this bug fix,
     // needed on his CentOS system.]
