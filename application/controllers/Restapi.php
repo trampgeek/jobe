@@ -193,10 +193,9 @@ class Restapi extends REST_Controller {
 
         // Get the parameters, and validate.
         $params = isset($run->parameters) ? $run->parameters : array();
-        if (isset($params['cputime']) &&
-                intval($params['cputime']) > intval($CI->config->item('cputime_upper_limit_secs'))
-        ) {
-            $this->response("cputime exceeds maximum allowed on this Jobe server", 400);
+        $max_cpu_time = intval($CI->config->item('cputime_upper_limit_secs'));
+        if (isset($params['cputime']) && intval($params['cputime']) > $max_cpu_time) {
+            $this->response("cputime exceeds maximum allowed on this Jobe server ($max_cpu_time secs)", 400);
         }
 
         // Debugging is set either via a config parameter or, for a
@@ -275,7 +274,7 @@ class Restapi extends REST_Controller {
     // **********************
     // Support functions
     // **********************
-    
+
     // Return true unless the given filename looks dangerous, e.g. has '/' or '..'
     // substrings. Uses code from https://stackoverflow.com/questions/2021624/string-sanitizer-for-filename
     private static function is_valid_source_filename($filename) {
@@ -292,7 +291,7 @@ class Restapi extends REST_Controller {
         $sanitised = ltrim($sanitised, '.-');
         return $sanitised === $filename;
     }
-    
+
     private function is_valid_filespec($file) {
         return (count($file) == 2 || count($file) == 3) &&
              is_string($file[0]) &&
