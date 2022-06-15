@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.6.6, 21 July 2021
+Version: 1.6.7, 15 June 2022
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -253,7 +253,7 @@ Other cloud servers, such as Amazon ECS, can of course also be used.
  1. Set yourself up with an account on [Digital Ocean](https://cloud.digitalocean.com).
  2. Create new Droplet: Ubuntu 20.04. x64, minimal config ($5 per month; 1GB CPI, 25GB disk)
  3. Connect to the server with an SSH client.
- 4. Install docker (see https://phoenixnap.com/kb/how-to-install-docker-on-ubuntu-18-04): 
+ 4. Install docker (see https://phoenixnap.com/kb/how-to-install-docker-on-ubuntu-18-04):
     sudo apt update; sudo apt install docker.io
  5. Launch JobeInABox with Docker: sudo docker run -d -p 80:80 --name jobe trampgeek/jobeinabox:latest
 
@@ -379,7 +379,7 @@ If the install appears OK but testsubmit.py fails:
     for all http requests.
  1. If you are getting Overloaded errors, then you can display the in-memory
     locks on the Jobe users with this PHP one-liner:
-    
+
     ```php -r 'print_r(shm_get_var(shm_attach(ftok
       ("/var/www/html/jobe/application/libraries/LanguageTask.php", "j")), 1));```
 
@@ -859,3 +859,9 @@ that results in multiple error messages when a python syntax check fails.
      there are multiple versions installed.
   1. Remove the temporary workaround for a bug in the python3 py_compile module
      (now fixed).
+
+### 1.6.7 (15 June 2022)
+
+  1. Tweak RestServer code to handle PHP 8
+  1. Tweak testsubmit.py to handle larger default memory limits and possible
+     increases in the user-configured maxcputime.
