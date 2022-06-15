@@ -369,8 +369,8 @@ int main() {
     'language_id': 'c',
     'sourcecode': r'''#include <stdio.h>
 #include <stdlib.h>
-// Will try to allocate 500MB; default limit is 200MB
-#define CHUNKSIZE 500000000
+// Will try to allocate 2000MB - should be above the default on all systems (?).
+#define CHUNKSIZE 2000000000
 
 int main() {
     char* p = malloc(CHUNKSIZE);
@@ -966,8 +966,9 @@ def do_get_languages():
 
 def check_bad_cputime():
     """Check that setting the cputime parameter in a run request to a value
-       greater than 50 (the default configured cputime_upper_limit_secs)
-       the appropriate 400 response occurs
+       greater than 150 generates an appropriate 400 response occurs.
+       [The default max is 50, but many sites raise this, so a more
+       extreme value of 151 has been chosen here.]
     """
     test = {
     'comment': 'C program run with illegal cputime',
@@ -978,13 +979,13 @@ int main() {
 }
 ''',
     'sourcefilename': 'test.c',
-    'parameters': {'cputime': 51}
+    'parameters': {'cputime': 151}
 }
     runspec = runspec_from_test(test)
     data = json.dumps({ 'run_spec' : runspec })
     print("\nTesting a submission with an excessive cputime parameter")
     ok, result = do_http('POST', RUNS_RESOURCE, data)
-    if result == "400: cputime exceeds maximum allowed on this Jobe server":
+    if result.startswith("400: cputime exceeds maximum allowed on this Jobe server"):
         print("OK")
     else:
         print("********** TEST FAILED **************")
