@@ -462,10 +462,15 @@ abstract class Task {
         }
     }
 
+    // Check if the task can be run
+
+    public function isRunnable() {
+      return empty($this->cmpinfo);
+    }
 
     // Return the JobeAPI result object to describe the state of this task
     public function resultObject() {
-        if ($this->cmpinfo) {
+        if (!$this->isRunnable()) {
             $this->result = Task::RESULT_COMPILATION_ERROR;
         }
         return new ResultObject(
