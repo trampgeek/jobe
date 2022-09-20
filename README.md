@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.6.7, 15 June 2022
+Version: 1.6.8, 20 September 2022
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -865,3 +865,8 @@ that results in multiple error messages when a python syntax check fails.
   1. Tweak RestServer code to handle PHP 8
   1. Tweak testsubmit.py to handle larger default memory limits and possible
      increases in the user-configured maxcputime.
+
+### 1.6.8 (20 September 2022)
+
+  1. Bug fix - the Python3 syntax check, using py_compile, was using the
+     default installed Python3 version, not a customised one (if set).

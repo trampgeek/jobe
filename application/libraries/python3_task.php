@@ -33,7 +33,7 @@ class Python3_Task extends Task {
 
     public function compile() {
         global $PYTHON3_VERSION;
-        $cmd = "python3 -m py_compile {$this->sourceFileName}";
+        $cmd = "$PYTHON3_VERSION -m py_compile {$this->sourceFileName}";
         $this->executableFileName = $this->sourceFileName;
         list($output, $this->cmpinfo) = $this->run_in_sandbox($cmd);
         if (!empty($this->cmpinfo) && !empty($output)) {
