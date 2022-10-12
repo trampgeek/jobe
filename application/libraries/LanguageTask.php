@@ -42,7 +42,7 @@ abstract class Task {
         'streamsize'    => 2,       // MB (for stdout/stderr)
         'cputime'       => 5,       // secs
         'memorylimit'   => 200,     // MB
-        'numprocs'      => 20,
+        'numprocs'      => 30,
         'compileargs'   => array(),
         'linkargs'      => array(),
         'interpreterargs' => array(),
