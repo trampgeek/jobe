@@ -695,7 +695,7 @@ end.
     'comment': 'Fail Hello world Pascal test',
     'language_id': 'pascal',
     'sourcecode': r'''begin
-writeln('Hello world!);
+writeln('Hello world!');
 end.
 ''',
     'sourcefilename': 'prog.pas',
