@@ -9,7 +9,6 @@
 from __future__ import print_function
 import os
 import subprocess
-import multiprocessing
 import re
 import sys
 
@@ -155,12 +154,7 @@ def main():
         try:
             check_php_version()
 
-            num_jobe_users = get_config('jobe_max_users', install_dir)
-            try:
-                num_jobe_users = int(num_jobe_users)
-            except ValueError:
-                # Must be still the default value of $ncpu
-                num_jobe_users = multiprocessing.cpu_count()
+            num_jobe_users = int(get_config('jobe_max_users', install_dir))
             if purging:
                 print('Purging all prior jobe users and files')
                 do_purge(install_dir, num_jobe_users)
