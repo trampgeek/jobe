@@ -722,12 +722,43 @@ could be 2 or more times higher, depending
 on the server infrastructure.
 
 <table>
-<tr><th>Language</th>Language id</th></th><th>Max burst size (jobs)</th><th>Max sustained throughput (jobs/sec)</th></tr>
-<tr><td>C</td><td>c</td><td>128</td><td>18</td></tr>
-<tr><td>Python3</td><td>python3</td><td>128</td><td>18</td></tr>
-<tr><td>JavaScript</td>td>nodejs</td></td><td>64</td><td>13</td></tr>
-<tr><td>C++/td><td>cpp</td><td>32</td><td>5</td></tr>
-<tr><td>Java</td><td>java</td><td>16</td><td>2</td></tr>
+<tr>
+    <th>Language</th>
+    <th>Language id</th>
+    <th>Max burst size (jobs)</th>
+    <th>Max sustained throughput (jobs/sec)</th>
+</tr>
+<tr>
+    <td>C</td>
+    <td>c</td>
+    <td>128</td>
+    <td>18</td>
+</tr>
+<tr>
+    <td>Python3</td>
+    <td>python3</td>
+    <td>128</td>
+    <td>18</td>
+</tr>
+<tr>
+    <td>JavaScript</td>
+    <td>nodejs</td>
+    <td>64</td>
+    <td>13</td>
+</tr>
+<tr>
+    <td>C++</td>
+    <td>cpp</td>
+    <td>32</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>Java</td>
+    <td>java</td>
+    <td>16</td>
+    <td>2</td>
+</tr>
+</table>
 
 ## Change Log
 
