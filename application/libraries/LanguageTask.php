@@ -14,7 +14,6 @@
 require_once('application/libraries/resultobject.php');
 
 define('ACTIVE_USERS', 1);  // The key for the shared memory active users array
-define('MAX_RETRIES', 8);   // Maximum retries (1 secs per retry), waiting for free user account
 
 class OverloadException extends Exception {
 }
@@ -205,6 +204,7 @@ abstract class Task {
         global $CI;
 
         $numUsers = $CI->config->item('jobe_max_users');
+        $jobe_wait_timeout = $CI->config->item('jobe_wait_timeout');
         $key = ftok(__FILE__,  TASK::PROJECT_KEY);
         $sem = sem_get($key);
         $user = -1;
@@ -235,7 +235,7 @@ abstract class Task {
             if ($user == $numUsers) {
                 $user = -1;
                 $retries += 1;
-                if ($retries <= MAX_RETRIES) {
+                if ($retries <= $jobe_wait_timeout) {
                     sleep(1);
                 } else {
                     throw new OverloadException();
