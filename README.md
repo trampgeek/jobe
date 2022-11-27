@@ -443,7 +443,7 @@ is not a problem we have ever observed in
 practice. However, it should be possible to protect against such an outcome by
 setting disk quotas for the users jobe00, jobe01, ... jobe09 [The number
 of such user accounts is defined by the parameter `jobe_max_users` in
-`application/config/config.php`. The default value is 10.]
+`application/config/config.php`. The default value is 8.]
 Instructions for installing the quota
 management system and setting quotas are given in various places on the web, e.g.
 [here](https://www.digitalocean.com/community/tutorials/how-to-enable-user-and-group-quotas).
@@ -712,10 +712,6 @@ Thus burst sizes might be low by a factor of 2. Apart from that, however,
 all figures should be regarded
 as upper-bounds on performance since the test jobs are of minimal size with
 minimal communication overhead.
-
-Performance of containerised Jobes, such as *JobeInABox* will be
-lower by a factor of around 2 for the faster languages like C and Python,
-but similar for slower languages like C++ and Java.
 
 Performance figures on 8-core virtualised servers on enterprise server systems
 could be 2 or more times higher, depending
