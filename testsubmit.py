@@ -12,47 +12,39 @@
     from the command line, and use a non-zero exit code (number of
     failures + number of exceptions) if not all tests pass.
 
-    Usage:
-    To run all tests:
-        ./testsubmit.py
-    or
-        ./testsubmit.py --verbose
+    Modified 27/11/2022 to include --perf to replace the normal test procedures
+    with a procedure to measure the performance of the Jobe server, both peak
+    burst-load capability and sustained load capability. If the command has
+    a list of languages, the performance test is done for each in turn, using
+    the first program in the test set in that language. Otherwise, the
+    test is done using only C.
 
-    To run selected tests by language:
-        ./testsubmit.py python3 octave --verbose
-    (Use of --verbose is optional here.)
+    Note that performance-check mode can take several minutes to run and will
+    repeatedly overload the Jobe server so must not be used on a production
+    Jobe server.
+
+    Enhanced UI to use standard arg parser, with options to set most of the
+    control variables formerly edited by hand in this code.
+
+    For information type 'python3 testsubmit.py --help'
+
 '''
-
+import json
+import sys
+import argparse
+import http.client
 from urllib.request import urlopen
 from urllib.parse import urlencode
 from urllib.error import HTTPError
-import json
-import sys
-import http.client
+from time import perf_counter, sleep
 from threading import Thread
 from hashlib import md5
 import copy
 from base64 import b64encode
 
-# Set VERBOSE to true to get a detailed report on each run as it is done
-# Can also be set True with --verbose command argument.
-VERBOSE = False
-
-# Set DEBUGGING to True to instruct Jobe to use debug mode, i.e., to
-# leave all runs (commands, input output etc) in /home/jobe/runs, rather
-# than deleting each run as soon as it is done.
-DEBUGGING = False
-
-# Set JOBE_SERVER to the Jobe server URL.
-# If Jobe expects an X-API-Key header, set API_KEY to a working value and set
-# USE_API_KEY to True.
 API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (100/hr) key on Jobe2
-
-USE_API_KEY = True
-JOBE_SERVER = 'localhost'
+DEBUGGING = False  # If true, all runs are saved on the Jobe server. Not recommended (there are lots!)
 RUNS_RESOURCE = '/jobe/index.php/restapi/runs/'
-
-#JOBE_SERVER = 'jobe2.cosc.canterbury.ac.nz'
 
 # The next constant controls the maximum number of parallel submissions to
 # throw at Jobe at once. Numbers less than or equal to the number of Jobe
@@ -429,11 +421,15 @@ int main() {
             successes += 1;
         }
     }
-    printf("%d forks succeeded, %d failed\n", successes, failures);
+    if (successes > 5 && successes <= 20) {
+        printf("OK\n");
+    } else {
+        printf("%d forks succeeded, %d failed\n", successes, failures);
+    }
 }''',
     'sourcefilename': 'test.c',
-    'parameters': { 'numprocs': 10 },
-    'expect': { 'outcome': 15, 'stdout': '9 forks succeeded, 991 failed\n' }
+    'parameters': { 'numprocs': 20 },
+    'expect': { 'outcome': 15, 'stdout': 'OK\n' }
 },
 
 
@@ -710,45 +706,42 @@ end.
 #
 #==========================================================================
 
+def output(*args, **keywords):
+    """Behave like print unless in performance mode, when do nothing."""
+    if not ARGS.perf:
+        print(*args, **keywords)
 
-def check_parallel_submissions():
-    '''Check that we can submit several jobs at once to Jobe with
-       the process limit set to 1 and still have no conflicts.
+
+def check_multiple_submissions(job, num_submits, sleep_time=0):
+    '''Check that we can submit the specified job to the jobe server 'num_submits'
+       times, pausing 'sleep_time' secs after each, and have all jobs run
+       correctly.
+       Return GOOD_TEST if all run or or FAIL_TEST otherwise.
+
     '''
 
-    job = {
-        'comment': 'C program to check parallel submissions',
-        'language_id': 'c',
-        'sourcecode': r'''#include <stdio.h>
-#include <unistd.h>
-int main() {
-    printf("Hello 1\n");
-    sleep(2);
-    printf("Hello 2\n");
-}''',
-        'sourcefilename': 'test.c',
-        'parameters': { 'numprocs': 1 },
-        'expect': { 'outcome': 15, 'stdout': 'Hello 1\nHello 2\n' }
-    }
-
     threads = []
-    print("\nChecking parallel submissions")
-    for child_num in range(NUM_PARALLEL_SUBMITS):
-        print("Doing child", child_num)
+    overall_outcome = GOOD_TEST
+    for child_num in range(num_submits):
+        if ARGS.verbose:
+            output(f"Doing child {child_num}")
         def run_job():
+            nonlocal overall_outcome
             this_job = copy.deepcopy(job)
             this_job['comment'] += '. Child' + str(child_num)
-            run_test(job)
+            if run_test(job) != GOOD_TEST:
+                overall_outcome = FAIL_TEST
 
         t = Thread(target=run_job)
         threads.append(t)
         t.start()
+        if sleep_time:
+            sleep(sleep_time)
 
     for t in threads:
         t.join()
-    print("All done")
-
-
+    output("All done")
+    return overall_outcome
 
 
 def is_correct_result(expected, got):
@@ -759,15 +752,16 @@ def is_correct_result(expected, got):
             return False
     return True
 
+
 # =============================================================
 
 def http_request(method, resource, data, headers):
     '''Send a request to Jobe with given HTTP method to given resource on
        the currently configured Jobe server and given data and headers.
        Return the connection object. '''
-    if USE_API_KEY:
-            headers["X-API-KEY"] = API_KEY
-    connect = http.client.HTTPConnection(JOBE_SERVER)
+    headers["X-API-KEY"] = API_KEY  # Relevant only when testing on UCan jobe2
+    url = f"{ARGS.host}:{ARGS.port}"
+    connect = http.client.HTTPConnection(url)
     connect.request(method, resource, data, headers)
     return connect
 
@@ -783,12 +777,12 @@ def check_file(file_id):
         connect = http_request('HEAD', resource, '', headers)
         response = connect.getresponse()
 
-        if VERBOSE:
-            print("Response to getting status of file ", file_id, ':')
+        if ARGS.verbose:
+            output(f"Response to getting status of file {file_id}:")
             content = ''
             if response.status != 204:
                 content =  response.read(4096)
-            print(response.status, response.reason, content)
+            output(f"{response.status} {response.reason} {content}")
 
         connect.close()
 
@@ -811,12 +805,12 @@ def put_file(file_desc):
                "Accept": "text/plain"}
     connect = http_request('PUT', resource, data, headers)
     response = connect.getresponse()
-    if VERBOSE or response.status != 204:
-        print("Response to putting", file_id, ':')
+    if ARGS.verbose or response.status != 204:
+        output(f"Response to putting {file_id}:")
         content = ''
         if response.status != 204:
             content =  response.read(4096)
-        print(response.status, response.reason, content)
+        output(f"{response.status} {response.reason} {content}")
     connect.close()
 
 
@@ -840,7 +834,7 @@ def run_test(test):
         put_file(file_desc)
         response_code = check_file(file_desc[0])
         if response_code != 204:
-            print("******** Put file/check file failed ({}). File not found.****".
+            output("******** Put file/check file failed ({}). File not found.****".
                   format(response_code))
 
     # Prepare the request
@@ -857,17 +851,18 @@ def run_test(test):
    # If not an exception, check the response is as specified
 
     if is_correct_result(test['expect'], result):
-        if VERBOSE:
+        if ARGS.verbose:
             display_result(test['comment'], result)
         else:
-            print(test['comment'] + ' OK')
+            output(test['comment'] + ' OK')
         return GOOD_TEST
     else:
-        print("\n***************** FAILED TEST ******************\n")
-        print(result)
+        output("\n***************** FAILED TEST ******************\n")
+        output(result)
         display_result(test['comment'], result)
-        print("\n************************************************\n")
+        output("\n************************************************\n")
         return FAIL_TEST
+    print("Shouldn't get here!")
 
 
 def do_http(method, resource, data=None):
@@ -896,11 +891,11 @@ def do_http(method, resource, data=None):
         connect.close()
 
     except (HTTPError, ValueError) as e:
-        print("\n***************** HTTP ERROR ******************\n")
+        output("\n***************** HTTP ERROR ******************\n")
         if response:
-            print(' Response:', response.status, response.reason, content)
+            output(' Response:', response.status, response.reason, content)
         else:
-            print(e)
+            output(e)
         ok = False
     return (ok, result)
 
@@ -916,9 +911,9 @@ def trim(s):
 
 def display_result(comment, ro):
     '''Display the given result object'''
-    print(comment)
+    output(comment)
     if not isinstance(ro, dict) or 'outcome' not in ro:
-        print("Bad result object", ro)
+        output("Bad result object", ro)
         return
 
     outcomes = {
@@ -933,35 +928,35 @@ def display_result(comment, ro):
         21: 'Server overload. Excessive parallelism?'}
 
     code = ro['outcome']
-    print("Jobe result: {}".format(outcomes[code]))
-    print()
+    output("Jobe result: {}".format(outcomes[code]))
+    output()
     if ro['cmpinfo']:
-        print("Compiler output:")
-        print(ro['cmpinfo'])
-        print()
+        output("Compiler output:")
+        output(ro['cmpinfo'])
+        output()
     else:
         if ro['stdout']:
-            print("Output:")
-            print(trim(ro['stdout']))
+            output("Output:")
+            output(trim(ro['stdout']))
         else:
-            print("No output")
+            output("No output")
         if ro['stderr']:
-            print()
-            print("Error output:")
-            print(trim(ro['stderr']))
+            output()
+            output("Error output:")
+            output(trim(ro['stderr']))
 
 
 def do_get_languages():
     """List all languages available on the jobe server"""
-    print("Supported languages:")
+    output("Supported languages:")
     resource = '/jobe/index.php/restapi/languages'
     ok, lang_versions = do_http('GET', resource)
     if not ok:
-        print("**** An exception occurred when getting languages ****")
+        output("**** An exception occurred when getting languages ****")
     else:
         for lang, version in lang_versions:
-            print("    {}: {}".format(lang, version))
-    print()
+            output("    {}: {}".format(lang, version))
+    output()
 
 
 def check_bad_cputime():
@@ -983,25 +978,18 @@ int main() {
 }
     runspec = runspec_from_test(test)
     data = json.dumps({ 'run_spec' : runspec })
-    print("\nTesting a submission with an excessive cputime parameter")
+    output("\nTesting a submission with an excessive cputime parameter")
     ok, result = do_http('POST', RUNS_RESOURCE, data)
     if result.startswith("400: cputime exceeds maximum allowed on this Jobe server"):
-        print("OK")
+        output("OK")
     else:
-        print("********** TEST FAILED **************")
-        print("Return value from do_http was ", (ok, result))
+        output("********** TEST FAILED **************")
+        output(f"Return value from do_http was {(ok, result)}")
 
 
-def main():
-    '''Every home should have one'''
-    global VERBOSE
+def normal_testing(langs_to_run):
+    '''Do the normal tests of functionality over the given languages.'''
     do_get_languages()
-    langs_to_run = set(sys.argv[1:]) # Get rid of the program name
-    if '--verbose' in langs_to_run:
-        VERBOSE = True
-        langs_to_run.remove('--verbose')
-    if len(langs_to_run) == 0:
-        langs_to_run = set([testcase['language_id'] for testcase in TEST_SET])
     counters = [0, 0, 0]  # Passes, fails, exceptions
     tests_run = 0;
     for test in TEST_SET:
@@ -1009,20 +997,127 @@ def main():
             tests_run += 1
             result = run_test(test)
             counters[result] += 1
-            if VERBOSE:
-                print('=====================================')
+            if ARGS.verbose:
+                output('=====================================')
 
-    print()
-    print("{} tests, {} passed, {} failed, {} exceptions".format(
+    output()
+    output("{} tests, {} passed, {} failed, {} exceptions".format(
         tests_run, counters[0], counters[1], counters[2]))
 
     if 'c' in langs_to_run:
-        check_parallel_submissions()
+        job = [job for job in TEST_SET if job['language_id'] == 'c'][0]
+        output(f"\nChecking parallel submissions in C")
+        check_multiple_submissions(job, NUM_PARALLEL_SUBMITS, 0)
         check_bad_cputime()
 
     return counters[1] + counters[2]
 
 
+def check_sustained_load(lang, starting_rate):
+    """Check the achievable sustained load in the given language.
+       Starting at the given rate less 1 jobs/sec, send jobs at a steady rate
+       over a 30 second time window, making sure all are successful. Increase the rate until
+       a single failure occurs. Report the maximum achieved sustained rate.
+    """
+    rate = max(1, int(starting_rate - 1))  # Jobs per sec
+    best_rate = None
+    job = [job for job in TEST_SET if job['language_id'] == lang][0]
+
+    failed = False
+    while not failed:
+        t0 = perf_counter()
+        print(f"Testing with rate of {rate} jobs/sec", end=': ')
+        sys.stdout.flush()
+        num_submits = int(int(ARGS.window) * rate)
+        if check_multiple_submissions(job, num_submits, 1 / rate) != GOOD_TEST:
+            failed = True
+            print("Failed")
+        else:
+            best_rate = rate
+            if rate < 10:
+                rate += 1
+            else:
+                rate = int(rate * 1.2)
+            print("OK")
+    print(f"Sustained throughout rate: {best_rate} jobs/sec")
+
+
+def check_performance(lang):
+    """Check the performance limits of the Jobe server in the given language,
+       using the first of the test jobs in that language (usually about the
+       simplest possible job in that language).
+       First, repeatedly double the number of parallel submissions until a
+       failure occurs. Report on the maximum achieved peak burst rate
+       across all bursts.
+       Using the maximum throughput across all bursts as a starting point, then
+       try finding the maximum sustainable rate over a 20 second window by
+       sending jobs at that rate less 10%, increasing in steps of 20%,
+       until failure occurs."""
+    num_submits = 1
+    outcome = GOOD_TEST
+    best_rate = 0
+    job = [job for job in TEST_SET if job['language_id'] == lang][0]
+
+    while outcome == GOOD_TEST:
+        t0 = perf_counter()
+        outcome = check_multiple_submissions(job, num_submits, 0)
+        t1 = perf_counter()
+        print(f"{num_submits} parallel submits: ", end='')
+        if outcome == GOOD_TEST:
+            rate = int(num_submits / (t1 - t0))
+            print(f"OK. {rate} jobs/sec")
+            best_rate = max(rate, best_rate)
+            num_submits *= 2
+        else:
+            print("FAIL.")
+
+    print()
+    peak_burst_rate = num_submits // 2
+    print(f"Maximum burst handled with no errors = {peak_burst_rate} jobs")
+    print(f"\nChecking maximum sustained throughput over {ARGS.window} sec window")
+    check_sustained_load(lang, best_rate)
+
+
+def main():
+    global ARGS
+    parser = argparse.ArgumentParser(
+        prog='python3 testsubmit.py',
+        description='Test the Jobe server',
+        epilog="""Without the --perf option, test that the server correctly runs
+sample programs in the specified languages, or all languages if none are specified.
+With the '--perf' option, attempt to determine the maximum burst-handling rate and
+the maximum sustainable throughput in all the given languages (default to just c).
+Do not use --perf on a production server as it will repeatedly overload it, causing
+other users' submissions to fail."""
+    )
+    parser.add_argument('--host', default='localhost',
+        help="The hostname of the Jobe server (default localhost)")
+    parser.add_argument('--port', default='80',
+        help="The port number on the Jobe host (default 80)")
+    parser.add_argument('--perf', action='store_true',
+        help='Measure performance instead of correctness')
+    parser.add_argument('-v', '--verbose', action='store_true',
+        help='Print extra info during tests')
+    parser.add_argument('langs', nargs='*',
+        help='Language(s) to check. One or more of: c cpp python3 java php pascal octave nodejs')
+    parser.add_argument('-w', '--window',
+        default='30',
+        help='''The time window in secs over which to measure sustainable throughput.
+Default 30. Use only with --perf. A value less than about 10 will not give meaningful answers''')
+
+    ARGS = parser.parse_args()
+    langs_to_run = ARGS.langs
+    if langs_to_run is None:
+        if ARGS.perf:
+            langs_to_run = ['c']
+        else:
+            langs_to_run = set([testcase['language_id'] for testcase in TEST_SET])
+    if not ARGS.perf:
+        return normal_testing(langs_to_run)
+    else:
+        for lang in langs_to_run:
+            print(f"Measuring performance in {lang}")
+            check_performance(lang)
+        return 0
+
 sys.exit(main())
-
-
