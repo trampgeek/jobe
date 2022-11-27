@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.6.8, 20 September 2022
+Version: 1.7.0, 27 November 2022
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -278,6 +278,12 @@ can use it, and so it can't itself open outgoing connections. For example:
 
 ## Testing the install
 
+The program *testsubmit.py* allows you to test your jobe server. For information
+on how to use it run this command on the Jobe server:
+
+    python3 testsubmit.py --help
+
+### Testing general correctness
 To test the installation, first try running the tester with the command
 
     python3 testsubmit.py
@@ -289,12 +295,36 @@ in /tmp so subsequent runs will be much faster, at least until the next reboot,
 when the list is rebuilt.
 
 All going well, you should then be able to copy the *testsubmit.py* file to
-any client machine that is allowed to access the jobe server, edit the line
+any client machine that is allowed to access the jobe server and rerun the
+command with a line of the form
 
-    JOBE_SERVER = 'localhost'
+    python3 testsubmit.py --host='jobe.somehow.somewhere' --port=4000
 
-to reference the JOBE_SERVER, e.g. by replacing *localhost* with its IP
-number, and re-run the tester with the same command from the client machine.
+where the host and port are set to reference the jobe server.
+
+### Testing performance
+
+To test the performance of your new Jobe server, run the testsubmit program
+on your client machine again, this time with a --perf command line argument, e.g.
+
+    python3 testsubmit.py --perf --host='jobe.somehow.somewhere' --port=4000
+
+The test will print information on the maximum burst of C compile-and-run submissions the server
+can handle in isolation and the sustained rate of submissions over a 30 second
+window by default. The figures you get are upper bounds, since the program being
+used for testing is a minimal 'hello world' program. It's also possible that
+the Moodle server cannot deliver jobs to the Jobe server at the maximum rate.
+
+Languages like C, PHP and nodejs have similar performance since the communication
+and server overheads dominate the performance. For slower languages like C++
+and particularly Java however, you will much lower throughput. To test Java,
+for example, type add the argument 'java' to the above command, i.e.
+
+    python3 testsubmit.py --perf --host='jobe.somehow.somewhere' --port=4000 java
+
+*WARNING*: you should not run the performance test on a live production server,
+as it repeatedly pushes the server into overload, which will result in other
+users' jobs also receiving server-overload errors.
 
 ## Using Jobe
 
@@ -303,9 +333,9 @@ has been installed and tested with `testsubmit.py` it can be used by CodeRunner
 questions by plugging the Jobe server hostname into the CodeRunner administrator
 settings, replacing the default value of `jobe2.cosc.canterbury.ac.nz`.
 
-However, Jobe can also be used standalone. The `testsubmit.py` program shows
-how it can be invoked from a Python client. There are also two other simpler
-clients provided in this repository: `simpletest.py` and `minimaltest.py`.
+However, Jobe can also be used standalone. The `simpletest.py` program shows
+how it can be invoked from a Python client.
+
 Note that the POST request
 payload must a JSON object with a *run_spec* attribute as specified in the
 document *restapi.pdf*. For example, the following POST data runs the classic
@@ -363,9 +393,6 @@ If the install appears OK but testsubmit.py fails:
     a readable error message.
  1. You are running testsubmit.py with Python3, right?
  1. Check the apache error log.
- 1. Set DEBUGGING = True in testsubmit.py (around line 19). This will result
-    in all jobe runs being saved in /home/jobe/runs. [Normally a run directory
-    is removed after each run completes.]
  1. If something unexpected happened with the actual run of a program, find
     the run in /home/jobe/runs and try executing the program manually. [The
     run directory contains the source file, the bash command used to run it,
@@ -673,6 +700,35 @@ Additionally the subclass may define:
 1. filteredStdout(). This performs the same task as filteredStderr() except it
    filters stdout, available to the function as $this->stdout.
 
+## Some typical (?) performance figures
+
+The following performance measurements were made on a physical
+8-core 16GB Intel i5 CPU @1.60GHz Jobe server.
+
+Burst sizes are measured by sending a burst of
+submissions as fast as possible to the server and then observing whether or not
+they all run successfully. If so, the burst size is doubled and the test repeated.
+Thus burst sizes might be low by a factor of 2. Apart from that, however,
+all figures should be regarded
+as upper-bounds on performance since the test jobs are of minimal size with
+minimal communication overhead.
+
+Performance of containerised Jobes, such as *JobeInABox* will be
+lower by a factor of around 2 for the faster languages like C and Python,
+but similar for slower languages like C++ and Java.
+
+Performance figures on 8-core virtualised servers on enterprise server systems
+could be 2 or more times higher, depending
+on the server infrastructure.
+
+<table>
+<tr><th>Language</th>Language id</th></th><th>Max burst size (jobs)</th><th>Max sustained throughput (jobs/sec)</th></tr>
+<tr><td>C</td><td>c</td><td>128</td><td>18</td></tr>
+<tr><td>Python3</td><td>python3</td><td>128</td><td>18</td></tr>
+<tr><td>JavaScript</td>td>nodejs</td></td><td>64</td><td>13</td></tr>
+<tr><td>C++/td><td>cpp</td><td>32</td><td>5</td></tr>
+<tr><td>Java</td><td>java</td><td>16</td><td>2</td></tr>
+
 ## Change Log
 
 ### Version 1.2
@@ -870,3 +926,18 @@ that results in multiple error messages when a python syntax check fails.
 
   1. Bug fix - the Python3 syntax check, using py_compile, was using the
      default installed Python3 version, not a customised one (if set).
+
+### 1.7.0 (27 December 2022)
+
+  1. Add a configuration parameter to config.php to allow users to adjust the
+     maximum time Jobe will wait for a free worker thread before aborting the
+     execution and returning a server-overload response.
+
+  1. Alter the testsubmit program to workaround differences in the way RedHat
+     servers handle process limits, particularly in containerised versions of
+     Jobe.
+
+  1. Add performance measurement code to the testsubmit program.
+
+  1. Add several command-line arguments to make the testsubmit.py program more
+     user-friendly.
