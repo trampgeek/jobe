@@ -1107,7 +1107,7 @@ Default 30. Use only with --perf. A value less than about 10 will not give meani
 
     ARGS = parser.parse_args()
     langs_to_run = ARGS.langs
-    if langs_to_run is None:
+    if len(langs_to_run) == 0:
         if ARGS.perf:
             langs_to_run = ['c']
         else:
