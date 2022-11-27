@@ -533,18 +533,12 @@ $config['proxy_ips'] = '';
 | jobe_max_users controls how many jobs can be run by the server at any
 | one time. It *must* agree with the number of users with names jobe01,
 | jobe02, jobe03 etc (which is how the install script will set things up).
-| The default code sets this to equal the number of cores; override
-| at your own risk. Any override must be a simple integer, or the install script
-| will fall back to using the number of CPUs.
 |
 | Clean up path is a semicolon-separated list of directories that are
 | writable by all, to be cleaned on completion of a job.
 |
 */
-$cpuinfo = file_get_contents('/proc/cpuinfo');
-preg_match_all('/^processor/m', $cpuinfo, $matches);
-$ncpu = count($matches[0]);
-$config['jobe_max_users'] = $ncpu;
+$config['jobe_max_users'] = 8;
 $config['jobe_wait_timeout'] = 10;  // Max number of secs to wait for a free Jobe user.
 $config['cputime_upper_limit_secs'] = 50;
 $config['clean_up_path'] = '/tmp;/var/tmp;/var/crash;/run/lock;/var/lock';
