@@ -22,7 +22,7 @@ class Python3_Task extends Task {
     // on import.
     public function __construct($filename, $input, $params) {
         parent::__construct($filename, $input, $params);
-        $this->default_params['memorylimit'] = 600; // Need more for numpy
+        $this->default_params['memorylimit'] = 1000; // Nnumpy+matplotlib is getting greedier.
         $this->default_params['interpreterargs'] = array('-BE');
     }
 
