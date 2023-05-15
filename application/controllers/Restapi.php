@@ -153,7 +153,7 @@ class Restapi extends REST_Controller {
             $this->error('runs_post: invalid run specification', 400);
         }
         if (isset($run['sourcefilename']) && !self::is_valid_source_filename($run['sourcefilename'])) {
-            $this->error('runs_post: invalid sourcefilename');
+            $this->error('runs_post: invalid sourcefilename', 400);
         }
 
         // REST_Controller has called to_array on the JSON decoded
