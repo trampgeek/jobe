@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.7.0, 27 November 2022
+Version: 1.7.1, 15 May 2023
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -40,7 +40,7 @@ with only a few minor bug fixes and security refinements.
 
 ## Implementation status
 
-The current version of Jobe (Version 1.6, January 2019) implements
+The current version of Jobe (Version 1.7.1, May 2023) implements
 a subset of the originally documented API, sufficient for use by CodeRunner.
 It has been used for many years at the University of Canterbury for several
 years, running many millions of submissions. Jobe is also used by over 600 other
@@ -131,7 +131,7 @@ installed.
 
 ### Installing the necessary dependencies
 
-On Ubuntu-16.04 or 18.04, the commands to set up all the necessary web tools plus
+On Ubuntu-22.04, the commands to set up all the necessary web tools plus
 all currently-supported languages is the following:
 
     sudo apt-get install apache2 php libapache2-mod-php php-cli\
@@ -968,3 +968,15 @@ that results in multiple error messages when a python syntax check fails.
 
   1. Add several command-line arguments to make the testsubmit.py program more
      user-friendly.
+
+### 1/7/1 (15 May 2023)
+
+  1. Increase memory allocation for Python as jobs continue to grow in memory demand.
+
+  1. Add HTTP return code to the error message on invalid sourcefilename.
+
+  1. Ensure PHP 8.2 compatibility by allowing dynamic properties in the CodeIgniter core
+     and by adding property declarations to Jobe classes.
+
+  1. Increase the backoff from 1 sec to 5 secs when starting the sustained load testing.
+     Otherwise, the first test could fail.
