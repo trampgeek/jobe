@@ -60,22 +60,24 @@ abstract class Task {
         'numprocs'      => 5        // processes
     );
 
-    public $id;             // The task id - use the workdir basename
-    public $input;          // Stdin for this task
-    public $sourceFileName; // The name to give the source file
-    public $params;         // Request parameters
+    public string $id;             // The task id - use the workdir basename
+    public string $input;          // Stdin for this task
+    public string $sourceFileName; // The name to give the source file
+    public string $executableFileName;  // The name of the compiled (if necessary) executable
+    public array $params;          // Request parameters
 
-    public $userId = null;  // The user id (number counting from 0).
-    public $user;           // The corresponding user name (e.g. jobe01).
+    public ?int $userId = null;     // The user id (number counting from 0).
+    public ?string $user;           // The corresponding user name (e.g. jobe01).
 
-    public $cmpinfo = '';   // Output from compilation
-    public $time = 0;       // Execution time (secs)
-    public $memory = 0;     // Memory used (MB)
-    public $signal = 0;
-    public $stdout = '';    // Output from execution
-    public $stderr = '';
-    public $result = Task::RESULT_INTERNAL_ERR;  // Should get overwritten
-    public $workdir = '';   // The temporary working directory created in constructor
+    public string $cmpinfo = '';   // Output from compilation
+    public float $time = 0;       // Execution time (secs)
+    public int $memory = 0;     // Memory used (MB)
+    public int $signal = 0;
+    public string $stdout = '';    // Output from execution
+    public string $stderr = '';
+    public int $result = Task::RESULT_INTERNAL_ERR;  // Should get overwritten
+    public ?string $workdir = '';   // The temporary working directory created in constructor
+
 
     // ************************************************
     //   MAIN METHODS THAT HANDLE THE FLOW OF ONE JOB
