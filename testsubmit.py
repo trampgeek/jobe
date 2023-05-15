@@ -1015,11 +1015,11 @@ def normal_testing(langs_to_run):
 
 def check_sustained_load(lang, starting_rate):
     """Check the achievable sustained load in the given language.
-       Starting at the given rate less 1 jobs/sec, send jobs at a steady rate
+       Starting at the given rate less 5 jobs/sec, send jobs at a steady rate
        over a 30 second time window, making sure all are successful. Increase the rate until
        a single failure occurs. Report the maximum achieved sustained rate.
     """
-    rate = max(1, int(starting_rate - 1))  # Jobs per sec
+    rate = max(1, int(starting_rate - 5))  # Jobs per sec
     best_rate = None
     job = [job for job in TEST_SET if job['language_id'] == lang][0]
 

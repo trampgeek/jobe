@@ -13,6 +13,12 @@
 
 class ResultObject {
 
+    public ?string $run_id;
+    public int $outcome;
+    public string $cmpinfo;
+    public string $stdout;
+    public string $stderr;
+
     public function __construct(
             $run_id,
             $outcome,
