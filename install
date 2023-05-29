@@ -122,10 +122,14 @@ def make_directory(dirpath, owner, group, permissions=771):
     do_command('chown {0}:{1} {2}; chmod {3} {2}'.format(owner, group, dirpath, permissions))
 
 
-def do_purge(install_dir, num_runners):
+def do_purge(install_dir):
     '''Purge existing users and extra files set up by a previous install'''
-    for i in range(num_runners):
-        do_command('userdel jobe{:02d}'.format(i), ignore_errors=True)
+    with open('/etc/passwd') as infile:
+        lines = infile.read().splitlines()
+
+    jobe_users = [line.split(':')[0] for line in lines if re.match(r'jobe\d\d', line)]
+    for jobe_user in jobe_users:
+        do_command(f'userdel {jobe_user}', ignore_errors=True)
 
     do_command('userdel jobe', ignore_errors=True)
     do_command('groupdel jobe', ignore_errors=True)
@@ -133,7 +137,6 @@ def do_purge(install_dir, num_runners):
     do_command('rm -rf /var/log/jobe')
     do_command('rm -rf {}/files'.format(install_dir), ignore_errors=True)
     do_command('rm -rf ' + FILE_CACHE_BASE + '/*', ignore_errors=True)
-
 
 def main():
     if len(sys.argv) > 2 or (len(sys.argv) > 1 and sys.argv[1] != '--purge'):
@@ -157,7 +160,7 @@ def main():
             num_jobe_users = int(get_config('jobe_max_users', install_dir))
             if purging:
                 print('Purging all prior jobe users and files')
-                do_purge(install_dir, num_jobe_users)
+                do_purge(install_dir)
 
             print('Configuring for', num_jobe_users, 'simultaneous job runs')
             webserver_user = get_webserver()
