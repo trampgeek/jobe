@@ -103,7 +103,7 @@ on it! **CAVEAT EMPTOR!**
 NOTE: a video walkthrough of the process of setting up a Jobe server
 on a DigitalOcean droplet is [here](https://www.youtube.com/watch?v=dGpnQpLnERw).
 
-Installation on Ubuntu 18.04 systems should be
+Installation on Ubuntu 22.04 systems should be
 straightforward but installation on other flavours of Linux or on systems
 with non-standard configurations may require
 Linux administrator skills.
@@ -111,13 +111,14 @@ Linux administrator skills.
 An alternative approach, and probably the simplest way to get up and running,
 is to use the [JobeInABox](https://hub.docker.com/r/trampgeek/jobeinabox/)
 Docker image, which should be runnable with a single terminal command
-on any Linux system that has
-docker installed. Thanks to David Bowes for the initial work on this.
+on any Linux system that has docker installed. Thanks to David Bowes for the initial work on this.
 Please be aware that while this Docker image has been around for a couple of years
-and no significant issues have been reported the developer has not himself
-used it in a production environment. Feedback is welcomed. The steps to fire
-up a Jobe Server on Digital Ocean using JobeInAbox are given below in section
+the developer has not himself used it in a production environment. Feedback is welcomed.
+The steps to fire up a Jobe Server on Digital Ocean using JobeInAbox are given below in section
 *Setting up a JobeInAbox Digital Ocean server*.
+
+However, for security and performance reasons it it *strongly* recommended to run
+Jobe on a dedicated server, even when running it in a container. 
 
 Jobe runs only on Linux, which must have the Apache web server
 installed and running. PHP must have been compiled with the System V
@@ -247,11 +248,12 @@ to use Version 3.3 or later.
 
 For people wanting to get a Jobe server up in hurry, the following is
 probably the simplest approach. This uses a minimal Digital Ocean virtual machine,
-costing just $US5.00 per month, to run the Docker *JobeInAbox* image.
+to run the Docker *JobeInAbox* image; you should increase memory and core for
+production servers. 
 Other cloud servers, such as Amazon ECS, can of course also be used.
 
  1. Set yourself up with an account on [Digital Ocean](https://cloud.digitalocean.com).
- 2. Create new Droplet: Ubuntu 20.04. x64, minimal config ($5 per month; 1GB CPI, 25GB disk)
+ 2. Create new Droplet: Ubuntu 22.04. x64, minimal config (1GB CPI, 25GB disk)
  3. Connect to the server with an SSH client.
  4. Install docker (see https://phoenixnap.com/kb/how-to-install-docker-on-ubuntu-18-04):
     sudo apt update; sudo apt install docker.io
@@ -969,7 +971,7 @@ that results in multiple error messages when a python syntax check fails.
   1. Add several command-line arguments to make the testsubmit.py program more
      user-friendly.
 
-### 1/7/1 (15 May 2023)
+### 1.7.1 (15 May 2023)
 
   1. Increase memory allocation for Python as jobs continue to grow in memory demand.
 
@@ -980,3 +982,18 @@ that results in multiple error messages when a python syntax check fails.
 
   1. Increase the backoff from 1 sec to 5 secs when starting the sustained load testing.
      Otherwise, the first test could fail.
+
+### 1.7.2 (4 June 2023)
+
+  1. Fix long-standing bug that always applied a compile parameter setting if this was
+    greater than the requested value, even when it wasn't a compile. Hopefully won't
+    break anyone's code (they'd have to have been using very low parameter values).
+
+  1. Bug fix: purge fails if num_jobe_users has been reduced in the config file since the install was run.
+
+  1. Upgrade install to include option to set range of UIDs for Jobe and workers. This should provide
+     a workaround for JobeInABox installs on systems running nginx, which resulted in a UID conflict
+     with the host.
+     Also include a --uninstall option.
+
+
