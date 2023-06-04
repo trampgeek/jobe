@@ -11,6 +11,10 @@ import os
 import subprocess
 import re
 import sys
+import argparse
+
+class LoginDefsException (Exception):
+    pass
 
 
 JOBE_DIRS = ['/var/www/jobe', '/var/www/html/jobe']
@@ -22,7 +26,7 @@ def get_config(param_name, install_dir):
        An exception occurs if either the file or the required parameter
        is not found.
     '''
-    with open('{}/application/config/config.php'.format(install_dir)) as config:
+    with open(f'{install_dir}/application/config/config.php') as config:
         lines = config.readlines()
     patterns = [
         r" *\$config\[ *'{}' *\] *= *\"([^\"]+)\";.*\n".format(param_name), # Double-quoted string
@@ -38,6 +42,7 @@ def get_config(param_name, install_dir):
 
 
 def fail():
+    """We're dead, Fred"""
     print("Install failed")
     sys.exit(1);
 
@@ -53,7 +58,9 @@ def get_webserver():
     candidates = names.intersection(set(['apache', 'www-data']))
     if len(candidates) != 1:
         raise Exception("Couldn't determine web-server user id. Is the web server running?")
-    return list(candidates)[0]
+    webserver_user = list(candidates)[0]
+    print("Web server is", webserver_user)
+    return webserver_user
 
 
 def do_command(cmd, ignore_errors=False):
@@ -98,7 +105,7 @@ def make_sudoers(install_dir, webserver_user, num_jobe_users):
             sudoers.write('{} ALL=(root) NOPASSWD: {}\n'.format(webserver_user, cmd))
 
 
-def make_user(username, comment, make_home_dir=False, group='jobe'):
+def make_user(username, comment, make_home_dir=False, group='jobe', uid=None):
     ''' Check if user exists. If not, add the named user with the given comment.
         Make a home directory only if make_home_dir is true.
     '''
@@ -107,11 +114,9 @@ def make_user(username, comment, make_home_dir=False, group='jobe'):
         print(username, 'already exists')
     except:
         opt = '--home /home/jobe -m' if make_home_dir else ' -M'
-        if group is None:
-            group_opt = ''
-        else:
-            group_opt = ' -g ' + group
-        do_command('useradd -r {} -s "/bin/false"{} -c "{}" {}'.format(opt, group_opt, comment, username))
+        group_opt = '' if group is None else f" -g {group}"
+        uid_opt = '' if uid is None else f" -u {uid}"
+        do_command(f'useradd -r {opt} -s "/bin/false"{group_opt}{uid_opt} -c "{comment}" {username}')
 
 
 def make_directory(dirpath, owner, group, permissions=771):
@@ -120,6 +125,17 @@ def make_directory(dirpath, owner, group, permissions=771):
     if not os.path.exists(dirpath):
         os.makedirs(dirpath)
     do_command('chown {0}:{1} {2}; chmod {3} {2}'.format(owner, group, dirpath, permissions))
+
+
+def make_runguard(install_dir):
+    """Make the runguard application"""
+    runguard_commands = [
+        "cd {0}".format(install_dir + '/runguard'),
+        "gcc -o runguard runguard.c", # TODO Add -lcgroups  if using cgroups
+        "chmod 700 runguard"
+    ]
+    cmd = ';'.join(runguard_commands)
+    do_command(cmd)
 
 
 def do_purge(install_dir):
@@ -132,19 +148,59 @@ def do_purge(install_dir):
         do_command(f'userdel {jobe_user}', ignore_errors=True)
 
     do_command('userdel jobe', ignore_errors=True)
-    do_command('groupdel jobe', ignore_errors=True)
+    #do_command('groupdel jobe', ignore_errors=True)
     do_command('rm -rf /home/jobe')
     do_command('rm -rf /var/log/jobe')
     do_command('rm -rf {}/files'.format(install_dir), ignore_errors=True)
     do_command('rm -rf ' + FILE_CACHE_BASE + '/*', ignore_errors=True)
 
+
+def make_workers(num_jobe_users, max_uid):
+    """Make the Jobe worker users"""
+    print(f"Making {num_jobe_users} Jobe workers")
+    uid = None if max_uid is None else max_uid - 1 # First uid is one less than max_uid (used by Jobe)
+    for i in range(num_jobe_users):
+        username = 'jobe{:02d}'.format(i)
+        make_user(username, 'Jobe server task runner', uid=uid)
+        if uid is not None:
+            uid -= 1
+
+
+def create_jobe_user_and_files(install_dir, webserver_user, max_uid):
+    """Create the user jobe and set up the home directory for runs"""
+    print("Making user jobe")
+    make_user('jobe', 'Jobe user. Provides home for runs and files.', True, None, max_uid)
+    # make sure webuser can reach /home/jobe/runs despite its not being in jobe group
+    do_command("chmod 751 /home/jobe")
+    print("Setting up Jobe runs directory (/home/jobe/runs)")
+    make_directory('/home/jobe/runs', 'jobe', webserver_user)
+    print("Setting up Jobe files directory (/home/jobe/files)")
+    make_directory('/home/jobe/files', 'jobe', webserver_user)
+    print("Setting up Jobe log directory (/var/log/jobe)")
+    make_directory('/var/log/jobe', 'jobe', webserver_user)
+
+
+def process_command_line_args():
+    """Command line argument handler."""
+    def max_uid(s):
+        max_uid = int(s)
+        if max_uid < 200 or max_uid > 998:
+            raise argparse.ArgumentTypeError("max_uid must be in the range 200 to 998")
+        return max_uid
+    
+    parser = argparse.ArgumentParser(description='Jobe installer')
+    parser.add_argument('--purge', action="store_true", help='Purge prior Jobe settings and files before installing')
+    parser.add_argument('--uninstall', action="store_true", help='Uninstall jobe')
+    parser.add_argument('--max_uid', action="store", type=max_uid, default=None,
+                        help="Set the maximum system UID to be used by Jobe and its workers. For use in containers only.")
+    args = parser.parse_args(sys.argv[1:])
+    return args
+
+
 def main():
-    if len(sys.argv) > 2 or (len(sys.argv) > 1 and sys.argv[1] != '--purge'):
-        print("Usage: install [--purge]")
-        sys.exit(0)
+    """Every home should have one."""
 
-    purging = len(sys.argv) == 2
-
+    args = process_command_line_args()
     install_dir = os.getcwd()
     if install_dir not in JOBE_DIRS:
         print("WARNING: Jobe appears not to have been installed in /var/www")
@@ -153,60 +209,44 @@ def main():
     if subprocess.check_output('whoami', shell=True) != b'root\n':
             print("****This script must be run by root*****")
             fail()
-    else:
+
+    try:
+        if args.purge or args.uninstall:
+            print('Purging all prior jobe users and files')
+            do_purge(install_dir)
+        if args.uninstall:
+            print("Jobe has been uninstalled")
+            sys.exit(0)
+
+        check_php_version()
+        webserver_user = get_webserver()
+
+        # Ensure install directory subtree owned by webuser and not readable by others
+        do_command('chown -R {0}:{0} {1}'.format(webserver_user, install_dir))
+        do_command('chmod -R o-rwx,g+w {}'.format(install_dir))
+
+        num_jobe_users = int(get_config('jobe_max_users', install_dir))
+        create_jobe_user_and_files(install_dir, webserver_user, args.max_uid)
+        make_workers(num_jobe_users, args.max_uid)
+
+        print("Setting up file cache")
+        make_directory(FILE_CACHE_BASE, 'jobe', webserver_user)
+
+        print("Building runguard")
+        make_runguard(install_dir)
+        
+        make_sudoers(install_dir, webserver_user, num_jobe_users)
         try:
-            check_php_version()
+            os.remove(LANGUAGE_CACHE_FILE)
+        except:
+            pass
 
-            num_jobe_users = int(get_config('jobe_max_users', install_dir))
-            if purging:
-                print('Purging all prior jobe users and files')
-                do_purge(install_dir)
+        print("Jobe installation complete")
 
-            print('Configuring for', num_jobe_users, 'simultaneous job runs')
-            webserver_user = get_webserver()
-            print("Web server is", webserver_user)
-            print("Make user jobe")
-            make_user('jobe', 'Jobe user. Provides home for runs and files.', True, None)
-            # make sure webuser can reach /home/jobe/runs despite its not being in jobe group
-            do_command("chmod 751 /home/jobe")
-            print("Setting up file cache")
-            make_directory(FILE_CACHE_BASE, 'jobe', webserver_user)
-
-            # Ensure install directory subtree owned by webuser and not readable by others
-            do_command('chown -R {0}:{0} {1}'.format(webserver_user, install_dir))
-            do_command('chmod -R o-rwx,g+w {}'.format(install_dir))
-
-            print("Making required job-runner users")
-            for i in range(num_jobe_users):
-                username = 'jobe{:02d}'.format(i)
-                make_user(username, 'Jobe server task runner')
-
-            print("Set up Jobe runs directory (/home/jobe/runs)")
-            make_directory('/home/jobe/runs', 'jobe', webserver_user)
-            print("Set up Jobe files directory (/home/jobe/files)")
-            make_directory('/home/jobe/files', 'jobe', webserver_user)
-            print("Set up Jobe log directory (/var/log/jobe)")
-            make_directory('/var/log/jobe', 'jobe', webserver_user)
-
-            print("Building runguard")
-            runguard_commands = [
-                "cd {0}".format(install_dir + '/runguard'),
-                "gcc -o runguard runguard.c", # TODO Add -lcgroups  if using cgroups
-                "chmod 700 runguard"
-            ]
-            cmd = ';'.join(runguard_commands)
-            do_command(cmd)
-
-            make_sudoers(install_dir, webserver_user, num_jobe_users)
-            try:
-                os.remove(LANGUAGE_CACHE_FILE)
-            except:
-                pass
-
-            print("Runguard installation complete")
-
-        except Exception as e:
-            print("Exception during install: " + str(e))
-            fail()
+    except Exception as e:
+        print("Exception during install: " + str(e))
+        fail()
 
 main()
+
+
