@@ -996,4 +996,3 @@ that results in multiple error messages when a python syntax check fails.
      with the host.
      Also include a --uninstall option.
 
-
