@@ -47,7 +47,7 @@ years, running many millions of submissions. Jobe is also used by over 600 other
 CodeRunner sites around the world. It can be considered stable and secure,
 though it should be run only on a separate appropriately-firewalled server.
 
-With reference to the original API spec, onnly immediate-mode runs are
+With reference to the original API spec, only immediate-mode runs are
 supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
 the server (unless *run\_spec.debug* is true; see the API), so
