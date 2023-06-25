@@ -81,7 +81,7 @@ Otherwise, they're taken as 8-bit character streams; characters below '\x20'
 (the space
 character) and above '\x7E' are replaced by C-style hexadecimal encodings
 (e.g. '\x8E') except for newlines which are passed through directly, and
-tabls and returns which are replaced with '\t' and '\r' respectively.
+tabs and returns which are replaced with '\t' and '\r' respectively.
 
 If Jobe is to correctly handle utf-8 output from programs, the Apache LANG
 environment variable must be set to a UTF-8 compatible value. See
