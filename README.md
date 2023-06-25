@@ -47,7 +47,7 @@ years, running many millions of submissions. Jobe is also used by over 600 other
 CodeRunner sites around the world. It can be considered stable and secure,
 though it should be run only on a separate appropriately-firewalled server.
 
-With reference to the original API spec, onnly immediate-mode runs are
+With reference to the original API spec, only immediate-mode runs are
 supported, with run results being returned with the
 response to the POST of the run requests. Run results are not retained by
 the server (unless *run\_spec.debug* is true; see the API), so
@@ -81,7 +81,7 @@ Otherwise, they're taken as 8-bit character streams; characters below '\x20'
 (the space
 character) and above '\x7E' are replaced by C-style hexadecimal encodings
 (e.g. '\x8E') except for newlines which are passed through directly, and
-tabls and returns which are replaced with '\t' and '\r' respectively.
+tabs and returns which are replaced with '\t' and '\r' respectively.
 
 If Jobe is to correctly handle utf-8 output from programs, the Apache LANG
 environment variable must be set to a UTF-8 compatible value. See
