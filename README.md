@@ -118,7 +118,7 @@ The steps to fire up a Jobe Server on Digital Ocean using JobeInAbox are given b
 *Setting up a JobeInAbox Digital Ocean server*.
 
 However, for security and performance reasons it it *strongly* recommended to run
-Jobe on a dedicated server, even when running it in a container. 
+Jobe on a dedicated server, even when running it in a container.
 
 Jobe runs only on Linux, which must have the Apache web server
 installed and running. PHP must have been compiled with the System V
@@ -199,6 +199,21 @@ set-up a jobe-sudoers file in /etc/sudoers.d that allows the web server
 to execute the runguard program as root and to kill any residual jobe
 processes from the run.
 
+Before running the install script, you might wish to edit the file
+
+    /var/www/html/jobe/application/config/config.php
+
+Find the line
+
+    $config['jobe_max_users'] = 8;
+
+and decide if that value, which sets the maximum number of jobs that can be run
+at once, is appropriate for your hardware set up. A rule of thumb is to set this
+to the number of cores on your machine, but if you plan on running lots of
+partially-I/O-bound jobs, you could consider larger numbers.
+
+Having set that value to your satisfaction:
+
     cd WEBROOT/jobe
     sudo ./install
 
@@ -249,7 +264,7 @@ to use Version 3.3 or later.
 For people wanting to get a Jobe server up in hurry, the following is
 probably the simplest approach. This uses a minimal Digital Ocean virtual machine,
 to run the Docker *JobeInAbox* image; you should increase memory and core for
-production servers. 
+production servers.
 Other cloud servers, such as Amazon ECS, can of course also be used.
 
  1. Set yourself up with an account on [Digital Ocean](https://cloud.digitalocean.com).
