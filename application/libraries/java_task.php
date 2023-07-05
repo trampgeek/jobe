@@ -24,7 +24,7 @@ class Java_Task extends Task {
              "-Xss8m",
              "-Xmx200m"
         );
-        $this->default_params['main_class'] = FALSE;
+        $this->default_params['main_class'] = null;
 
         if (isset($params['numprocs']) && $params['numprocs'] < 256) {
             $params['numprocs'] = 256;  // Minimum for Java 8 JVM
