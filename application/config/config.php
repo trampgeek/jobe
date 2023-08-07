@@ -549,5 +549,31 @@ $config['python3_version'] = 'python3'; # /usr/bin/<python3_version> is the pyth
 // might be hidden away in a systemd-private directory, depending on your Linux
 // version).
 
+/*
+|--------------------------------------------------------------------------
+| Jobe parameters: CPU pinning for jobs
+|--------------------------------------------------------------------------
+|
+| This section of the config file controls processor affinity, i.e. pinning
+| runguard tasks to a particular CPU core.
+|
+| The way task are pinned is to use the jobe user id modulo the number of 
+| cores. Under a load which requires more compute than is available
+| this yields linear slowdown for each job. Assigning jobs to a specific
+| core yields more predictable behaviour during extreme overallocation.
+| This is more significant with machines that have multi-socket CPUs 
+| which can have larger memory/cache penalites when tasks are transferred 
+| between cores.
+|
+| Consider setting jobe_max_users to be a multiple of num_cores, otherwise 
+| there will be imbalance under 100% job allocation.
+|
+| Enabling this option restricts each job to a singular core, regardless 
+| of number of spawned threads. Multiple threads will work fine but they 
+| cannot run perfectly concurrent, a context switch must occur.
+*/
+$config['cpu_pinning_enabled'] = FALSE; 
+$config['cpu_pinning_num_cores'] = 16; // Update to number of server cores
+
 /* End of file config.php */
 /* Location: ./application/config/config.php */
