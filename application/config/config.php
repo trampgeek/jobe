@@ -575,5 +575,19 @@ $config['python3_version'] = 'python3'; # /usr/bin/<python3_version> is the pyth
 $config['cpu_pinning_enabled'] = FALSE; 
 $config['cpu_pinning_num_cores'] = 16; // Update to number of server cores
 
+/*
+|--------------------------------------------------------------------------
+| Jobe parameters: Extra Java/Javac arguments
+|--------------------------------------------------------------------------
+|
+| This section of the config file adds extra flags to java and javac
+|
+| Provided examples tells java/javac that there is only 1 core, which 
+| reduces the number of spawned threads when compiling. This option can be 
+| used to provide a better experience when many users are using jobe.
+*/
+$config['javac_extraflags'] = ''; //'-J-XX:ActiveProcessorCount=1'; 
+$config['java_extraflags'] = ''; //'-XX:ActiveProcessorCount=1';
+
 /* End of file config.php */
 /* Location: ./application/config/config.php */
