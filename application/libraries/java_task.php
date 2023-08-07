@@ -16,6 +16,8 @@ class Java_Task extends Task {
     public string $mainClassName;
     
     public function __construct($filename, $input, $params) {
+        global $CI;
+
         $params['memorylimit'] = 0;    // Disregard memory limit - let JVM manage memory
         $this->default_params['numprocs'] = 256;     // Java 8 wants lots of processes
         $this->default_params['interpreterargs'] = array(
@@ -24,6 +26,11 @@ class Java_Task extends Task {
              "-Xss8m",
              "-Xmx200m"
         );
+
+        // Extra global Java arguments
+        if($CI->config->item('java_extraflags') != '') {
+            array_push($this->default_params['interpreterargs'], $CI->config->item('java_extraflags')); 
+        }
 
         if (isset($params['numprocs']) && $params['numprocs'] < 256) {
             $params['numprocs'] = 256;  // Minimum for Java 8 JVM
@@ -46,9 +53,14 @@ class Java_Task extends Task {
     }
 
     public function compile() {
+        global $CI;
+
+        // Extra global Javac arguments
+        $extra_javacflags = $CI->config->item('javac_extraflags');
+
         $prog = file_get_contents($this->sourceFileName);
         $compileArgs = $this->getParam('compileargs');
-        $cmd = '/usr/bin/javac ' . implode(' ', $compileArgs) . " {$this->sourceFileName}";
+        $cmd = '/usr/bin/javac ' . $extra_javacflags . ' ' . implode(' ', $compileArgs) . " {$this->sourceFileName}";
         list($output, $this->cmpinfo) = $this->run_in_sandbox($cmd);
         if (empty($this->cmpinfo)) {
             $this->executableFileName = $this->sourceFileName;
