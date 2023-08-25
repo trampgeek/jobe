@@ -559,7 +559,7 @@ defined with an SQL command like
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 You can turn off limit checking on a key-by-key basis by setting the *ignore_limits*
-to FALSE in the *keys* table.
+to TRUE (1) in the *keys* table.
 
 You should read the REST-server plugin documentation and the file
 *application/config/rest.php* for other features available.
