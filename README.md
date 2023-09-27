@@ -583,7 +583,7 @@ before the job is aborted
  1. streamsize (2): the maximum number of megabytes of standard output before the
 job is aborted.
  1. cputime (5): the maximum number of seconds of CPU time before the job is aborted
- 1. memorylimit (usually 200 but 600 for Python3):
+ 1. memorylimit (default 400 but raised for some languages, e.g. 1000 for Python3):
 the maximum number of megabytes of memory the task can consume. This value is
 used to set the Linux RLIMIT_STACK, RLIMIT_DATA and
 RLIMIT_AS via the *setrlimit* system call. If the value is exceeded the job

@@ -40,7 +40,7 @@ abstract class Task {
         'disklimit'     => 20,      // MB (for normal files)
         'streamsize'    => 2,       // MB (for stdout/stderr)
         'cputime'       => 5,       // secs
-        'memorylimit'   => 200,     // MB
+        'memorylimit'   => 400,     // MB
         'numprocs'      => 30,
         'compileargs'   => array(),
         'linkargs'      => array(),
