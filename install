@@ -154,9 +154,10 @@ def do_purge(install_dir):
     do_command('rm -rf {}/files'.format(install_dir), ignore_errors=True)
     do_command('rm -rf ' + FILE_CACHE_BASE + '/*', ignore_errors=True)
 
+
 def update_runguard_config(install_dir, num_jobe_users):
     # Make sure the number of valid users are matching our num jobe users
-    print("Settig up runguard config")
+    print("Setting up runguard config")
     runguard_users = ["domjudge", "jobe"] + ['jobe{:02d}'.format(i) for i in range(num_jobe_users)]
     with open(os.path.join(install_dir, "runguard/runguard-config.h"), "r") as runguard_config_in:
         runguard_config = runguard_config_in.read()
@@ -166,6 +167,7 @@ def update_runguard_config(install_dir, num_jobe_users):
     runguard_config = re.sub("#define\s+VALID_USERS[^\n]+", '#define VALID_USERS "' + runguard_valid_users + '"', runguard_config)
     with open(os.path.join(install_dir, "runguard/runguard-config.h"), "w") as runguard_config_out:
         runguard_config_out.write(runguard_config)
+
 
 def make_workers(num_jobe_users, max_uid):
     """Make the Jobe worker users"""
@@ -192,9 +194,6 @@ def create_jobe_user_and_files(install_dir, webserver_user, max_uid):
     make_directory('/var/log/jobe', 'jobe', webserver_user)
 
 
-
-
-
 def process_command_line_args():
     """Command line argument handler."""
     def max_uid(s):
@@ -202,7 +201,7 @@ def process_command_line_args():
         if max_uid < 200 or max_uid > 998:
             raise argparse.ArgumentTypeError("max_uid must be in the range 200 to 998")
         return max_uid
-    
+
     parser = argparse.ArgumentParser(description='Jobe installer')
     parser.add_argument('--purge', action="store_true", help='Purge prior Jobe settings and files before installing')
     parser.add_argument('--uninstall', action="store_true", help='Uninstall jobe')
@@ -250,7 +249,7 @@ def main():
         print("Building runguard")
         update_runguard_config(install_dir, num_jobe_users)
         make_runguard(install_dir)
-        
+
         make_sudoers(install_dir, webserver_user, num_jobe_users)
         try:
             os.remove(LANGUAGE_CACHE_FILE)
@@ -264,5 +263,3 @@ def main():
         fail()
 
 main()
-
-

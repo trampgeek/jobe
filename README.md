@@ -1,11 +1,11 @@
 # JOBE
 
-Version: 1.7.1, 15 May 2023
+Version: 1.8.0, 9 October 2023
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
 
-Contributors: Tim Hunt, Fedor Lyanguzov, Kai-Cheung Leung
+Contributors: Tim Hunt, Fedor Lyanguzov, Kai-Cheung Leung, Marcus Klang
 
 ## Introduction
 
@@ -1010,4 +1010,16 @@ that results in multiple error messages when a python syntax check fails.
      a workaround for JobeInABox installs on systems running nginx, which resulted in a UID conflict
      with the host.
      Also include a --uninstall option.
+
+### 1.8.0 (9 October 2023)
+
+  1. Add various tuning parameters for Java to config file. Thanks Marcus Klang.
+
+  1. Ensure that install updates runguard config to allow for a large number of
+     Jobe users (> 20). Thanks Marcus Klang.
+
+  1. Add a main_class parameter to Java task. Thanks Peter Seibel.
+
+  1. Increase default per-run memory allocation from 200 MB to 400 MB. Needed for
+     NodeJS in particular but everything is getting greedier.
 
