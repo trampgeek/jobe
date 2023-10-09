@@ -542,7 +542,7 @@ $config['jobe_max_users'] = 8;
 $config['jobe_wait_timeout'] = 10;  // Max number of secs to wait for a free Jobe user.
 $config['cputime_upper_limit_secs'] = 50;
 $config['clean_up_path'] = '/tmp;/var/tmp;/var/crash;/run/lock;/var/lock';
-$config['debugging'] = FALSE;
+$config['debugging'] = false;
 $config['python3_version'] = 'python3'; # /usr/bin/<python3_version> is the python to run
 // NB: if you modify the python3_version configuration you will also need to
 // reboot the server or delete the file /tmp/jobe_language_cache_file (which
