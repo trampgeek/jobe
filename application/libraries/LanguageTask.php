@@ -276,6 +276,8 @@ abstract class Task {
      * from running the given command.
      */
     public function run_in_sandbox($wrappedCmd, $iscompile=true, $stdin=null) {
+        $output = array();
+        $return_value = null;
         $filesize = 1000 * $this->getParam('disklimit', $iscompile); // MB -> kB
         $streamsize = 1000 * $this->getParam('streamsize', $iscompile); // MB -> kB
         $memsize = 1000 * $this->getParam('memorylimit', $iscompile);
@@ -452,7 +454,7 @@ abstract class Task {
         }
 
         // Refine RuntimeError if possible
-        if (strpos($this->stderr, "warning: timelimit exceeded")) {
+        if (strpos($this->stderr, "CPU time limit exceeded") !== false) {
             $this->result = Task::RESULT_TIME_LIMIT;
             $this->signal = 9;
             $this->stderr = '';

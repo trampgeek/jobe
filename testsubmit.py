@@ -357,39 +357,39 @@ int main() {
 },
 
 {
-    'comment': 'Memory limit exceeded in C (seg faults)',
+    'comment': 'Memory limit exceeded in C (killed by OOM handler)',
     'language_id': 'c',
     'sourcecode': r'''#include <stdio.h>
 #include <stdlib.h>
-// Will try to allocate 2000MB - should be above the default on all systems (?).
+#include <string.h>
+// Will try to allocate and use 2000MB - should be above the default on all systems (?).
 #define CHUNKSIZE 2000000000
 
 int main() {
     char* p = malloc(CHUNKSIZE);
-    if (p == NULL) {
-        printf("Memory limit worked\n");
-    } else {
-        printf("Oh dear, the malloc worked");
+    if (p != NULL) { // Probably the OOM handler hasn't killed us yet
+        memset(p, 0, CHUNKSIZE); // Now we really should get killed.
     }
+    puts("Oh dear. We shouldn't have got here.");
 }
 
 ''',
     'sourcefilename': 'prog.c',
-    'expect': { 'outcome': 15, 'stdout': 'Memory limit worked\n' }
+    'expect': { 'outcome': 12, 'stdout': '' }
 },
 
 {
     'comment': 'Infinite recursion (stack error) on C',
     'language_id': 'c',
     'sourcecode': r'''#include <stdlib.h>
-#include <assert.h>
+#include <stdio.h>
 
 void silly(int i) {
     int j = i + 1;
-    if (j != 0) {
-        silly(j);
+    if (j == 0) {
+        puts("I don't expect to get here");
     } else {
-        silly(j + 1);
+        silly(j);
     }
 }
 
@@ -858,7 +858,7 @@ def run_test(test):
         return GOOD_TEST
     else:
         output("\n***************** FAILED TEST ******************\n")
-        output(result)
+        # output(result)
         display_result(test['comment'], result)
         output("\n************************************************\n")
         return FAIL_TEST
@@ -922,7 +922,7 @@ def display_result(comment, ro):
         12: 'Runtime error',
         13: 'Time limit exceeded',
         15: 'Successful run',
-        17: 'Memory limit exceeded',
+        17: 'Memory limit exceeded', # Can never actually get this?
         19: 'Illegal system call',
         20: 'Internal error, please report',
         21: 'Server overload. Excessive parallelism?'}

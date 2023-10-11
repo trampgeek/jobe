@@ -131,7 +131,7 @@ def make_runguard(install_dir):
     """Make the runguard application"""
     runguard_commands = [
         "cd {0}".format(install_dir + '/runguard'),
-        "gcc -o runguard runguard.c", # TODO Add -lcgroups  if using cgroups
+        "gcc -o runguard runguard.c -lm -lcgroup",
         "chmod 700 runguard"
     ]
     cmd = ';'.join(runguard_commands)
@@ -187,7 +187,7 @@ def process_command_line_args():
         if max_uid < 200 or max_uid > 998:
             raise argparse.ArgumentTypeError("max_uid must be in the range 200 to 998")
         return max_uid
-    
+
     parser = argparse.ArgumentParser(description='Jobe installer')
     parser.add_argument('--purge', action="store_true", help='Purge prior Jobe settings and files before installing')
     parser.add_argument('--uninstall', action="store_true", help='Uninstall jobe')
@@ -234,7 +234,7 @@ def main():
 
         print("Building runguard")
         make_runguard(install_dir)
-        
+
         make_sudoers(install_dir, webserver_user, num_jobe_users)
         try:
             os.remove(LANGUAGE_CACHE_FILE)
