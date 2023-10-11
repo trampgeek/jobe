@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 1.8.0, 9 October 2023
+Version: 1.9.0, 10 October 2023
 
 
 Author: Richard Lobb, University of Canterbury, New Zealand
@@ -1023,3 +1023,8 @@ that results in multiple error messages when a python syntax check fails.
   1. Increase default per-run memory allocation from 200 MB to 400 MB. Needed for
      NodeJS in particular but everything is getting greedier.
 
+### 1.9.0 (10 October 2023)
+
+  1. Update runguard to latest version from domjudge. It uses cgroups to limit
+     CPU time and memory, so should be much more robust in dealing with Java,
+     which allocates itself vast amounts of memory that it never uses.
