@@ -276,6 +276,7 @@ abstract class Task {
      * from running the given command.
      */
     public function run_in_sandbox($wrappedCmd, $iscompile=true, $stdin=null) {
+        global $CI;
         $output = array();
         $return_value = null;
         $filesize = 1000 * $this->getParam('disklimit', $iscompile); // MB -> kB
@@ -284,16 +285,27 @@ abstract class Task {
         $cputime = $this->getParam('cputime', $iscompile);
         $killtime = 2 * $cputime; // Kill the job after twice the allowed cpu time
         $numProcs = $this->getParam('numprocs', $iscompile) + 1; // The + 1 allows for the sh command below.
+
+        // CPU pinning - only active if enabled
+        $sandboxCpuPinning = array();
+        if($CI->config->item('cpu_pinning_enabled') == TRUE) {
+            $taskset_core_id = intval($this->userId) % intval($CI->config->item('cpu_pinning_num_cores'));
+            $sandboxCpuPinning = array("taskset --cpu-list " . $taskset_core_id);
+        }
+
         $sandboxCommandBits = array(
                 "sudo " . dirname(__FILE__)  . "/../../runguard/runguard",
                 "--user={$this->user}",
                 "--group=jobe",
                 "--cputime=$cputime",      // Seconds of execution time allowed
-                "--walltime=$killtime",        // Wall clock kill time
+                "--walltime=$killtime",    // Wall clock kill time
                 "--filesize=$filesize",    // Max file sizes
                 "--nproc=$numProcs",       // Max num processes/threads for this *user*
                 "--no-core",
                 "--streamsize=$streamsize");   // Max stdout/stderr sizes
+
+        // Prepend CPU pinning command if enabled
+        $sandboxCommandBits = array_merge($sandboxCpuPinning, $sandboxCommandBits);
 
         if ($memsize != 0) {  // Special case: Matlab won't run with a memsize set. TODO: WHY NOT!
             $sandboxCommandBits[] = "--memsize=$memsize";

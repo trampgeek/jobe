@@ -542,12 +542,52 @@ $config['jobe_max_users'] = 8;
 $config['jobe_wait_timeout'] = 10;  // Max number of secs to wait for a free Jobe user.
 $config['cputime_upper_limit_secs'] = 50;
 $config['clean_up_path'] = '/tmp;/var/tmp;/var/crash;/run/lock;/var/lock';
-$config['debugging'] = FALSE;
+$config['debugging'] = false;
 $config['python3_version'] = 'python3'; # /usr/bin/<python3_version> is the python to run
 // NB: if you modify the python3_version configuration you will also need to
 // reboot the server or delete the file /tmp/jobe_language_cache_file (which
 // might be hidden away in a systemd-private directory, depending on your Linux
 // version).
+
+/*
+|--------------------------------------------------------------------------
+| Jobe parameters: CPU pinning for jobs  [Thanks Marcus Klang]
+|--------------------------------------------------------------------------
+|
+| This section of the config file controls processor affinity, i.e. pinning
+| runguard tasks to a particular CPU core.
+|
+| The way task are pinned is to use the jobe user id modulo the number of
+| cores. Under a load which requires more compute than is available
+| this yields linear slowdown for each job. Assigning jobs to a specific
+| core yields more predictable behaviour during extreme overallocation.
+| This is more significant with machines that have multi-socket CPUs
+| which can have larger memory/cache penalites when tasks are transferred
+| between cores.
+|
+| Consider setting jobe_max_users to be a multiple of num_cores, otherwise
+| there will be imbalance under 100% job allocation.
+|
+| Enabling this option restricts each job to a singular core, regardless
+| of number of spawned threads. Multiple threads will work fine but they
+| cannot run perfectly concurrent, a context switch must occur.
+*/
+$config['cpu_pinning_enabled'] = false;
+$config['cpu_pinning_num_cores'] = 8; // Update to number of server cores
+
+/*
+|--------------------------------------------------------------------------
+| Jobe parameters: Extra Java/Javac arguments [Thanks Marcus Klang]
+|--------------------------------------------------------------------------
+|
+| This section of the config file adds extra flags to java and javac
+|
+| Provided examples tells java/javac that there is only 1 core, which
+| reduces the number of spawned threads when compiling. This option can be
+| used to provide a better experience when many users are using jobe.
+*/
+$config['javac_extraflags'] = ''; //'-J-XX:ActiveProcessorCount=1';
+$config['java_extraflags'] = ''; //'-XX:ActiveProcessorCount=1';
 
 /* End of file config.php */
 /* Location: ./application/config/config.php */
