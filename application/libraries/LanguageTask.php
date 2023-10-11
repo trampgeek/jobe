@@ -287,7 +287,7 @@ abstract class Task {
                 "--user={$this->user}",
                 "--group=jobe",
                 "--cputime=$cputime",      // Seconds of execution time allowed
-                "--time=$killtime",        // Wall clock kill time
+                "--walltime=$killtime",        // Wall clock kill time
                 "--filesize=$filesize",    // Max file sizes
                 "--nproc=$numProcs",       // Max num processes/threads for this *user*
                 "--no-core",
