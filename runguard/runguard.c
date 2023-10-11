@@ -737,6 +737,11 @@ void read_optarg_time(const char *desc, double *times)
 
 void setrestrictions()
 {
+    char* savedEnvironmentVariables[] = {"PATH", "LANG", "LC_ALL", "LC_COLLATE",
+            "LC_CTYPE", "LC_MESSAGES", "LC_MONETARY", "LC_NUMERIC", "LC_TIME"};
+    char* savedValues[sizeof(savedEnvironmentVariables) / sizeof(char*)];
+    int numSavedVariables = sizeof(savedEnvironmentVariables) / sizeof(char*);
+
 	char *path;
 	char  cwd[PATH_MAX+1];
 	gid_t aux_groups[10];
@@ -744,21 +749,24 @@ void setrestrictions()
 	struct rlimit lim;
 
 	/* Clear environment to prevent all kinds of security holes, save PATH */
+
 	if ( !preserve_environment ) {
 		path = getenv("PATH");
+
+        // Firstly save all the local environment variables. (JOBE mod)
+         for (int i = 0; i < numSavedVariables; i++) {
+            savedValues[i] = getenv(savedEnvironmentVariables[i]);
+        }
 		environ[0] = NULL;
 		/* FIXME: Clean path before setting it again? */
-		if ( path!=NULL ) setenv("PATH",path,1);
-	}
+		// if ( path!=NULL ) setenv("PATH",path,1);
 
-	/* Set additional environment variables. */
-	if (environment_variables != NULL) {
-		char *token = strtok(environment_variables, ";");
-		while (token != NULL) {
-			verbose("setting environment variable: %s", token);
-			putenv(token);
-			token = strtok(NULL, ";");
-		}
+        // Restore locale environment.
+        for (int i = 0; i < numSavedVariables; i++) {
+            if (savedValues[i] != NULL) {
+                setenv(savedEnvironmentVariables[i], savedValues[i], 1);
+            }
+        }
 	}
 
 	/* Set resource limits: must be root to raise hard limits.
