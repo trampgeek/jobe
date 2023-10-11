@@ -137,7 +137,7 @@ all currently-supported languages is the following:
 
     sudo apt-get install apache2 php libapache2-mod-php php-cli\
         php-mbstring nodejs git python3 build-essential default-jdk\
-        python3-pip fp-compiler acl sudo sqlite3
+        libcgroup-dev python3-pip fp-compiler acl sudo sqlite3
 
     sudo apt-get install --no-install-suggests --no-install-recommends  octave
 

@@ -135,7 +135,12 @@ def make_runguard(install_dir):
         "chmod 700 runguard"
     ]
     cmd = ';'.join(runguard_commands)
-    do_command(cmd)
+    try:
+        do_command(cmd)
+    except OSError as e:
+        print("Compile of runguard failed.")
+        print("Check all dependencies are installed, particularly libcgroup-dev")
+        raise OSError("Runguard build failed")
 
 
 def do_purge(install_dir):
