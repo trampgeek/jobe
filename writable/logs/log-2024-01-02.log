@@ -1,0 +1,507 @@
+CRITICAL - 2024-01-02 04:03:30 --> ParseError: syntax error, unexpected token "=>", expecting "]"
+in APPPATH/Config/Routes.php on line 8.
+ 1 SYSTEMPATH/CLI/Console.php(39): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 2 ROOTPATH/spark(102): CodeIgniter\CLI\Console->run()
+CRITICAL - 2024-01-02 04:55:29 --> Error: Class "App\Controllers\LanguagesModel" not found
+in APPPATH/Controllers/Languages.php on line 13.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 04:56:21 --> Error: Call to undefined method App\Models\LanguagesModel::log()
+in APPPATH/Models/LanguagesModel.php on line 16.
+ 1 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 04:57:15 --> Error: Call to undefined method App\Models\LanguagesModel::log_message()
+in APPPATH/Models/LanguagesModel.php on line 16.
+ 1 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 04:58:33 --> INDEX languages called
+DEBUG - 2024-01-02 04:58:33 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 04:58:33 --> ErrorException: scandir(/var/www/html/jobe/public/classes/libraries/): Failed to open directory: No such file or directory
+in APPPATH/Models/LanguagesModel.php on line 48.
+ 1 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 APPPATH/Models/LanguagesModel.php(48): scandir()
+ 3 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 4 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 5 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 6 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 8 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 04:59:33 --> INDEX languages called
+DEBUG - 2024-01-02 04:59:33 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 04:59:33 --> ErrorException: require_once(/var/www/html/jobe/public/classes/libraries/_task.php): Failed to open stream: No such file or directory
+in APPPATH/Models/LanguagesModel.php on line 54.
+ 1 APPPATH/Models/LanguagesModel.php(54): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 APPPATH/Models/LanguagesModel.php(54): require_once()
+ 3 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 4 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 5 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 6 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 8 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 04:59:57 --> INDEX languages called
+DEBUG - 2024-01-02 04:59:57 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 04:59:57 --> ErrorException: require_once(/var/www/html/jobe/public/classes/libraries/Task.php): Failed to open stream: No such file or directory
+in APPPATH/Models/LanguagesModel.php on line 54.
+ 1 APPPATH/Models/LanguagesModel.php(54): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 APPPATH/Models/LanguagesModel.php(54): require_once()
+ 3 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 4 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 5 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 6 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 8 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:00:38 --> INDEX languages called
+DEBUG - 2024-01-02 05:00:38 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:00:38 --> Error: Class "Jobe\Task" not found
+in FCPATH/classes/languages/CTask.php on line 16.
+ 1 APPPATH/Models/LanguagesModel.php(54): require_once()
+ 2 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 3 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:02:18 --> INDEX languages called
+DEBUG - 2024-01-02 05:02:18 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:02:18 --> Error: Class "LanguageTask" not found
+in FCPATH/classes/languages/CTask.php on line 18.
+ 1 APPPATH/Models/LanguagesModel.php(54): require_once()
+ 2 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 3 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:21:00 --> INDEX languages called
+DEBUG - 2024-01-02 05:21:00 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:21:00 --> ErrorException: require_once(/var/www/html/jobe/app//Libraries/Task.php): Failed to open stream: No such file or directory
+in APPPATH/Models/LanguagesModel.php on line 54.
+ 1 APPPATH/Models/LanguagesModel.php(54): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 APPPATH/Models/LanguagesModel.php(54): require_once()
+ 3 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 4 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 5 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 6 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 8 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:21:47 --> INDEX languages called
+DEBUG - 2024-01-02 05:21:47 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:21:47 --> ErrorException: require_once(/var/www/html/jobe/app//Libraries/Task.php): Failed to open stream: No such file or directory
+in APPPATH/Models/LanguagesModel.php on line 54.
+ 1 APPPATH/Models/LanguagesModel.php(54): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 APPPATH/Models/LanguagesModel.php(54): require_once()
+ 3 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 4 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 5 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 6 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 8 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:24:47 --> INDEX languages called
+DEBUG - 2024-01-02 05:24:47 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:24:47 --> ErrorException: require_once(/var/www/html/jobe/app//Libraries/blah.gitkeepxTask.php): Failed to open stream: No such file or directory
+in APPPATH/Models/LanguagesModel.php on line 54.
+ 1 APPPATH/Models/LanguagesModel.php(54): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 APPPATH/Models/LanguagesModel.php(54): require_once()
+ 3 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 4 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 5 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 6 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 8 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:26:13 --> INDEX languages called
+DEBUG - 2024-01-02 05:26:13 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:26:13 --> ErrorException: require_once(/var/www/html/jobe/app//Libraries/blahCTask.phpxCTask.php): Failed to open stream: No such file or directory
+in APPPATH/Models/LanguagesModel.php on line 54.
+ 1 APPPATH/Models/LanguagesModel.php(54): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 APPPATH/Models/LanguagesModel.php(54): require_once()
+ 3 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 4 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 5 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 6 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 8 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 05:26:40 --> ParseError: syntax error, unexpected token ";"
+in APPPATH/Models/LanguagesModel.php on line 54.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 3 APPPATH/Controllers/Languages.php(14): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:26:49 --> INDEX languages called
+DEBUG - 2024-01-02 05:26:49 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:26:50 --> Error: Class "Jobe\LanguageTask" not found
+in APPPATH/Libraries/CTask.php on line 16.
+ 1 APPPATH/Models/LanguagesModel.php(54): require_once()
+ 2 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 3 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:27:39 --> INDEX languages called
+DEBUG - 2024-01-02 05:27:39 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:27:39 --> Error: Class "Jobe\Task" not found
+in APPPATH/Libraries/CTask.php on line 16.
+ 1 APPPATH/Models/LanguagesModel.php(54): require_once()
+ 2 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 3 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:28:00 --> INDEX languages called
+DEBUG - 2024-01-02 05:28:00 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:28:00 --> Error: Class "CTask" not found
+in APPPATH/Models/LanguagesModel.php on line 56.
+ 1 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 2 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 3 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 4 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 6 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:30:04 --> INDEX languages called
+DEBUG - 2024-01-02 05:30:04 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 05:32:49 --> INDEX languages called
+DEBUG - 2024-01-02 05:32:49 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:32:49 --> Error: Class "CTask" not found
+in APPPATH/Models/LanguagesModel.php on line 56.
+ 1 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 2 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 3 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 4 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 6 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:33:24 --> INDEX languages called
+DEBUG - 2024-01-02 05:33:24 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 05:34:32 --> INDEX languages called
+DEBUG - 2024-01-02 05:34:32 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:34:32 --> Error: Class "Jobe\CTaskx" not found
+in APPPATH/Models/LanguagesModel.php on line 55.
+ 1 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 2 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 3 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 4 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 6 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:34:44 --> INDEX languages called
+DEBUG - 2024-01-02 05:34:44 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 05:38:14 --> INDEX languages called
+DEBUG - 2024-01-02 05:38:14 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:38:14 --> Error: Class "App\Models\CTask" not found
+in APPPATH/Models/LanguagesModel.php on line 55.
+ 1 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 2 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 3 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 4 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 6 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:38:47 --> INDEX languages called
+DEBUG - 2024-01-02 05:38:47 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:38:47 --> Error: Class "App\Models\Jobe\CTask" not found
+in APPPATH/Models/LanguagesModel.php on line 55.
+ 1 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 2 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 3 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 4 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 6 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:40:15 --> INDEX languages called
+DEBUG - 2024-01-02 05:40:15 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:40:15 --> Error: Class "App\Models\CTask" not found
+in APPPATH/Models/LanguagesModel.php on line 57.
+ 1 APPPATH/Models/LanguagesModel.php(18): App\Models\LanguagesModel->supportedLanguages()
+ 2 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 3 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 4 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 6 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:40:17 --> INDEX languages called
+DEBUG - 2024-01-02 05:40:17 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:40:17 --> Error: Class "App\Models\CTask" not found
+in APPPATH/Models/LanguagesModel.php on line 57.
+ 1 APPPATH/Models/LanguagesModel.php(18): App\Models\LanguagesModel->supportedLanguages()
+ 2 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 3 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 4 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 6 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:40:41 --> INDEX languages called
+DEBUG - 2024-01-02 05:40:41 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:40:41 --> Error: Call to undefined method App\Models\LanguagesModel::response()
+in APPPATH/Models/LanguagesModel.php on line 22.
+ 1 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:41:21 --> INDEX languages called
+DEBUG - 2024-01-02 05:41:21 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 05:41:52 --> INDEX languages called
+DEBUG - 2024-01-02 05:41:52 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:41:52 --> Error: Call to undefined method App\Models\LanguagesModel::response()
+in APPPATH/Models/LanguagesModel.php on line 22.
+ 1 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:42:38 --> INDEX languages called
+DEBUG - 2024-01-02 05:42:38 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:42:38 --> Error: Call to undefined method App\Models\LanguagesModel::respond()
+in APPPATH/Models/LanguagesModel.php on line 22.
+ 1 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 05:42:58 --> INDEX languages called
+DEBUG - 2024-01-02 05:42:58 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 05:46:16 --> INDEX languages called
+DEBUG - 2024-01-02 05:46:16 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 05:46:16 --> ErrorException: Undefined property: App\Models\LanguagesModel::$load
+in APPPATH/Models/LanguagesModel.php on line 55.
+ 1 APPPATH/Models/LanguagesModel.php(55): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 3 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 06:30:35 --> INDEX languages called
+DEBUG - 2024-01-02 06:30:35 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:31:09 --> INDEX languages called
+DEBUG - 2024-01-02 06:31:09 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:32:02 --> INDEX languages called
+DEBUG - 2024-01-02 06:32:02 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 06:32:02 --> ArgumentCountError: Too few arguments to function Jobe\CTask::__construct(), 0 passed in /var/www/html/jobe/app/Models/LanguagesModel.php on line 55 and exactly 3 expected
+in APPPATH/Libraries/CTask.php on line 19.
+ 1 APPPATH/Models/LanguagesModel.php(55): Jobe\CTask->__construct()
+ 2 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 3 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 06:32:13 --> INDEX languages called
+DEBUG - 2024-01-02 06:32:13 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 06:32:13 --> ArgumentCountError: Too few arguments to function Jobe\CTask::__construct(), 0 passed in /var/www/html/jobe/app/Models/LanguagesModel.php on line 55 and exactly 3 expected
+in APPPATH/Libraries/CTask.php on line 19.
+ 1 APPPATH/Models/LanguagesModel.php(55): Jobe\CTask->__construct()
+ 2 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 3 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 06:32:26 --> INDEX languages called
+DEBUG - 2024-01-02 06:32:26 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 06:32:26 --> ArgumentCountError: Too few arguments to function Jobe\CTask::__construct(), 0 passed in /var/www/html/jobe/app/Models/LanguagesModel.php on line 55 and exactly 3 expected
+in APPPATH/Libraries/CTask.php on line 19.
+ 1 APPPATH/Models/LanguagesModel.php(55): Jobe\CTask->__construct()
+ 2 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 3 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 06:34:18 --> INDEX languages called
+DEBUG - 2024-01-02 06:34:18 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 06:34:18 --> ErrorException: Attempt to read property "config" on null
+in APPPATH/Libraries/JavaTask.php on line 35.
+ 1 APPPATH/Libraries/JavaTask.php(35): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 APPPATH/Models/LanguagesModel.php(55): Jobe\JavaTask->__construct()
+ 3 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 4 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 5 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 6 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 8 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 06:36:01 --> INDEX languages called
+DEBUG - 2024-01-02 06:36:01 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:36:33 --> INDEX languages called
+DEBUG - 2024-01-02 06:36:33 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:36:35 --> INDEX languages called
+DEBUG - 2024-01-02 06:36:35 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:37:15 --> INDEX languages called
+DEBUG - 2024-01-02 06:37:15 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:37:27 --> INDEX languages called
+DEBUG - 2024-01-02 06:37:27 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:37:57 --> INDEX languages called
+DEBUG - 2024-01-02 06:37:57 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:39:09 --> INDEX languages called
+DEBUG - 2024-01-02 06:39:09 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:39:15 --> INDEX languages called
+DEBUG - 2024-01-02 06:39:15 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:39:20 --> INDEX languages called
+DEBUG - 2024-01-02 06:39:20 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:39:25 --> INDEX languages called
+DEBUG - 2024-01-02 06:39:25 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:40:26 --> INDEX languages called
+DEBUG - 2024-01-02 06:40:26 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:40:36 --> INDEX languages called
+DEBUG - 2024-01-02 06:40:36 --> Missing or corrupt languages cache file ... rebuilding it.
+CRITICAL - 2024-01-02 06:40:36 --> Error: Class "\Jobe\NodejsTask" not found
+in APPPATH/Models/LanguagesModel.php on line 55.
+ 1 APPPATH/Models/LanguagesModel.php(17): App\Models\LanguagesModel->supportedLanguages()
+ 2 APPPATH/Controllers/Languages.php(15): App\Models\LanguagesModel->findAll()
+ 3 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 4 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 6 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 06:40:58 --> INDEX languages called
+DEBUG - 2024-01-02 06:40:58 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:41:37 --> INDEX languages called
+DEBUG - 2024-01-02 06:41:37 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:43:03 --> INDEX languages called
+DEBUG - 2024-01-02 06:43:03 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:43:07 --> INDEX languages called
+DEBUG - 2024-01-02 06:43:07 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:45:39 --> INDEX languages called
+DEBUG - 2024-01-02 06:45:39 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:46:48 --> INDEX languages called
+DEBUG - 2024-01-02 06:46:48 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:48:57 --> INDEX languages called
+DEBUG - 2024-01-02 06:49:29 --> INDEX languages called
+DEBUG - 2024-01-02 06:49:29 --> Missing or corrupt languages cache file ... rebuilding it.
+DEBUG - 2024-01-02 06:50:07 --> INDEX languages called
+DEBUG - 2024-01-02 06:50:59 --> INDEX languages called
+DEBUG - 2024-01-02 06:51:15 --> INDEX languages called
+DEBUG - 2024-01-02 06:51:32 --> INDEX languages called
+DEBUG - 2024-01-02 09:01:09 --> INDEX languages called
+CRITICAL - 2024-01-02 09:01:09 --> Error: Call to undefined method App\Models\LanguagesModel::getPathForLanguageTask()
+in APPPATH/Models/LanguagesModel.php on line 54.
+ 1 APPPATH/Models/LanguagesModel.php(32): App\Models\LanguagesModel->supportedLanguages()
+ 2 APPPATH/Controllers/Languages.php(34): App\Models\LanguagesModel->findAll()
+ 3 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->index()
+ 4 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 6 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 09:01:56 --> INDEX languages called
+CRITICAL - 2024-01-02 09:07:41 --> ErrorException: Declaration of App\Controllers\Languages::show() must be compatible with CodeIgniter\RESTful\ResourceController::show($id = null)
+in APPPATH/Controllers/Languages.php on line 39.
+ 1 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+CRITICAL - 2024-01-02 09:09:26 --> Error: Call to undefined method CodeIgniter\Router\RouteCollection::index()
+in APPPATH/Config/Routes.php on line 8.
+ 1 SYSTEMPATH/Router/RouteCollection.php(344): require()
+ 2 SYSTEMPATH/CodeIgniter.php(810): CodeIgniter\Router\RouteCollection->loadRoutes()
+ 3 SYSTEMPATH/CodeIgniter.php(450): CodeIgniter\CodeIgniter->tryToRouteIt()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 09:15:47 --> INDEX languages called
+CRITICAL - 2024-01-02 09:15:47 --> ErrorException: Undefined variable $langMod
+in APPPATH/Controllers/Runs.php on line 31.
+ 1 APPPATH/Controllers/Runs.php(31): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(913): App\Controllers\Runs->__construct()
+ 3 SYSTEMPATH/CodeIgniter.php(493): CodeIgniter\CodeIgniter->createController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 09:15:47 --> ErrorException: Undefined variable $langMod
+in APPPATH/Controllers/Runs.php on line 31.
+ 1 APPPATH/Controllers/Runs.php(31): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(913): App\Controllers\Runs->__construct()
+ 3 SYSTEMPATH/CodeIgniter.php(493): CodeIgniter\CodeIgniter->createController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 09:15:47 --> ErrorException: Undefined variable $langMod
+in APPPATH/Controllers/Runs.php on line 31.
+ 1 APPPATH/Controllers/Runs.php(31): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(913): App\Controllers\Runs->__construct()
+ 3 SYSTEMPATH/CodeIgniter.php(493): CodeIgniter\CodeIgniter->createController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 09:17:03 --> INDEX languages called
+CRITICAL - 2024-01-02 09:17:03 --> ErrorException: Undefined variable $langMod
+in APPPATH/Controllers/Runs.php on line 31.
+ 1 APPPATH/Controllers/Runs.php(31): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(913): App\Controllers\Runs->__construct()
+ 3 SYSTEMPATH/CodeIgniter.php(493): CodeIgniter\CodeIgniter->createController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 09:17:03 --> ErrorException: Undefined variable $langMod
+in APPPATH/Controllers/Runs.php on line 31.
+ 1 APPPATH/Controllers/Runs.php(31): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(913): App\Controllers\Runs->__construct()
+ 3 SYSTEMPATH/CodeIgniter.php(493): CodeIgniter\CodeIgniter->createController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 09:17:03 --> ErrorException: Undefined variable $langMod
+in APPPATH/Controllers/Runs.php on line 31.
+ 1 APPPATH/Controllers/Runs.php(31): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(913): App\Controllers\Runs->__construct()
+ 3 SYSTEMPATH/CodeIgniter.php(493): CodeIgniter\CodeIgniter->createController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 09:17:59 --> INDEX languages called
+DEBUG - 2024-01-02 09:17:59 --> INDEX languages called
+CRITICAL - 2024-01-02 09:17:59 --> Error: Call to undefined method App\Controllers\Runs::is_valid_source_filename()
+in APPPATH/Controllers/Runs.php on line 56.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 09:17:59 --> INDEX languages called
+CRITICAL - 2024-01-02 09:17:59 --> Error: Call to undefined method App\Controllers\Runs::is_valid_source_filename()
+in APPPATH/Controllers/Runs.php on line 56.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 09:17:59 --> INDEX languages called
+CRITICAL - 2024-01-02 09:17:59 --> Error: Call to undefined method App\Controllers\Runs::is_valid_source_filename()
+in APPPATH/Controllers/Runs.php on line 56.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')

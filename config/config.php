@@ -1,6 +1,7 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
+// phpcs:disable
 /*
 |--------------------------------------------------------------------------
 | Base Site URL
