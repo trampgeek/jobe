@@ -40,7 +40,7 @@ with only a few minor bug fixes and security refinements.
 
 ## Implementation status
 
-The current version of Jobe (Version 1.7.1, May 2023) implements
+The current version of Jobe implements
 a subset of the originally documented API, sufficient for use by CodeRunner.
 It has been used for many years at the University of Canterbury for several
 years, running many millions of submissions. Jobe is also used by over 600 other
