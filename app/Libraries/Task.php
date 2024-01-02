@@ -206,10 +206,8 @@ abstract class Task
     // returns an integer in the range 0 to jobe_max_users - 1 inclusive.
     private function getFreeUser()
     {
-        global $CI;
-
-        $numUsers = $CI->config->item('jobe_max_users');
-        $jobe_wait_timeout = $CI->config->item('jobe_wait_timeout');
+        $numUsers = config('Jobe')->jobe_max_users;
+        $jobe_wait_timeout = config('Jobe')->jobe_wait_timeout;
         $key = ftok(__FILE__, TASK::PROJECT_KEY);
         $sem = sem_get($key);
         $user = -1;
@@ -281,7 +279,6 @@ abstract class Task
      */
     public function runInSandbox($wrappedCmd, $iscompile = true, $stdin = null)
     {
-        global $CI;
         $output = array();
         $return_value = null;
         $filesize = 1000 * $this->getParam('disklimit', $iscompile); // MB -> kB
@@ -293,8 +290,8 @@ abstract class Task
 
         // CPU pinning - only active if enabled
         $sandboxCpuPinning = array();
-        if ($CI->config->item('cpu_pinning_enabled') == true) {
-            $taskset_core_id = intval($this->userId) % intval($CI->config->item('cpu_pinning_num_cores'));
+        if (config('Jobe')->cpu_pinning_enabled == true) {
+            $taskset_core_id = intval($this->userId) % config('Jobe')->cpu_pinning_num_cores;
             $sandboxCpuPinning = array("taskset --cpu-list " . $taskset_core_id);
         }
 
@@ -507,8 +504,7 @@ abstract class Task
     // of a run
     protected function removeTemporaryFiles($user)
     {
-        global $CI;
-        $path = $CI->config->item('clean_up_path');
+        $path = config('Jobe')->clean_up_path;
         $dirs = explode(';', $path);
         foreach ($dirs as $dir) {
             exec("sudo /usr/bin/find $dir/ -user $user -delete");

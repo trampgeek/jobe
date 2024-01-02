@@ -39,7 +39,7 @@ class LanguagesModel
 
     // Return an associative array mapping language name to language version
     // string for all supported languages (and only supported languages).
-    private function supportedLanguages()
+    public function supportedLanguages()
     {
         if (file_exists(LANGUAGE_CACHE_FILE)) {
             $langsJson = @file_get_contents(LANGUAGE_CACHE_FILE);

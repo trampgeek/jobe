@@ -1,4 +1,4 @@
-<?php defined('BASEPATH') OR exit('No direct script access allowed');
+<?php
 
 /* ==============================================================
  *
@@ -11,7 +11,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class ResultObject {
+ namespace Jobe;
+
+class ResultObject
+{
 
     public ?string $run_id;
     public int $outcome;
@@ -20,12 +23,12 @@ class ResultObject {
     public string $stderr;
 
     public function __construct(
-            $run_id,
-            $outcome,
-            $cmpinfo='',
-            $stdout='',
-            $stderr='')
-    {
+        $run_id,
+        $outcome,
+        $cmpinfo = '',
+        $stdout = '',
+        $stderr = ''
+    ) {
         $this->run_id = $run_id;   // A unique identifying string
         $this->outcome = $outcome; // Outcome of this job
         $this->cmpinfo = $this->clean($cmpinfo);
@@ -34,7 +37,8 @@ class ResultObject {
     }
 
 
-    protected static function clean(&$s) {
+    protected static function clean(&$s)
+    {
         // If the given parameter string is valid utf-8, it is returned
         // as is. Otherise, the return value is a copy of $s sanitised by
         // replacing all control chars except newlines, tabs and returns with hex

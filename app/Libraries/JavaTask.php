@@ -19,8 +19,6 @@ class JavaTask extends Task
     
     public function __construct($filename, $input, $params)
     {
-        global $CI;
-
         $params['memorylimit'] = 0;    // Disregard memory limit - let JVM manage memory
         $this->default_params['numprocs'] = 256;     // Java 8 wants lots of processes
         $this->default_params['interpreterargs'] = array(
@@ -32,8 +30,8 @@ class JavaTask extends Task
         $this->default_params['main_class'] = null;
 
         // Extra global Java arguments
-        if ($CI->config->item('java_extraflags') != '') {
-            array_push($this->default_params['interpreterargs'], $CI->config->item('java_extraflags'));
+        if (config('Jobe')->java_extraflags != '') {
+            array_push($this->default_params['interpreterargs'], config('Jobe')->java_extraflags);
         }
 
         if (isset($params['numprocs']) && $params['numprocs'] < 256) {
@@ -60,10 +58,8 @@ class JavaTask extends Task
 
     public function compile()
     {
-        global $CI;
-
         // Extra global Javac arguments
-        $extra_javacflags = $CI->config->item('javac_extraflags');
+        $extra_javacflags = config('Jobe')->javac_extraflags;
 
         $prog = file_get_contents($this->sourceFileName);
         $compileArgs = $this->getParam('compileargs');

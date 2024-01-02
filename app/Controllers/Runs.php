@@ -23,13 +23,14 @@ namespace App\Controllers;
 use CodeIgniter\RESTful\ResourceController;
 use CodeIgniter\API\ResponseTrait;
 use App\Models\LanguagesModel;
+use Jobe\ResultObject;
 
 class Runs extends ResourceController
 {
     public function __construct()
     {
         $this->langMod = new LanguagesModel();
-        $this->languages = $this->langMod->findAll();
+        $this->languages = $this->langMod->supportedLanguages();
     }
 
     public function post()
@@ -53,7 +54,7 @@ class Runs extends ResourceController
         if (!isset($run->language_id)) {
             return $this->respond('run_spec is missing the required language_id attribute', 400);
         }
-        if (!isset($run->sourcefilename) || !self::is_valid_source_filename($run->sourcefilename)) {
+        if (!isset($run->sourcefilename) || !self:: isValidSourceFilename($run->sourcefilename)) {
             return $this->respond('The sourcefilename for the run_spec is missing or invalid', 400);
         }
 
@@ -66,9 +67,9 @@ class Runs extends ResourceController
         }
 
         // Get the the request languages and check it.
-        $language = $run->language_id;
+        $language = ucwords($run->language_id);
         if (!array_key_exists($language, $this->languages)) {
-            return $this->respond("Language '$language' is not known", 400);
+            return $this->respond("Language '$language' is not known". var_dump($this->languages, true), 400);
         }
 
         if (!isset($run->sourcefilename) || $run->sourcefilename == 'prog.java') {
@@ -85,8 +86,8 @@ class Runs extends ResourceController
 
         // Get the parameters, and validate.
         $params = $run->parameters ?? [];
-        $config = config('Config');
-        $max_cpu_time = intval($config->cputime_upper_limit_secs);
+        $config = config('Jobe');
+        $max_cpu_time = $config->cputime_upper_limit_secs;
         if (isset($params['cputime']) && intval($params['cputime']) > $max_cpu_time) {
             return $this->respond("cputime exceeds maximum allowed on this Jobe server ($max_cpu_time secs)", 400);
         }
@@ -109,11 +110,11 @@ class Runs extends ResourceController
 
                 $this->task->loadFiles($files);
 
-                $this->log_message('debug', "runs_post: compiling job {$this->task->id}");
+                log_message('debug', "runs_post: compiling job {$this->task->id}");
                 $this->task->compile();
 
                 if (empty($this->task->cmpinfo)) {
-                    $this->log_message('debug', "runs_post: executing job {$this->task->id}");
+                    log_message('debug', "runs_post: executing job {$this->task->id}");
                     $this->task->execute();
                 }
             } finally {
@@ -122,19 +123,50 @@ class Runs extends ResourceController
             }
 
             // Success!
-            $this->log_message('debug', "runs_post: returning 200 OK for task {$this->task->id}");
+            log_message('debug', "runs_post: returning 200 OK for task {$this->task->id}");
             return $this->respond($this->task->resultObject(), 200);
 
         // Report any errors.
         } catch (JobException $e) {
-            $this->log_message('debug', 'runs_post: ' . $e->getLogMessage());
+            log_message('debug', 'runs_post: ' . $e->getLogMessage());
             return $this->respond($e->getMessage(), $e->getHttpStatusCode());
         } catch (OverloadException $e) {
-            $this->log_message('debug', 'runs_post: overload exception occurred');
+            log_message('debug', 'runs_post: overload exception occurred');
             $resultobject = new ResultObject(0, Task::RESULT_SERVER_OVERLOAD);
             return $this->respond($resultobject, 200);
         } catch (Exception $e) {
             return $this->respond('Server exception (' . $e->getMessage() . ')', 500);
         }
+    }
+
+    // Return true unless the given filename looks dangerous, e.g. has '/' or '..'
+    // substrings. Uses code from https://stackoverflow.com/questions/2021624/string-sanitizer-for-filename
+    private static function isValidSourceFilename($filename)
+    {
+        $sanitised = preg_replace(
+            '~
+        [<>:"/\\|?*]|   # file system reserved https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words
+        [\x00-\x1F]|    # ctrl chars http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247%28v=vs.85%29.aspx
+        [\x7F\xA0\xAD]|       # non-printing characters DEL, NO-BREAK SPACE, SOFT HYPHEN
+        [#\[\]@!$&\'()+,;=]|  # URI reserved https://tools.ietf.org/html/rfc3986#section-2.2
+        [{}^\~`]              # URL unsafe characters https://www.ietf.org/rfc/rfc1738.txt
+        ~x',
+            '-',
+            $filename
+        );
+        // Avoid ".", ".." or ".hiddenFiles"
+        $sanitised = ltrim($sanitised, '.-');
+        return $sanitised === $filename;
+    }
+
+    private function isValidFilespec($file)
+    {
+        return (count($file) == 2 || count($file) == 3) &&
+             is_string($file[0]) &&
+             is_string($file[1]) &&
+             strlen($file[0]) >= MIN_FILE_IDENTIFIER_SIZE &&
+             ctype_alnum($file[0]) &&
+             strlen($file[1]) > 0 &&
+             ctype_alnum(str_replace(array('-', '_', '.'), '', $file[1]));
     }
 }

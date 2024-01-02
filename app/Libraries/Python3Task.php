@@ -24,19 +24,19 @@ class Python3Task extends Task
         parent::__construct($filename, $input, $params);
         $this->default_params['memorylimit'] = 1000; // Nnumpy+matplotlib is getting greedier.
         $this->default_params['interpreterargs'] = array('-BE');
-        $this->PYTHON3_VERSION = Config::item('python3_version');
+        $config = config('Jobe');
+        $this->PYTHON3_VERSION = $config->python3_version;
     }
 
     public static function getVersionCommand()
     {
-        global $PYTHON3_VERSION;
-        return array("$PYTHON3_VERSION --version", '/Python ([0-9._]*)/');
+        $python = config('Jobe')->python3_version;
+        return array("$python --version", '/Python ([0-9._]*)/');
     }
 
     public function compile()
     {
-        global $PYTHON3_VERSION;
-        $cmd = "$PYTHON3_VERSION -m py_compile {$this->sourceFileName}";
+        $cmd = config('Jobe')->python3_version . " -m py_compile {$this->sourceFileName}";
         $this->executableFileName = $this->sourceFileName;
         list($output, $this->cmpinfo) = $this->runInSandbox($cmd);
         if (!empty($this->cmpinfo) && !empty($output)) {
@@ -54,8 +54,7 @@ class Python3Task extends Task
 
     public function getExecutablePath()
     {
-        global $PYTHON3_VERSION;
-        return "/usr/bin/$PYTHON3_VERSION";
+        return "/usr/bin/" . config('Jobe')->python3_version;
     }
 
 
