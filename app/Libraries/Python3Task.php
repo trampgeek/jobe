@@ -62,4 +62,4 @@ class Python3Task extends Task
     {
         return $this->sourceFileName;
     }
-};
+}

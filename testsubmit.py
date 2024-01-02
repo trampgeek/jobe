@@ -44,7 +44,8 @@ from base64 import b64encode
 
 API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (100/hr) key on Jobe2
 DEBUGGING = False  # If true, all runs are saved on the Jobe server. Not recommended (there are lots!)
-RUNS_RESOURCE = '/jobe/index.php/restapi/runs/'
+RESOURCE_BASE = '' #'/jobe/index.php/restapi'
+RUNS_RESOURCE = f'{RESOURCE_BASE}/runs/'
 
 # The next constant controls the maximum number of parallel submissions to
 # throw at Jobe at once. Numbers less than or equal to the number of Jobe
@@ -771,7 +772,7 @@ def check_file(file_id):
        Returns status: 204 denotes file exists, 404 denotes file not found.
     '''
 
-    resource = '/jobe/index.php/restapi/files/' + file_id
+    resource = f'{RESOURCE_BASE}/files/' + file_id
     headers = {"Accept": "text/plain"}
     try:
         connect = http_request('HEAD', resource, '', headers)
@@ -800,7 +801,7 @@ def put_file(file_desc):
     file_id, contents = file_desc
     contentsb64 = b64encode(contents.encode('utf8')).decode(encoding='UTF-8')
     data = json.dumps({ 'file_contents' : contentsb64 })
-    resource = '/jobe/index.php/restapi/files/' + file_id
+    resource = f'{RESOURCE_BASE}/files/' + file_id
     headers = {"Content-type": "application/json",
                "Accept": "text/plain"}
     connect = http_request('PUT', resource, data, headers)
@@ -949,7 +950,7 @@ def display_result(comment, ro):
 def do_get_languages():
     """List all languages available on the jobe server"""
     output("Supported languages:")
-    resource = '/jobe/index.php/restapi/languages'
+    resource = f'{RESOURCE_BASE}/languages'
     ok, lang_versions = do_http('GET', resource)
     if not ok:
         output("**** An exception occurred when getting languages ****")

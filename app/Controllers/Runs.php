@@ -85,7 +85,11 @@ class Runs extends ResourceController
         $input = $run->input ?? '';
 
         // Get the parameters, and validate.
-        $params = $run->parameters ?? [];
+        if (isset($run->parameters)) {
+            $params = (array) $run->parameters;
+        } else {
+            $params = [];
+        }
         $config = config('Jobe');
         $max_cpu_time = $config->cputime_upper_limit_secs;
         if (isset($params['cputime']) && intval($params['cputime']) > $max_cpu_time) {
