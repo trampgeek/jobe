@@ -27,8 +27,8 @@ function jobresultarrived() {
 function submitjob() {
     xhr = new XMLHttpRequest();
     xhr.onreadystatechange = jobresultarrived;
-    resource = 'http://jobe2.cosc.canterbury.ac.nz/jobe/index.php/restapi/runs/';
-    //resource = 'http://localhost/jobe/index.php/restapi/runs';
+    // resource = 'http://jobe2.cosc.canterbury.ac.nz/jobe/index.php/restapi/runs/';
+    resource = 'http://localhost/jobe/index.php/restapi/runs';
 
     runspec = { "run_spec":
         {'language_id': 'python3',
