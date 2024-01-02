@@ -12,7 +12,7 @@
 
 namespace Jobe;
 
-class OctaveTask extends Task
+class OctaveTask extends LanguageTask
 {
     public function __construct($filename, $input, $params)
     {

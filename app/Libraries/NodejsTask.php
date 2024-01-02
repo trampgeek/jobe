@@ -12,7 +12,7 @@
 
 namespace Jobe;
 
-class NodejsTask extends Task
+class NodejsTask extends LanguageTask
 {
     public function __construct($filename, $input, $params)
     {

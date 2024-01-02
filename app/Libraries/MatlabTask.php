@@ -12,7 +12,7 @@
 
 namespace jobe;
 
-class MatlabTask extends Task
+class MatlabTask extends LanguageTask
 {
     public function __construct($filename, $input, $params)
     {

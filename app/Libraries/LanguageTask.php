@@ -2,7 +2,7 @@
 
 /* ==============================================================
  *
- * This file defines the abstract Task class, a subclass of which
+ * This file defines the abstract LanguageTask class, a subclass of which
  * must be defined for each implemented language.
  *
  * ==============================================================
@@ -15,7 +15,7 @@ namespace Jobe;
 
 define('ACTIVE_USERS', 1);  // The key for the shared memory active users array
 
-abstract class Task
+abstract class LanguageTask
 {
     // Symbolic constants as per ideone API
 
@@ -71,7 +71,7 @@ abstract class Task
     public int $signal = 0;
     public string $stdout = '';    // Output from execution
     public string $stderr = '';
-    public int $result = Task::RESULT_INTERNAL_ERR;  // Should get overwritten
+    public int $result = LanguageTask::RESULT_INTERNAL_ERR;  // Should get overwritten
     public ?string $workdir = '';   // The temporary working directory created in constructor
 
 
@@ -108,7 +108,7 @@ abstract class Task
         $this->workdir = tempnam("/home/jobe/runs", "jobe_");
         if (!unlink($this->workdir) || !mkdir($this->workdir)) {
             log_message('error', 'LanguageTask constructor: error making temp directory');
-            throw new Exception("Task: error making temp directory (race error?)");
+            throw new Exception("LanguageTask: error making temp directory (race error?)");
         }
         chdir($this->workdir);
 
@@ -143,7 +143,6 @@ abstract class Task
                (file_put_contents($destPath, $contents)) === false) {
                 throw new JobException(
                     'One or more of the specified files is missing/unavailable',
-                    'file(s) not found',
                     404
                 );
             }
@@ -165,10 +164,10 @@ abstract class Task
             $this->stderr = $this->filteredStderr();
             $this->diagnoseResult();  // Analyse output and set result
         } catch (OverloadException $e) {
-            $this->result = Task::RESULT_SERVER_OVERLOAD;
+            $this->result = LanguageTask::RESULT_SERVER_OVERLOAD;
             $this->stderr = $e->getMessage();
         } catch (Exception $e) {
-            $this->result = Task::RESULT_INTERNAL_ERR;
+            $this->result = LanguageTask::RESULT_INTERNAL_ERR;
             $this->stderr = $e->getMessage();
         }
     }
@@ -208,7 +207,7 @@ abstract class Task
     {
         $numUsers = config('Jobe')->jobe_max_users;
         $jobe_wait_timeout = config('Jobe')->jobe_wait_timeout;
-        $key = ftok(__FILE__, TASK::PROJECT_KEY);
+        $key = ftok(__FILE__, LanguageTask::PROJECT_KEY);
         $sem = sem_get($key);
         $user = -1;
         $retries = 0;
@@ -467,14 +466,14 @@ abstract class Task
     public function diagnoseResult()
     {
         if (strlen($this->filteredStderr())) {
-            $this->result = TASK::RESULT_RUNTIME_ERROR;
+            $this->result = LanguageTask::RESULT_RUNTIME_ERROR;
         } else {
-            $this->result = TASK::RESULT_SUCCESS;
+            $this->result = LanguageTask::RESULT_SUCCESS;
         }
 
         // Refine RuntimeError if possible
         if (strpos($this->stderr, "CPU time limit exceeded") !== false) {
-            $this->result = Task::RESULT_TIME_LIMIT;
+            $this->result = LanguageTask::RESULT_TIME_LIMIT;
             $this->signal = 9;
             $this->stderr = '';
         } elseif (strpos($this->stderr, "warning: command terminated with signal 11")) {
@@ -488,7 +487,7 @@ abstract class Task
     public function resultObject()
     {
         if ($this->cmpinfo) {
-            $this->result = Task::RESULT_COMPILATION_ERROR;
+            $this->result = LanguageTask::RESULT_COMPILATION_ERROR;
         }
         return new ResultObject(
             $this->workdir,

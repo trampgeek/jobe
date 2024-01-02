@@ -12,7 +12,7 @@
 
 namespace Jobe;
 
-class PhpTask extends Task
+class PhpTask extends LanguageTask
 {
     public function __construct($filename, $input, $params)
     {

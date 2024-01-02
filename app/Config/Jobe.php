@@ -11,31 +11,39 @@ class Jobe extends BaseConfig
     | Jobe parameters
     |--------------------------------------------------------------------------
     |
-    | This section of the config file is not CodeIgniter standard. It contains
-    | constants related to the Jobe server itself.
-    |
+    | This config file Jobe-server specific constants.
+    */
+
+    /*
     | jobe_max_users controls how many jobs can be run by the server at any
     | one time. It *must* agree with the number of users with names jobe01,
     | jobe02, jobe03 etc (which is how the install script will set things up).
-    |
+    */
+    public int $jobe_max_users = 8;
+
+    public int $jobe_wait_timeout = 10;  // Max number of secs to wait for a free Jobe user.
+    public int $cputime_upper_limit_secs = 120;
+
+    /*
     | Clean up path is a semicolon-separated list of directories that are
     | writable by all, to be cleaned on completion of a job.
     |
     */
-    public int $jobe_max_users = 8;
-    public int $jobe_wait_timeout = 10;  // Max number of secs to wait for a free Jobe user.
-    public int $cputime_upper_limit_secs = 120;
     public string $clean_up_path = '/tmp;/var/tmp;/var/crash;/run/lock;/var/lock';
-    public bool $debugging = false;
-    public string $python3_version = 'python3'; # /usr/bin/<python3_version> is the python to run
-    // NB: if you modify the python3_version configuration you will also need to
-    // reboot the server or delete the file /tmp/jobe_language_cache_file (which
-    // might be hidden away in a systemd-private directory, depending on your Linux
-    // version).
+    public bool $debugging = false;  // If True, the workspace folder for a run is not deleted.
+
+    /*
+     | /usr/bin/<python3_version> is the python to run
+     | Warning: if you modify the python3_version configuration you will also need to
+     | reboot the server or delete the file /tmp/jobe_language_cache_file (which
+     | might be hidden away in a systemd-private directory, depending on your Linux
+     | version
+     */
+    public string $python3_version = 'python3';
 
     /*
     |--------------------------------------------------------------------------
-    | Jobe parameters: CPU pinning for jobs  [Thanks Marcus Klang
+    | CPU pinning for jobs  [Thanks Marcus Klang
     |--------------------------------------------------------------------------
     |
     | This section of the config file controls processor affinity, i.e. pinning
@@ -61,7 +69,7 @@ class Jobe extends BaseConfig
 
     /*
     |--------------------------------------------------------------------------
-    | Jobe parameters: Extra Java/Javac arguments [Thanks Marcus Klang
+    | Extra Java/Javac arguments [Thanks Marcus Klang
     |--------------------------------------------------------------------------
     |
     | This section of the config file adds extra flags to java and javac

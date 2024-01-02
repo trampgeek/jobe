@@ -6,7 +6,7 @@
  * A pseudo model to manage the set of languages implemented
  * by Jobe. It's a pseudomodel that doesn't extend the base
  * Model class as it's not asociated with a database table.
- *
+
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,10 +26,12 @@ define('LANGUAGE_CACHE_FILE', '/tmp/jobe_language_cache_file');
 
 class LanguagesModel
 {
-    public function findAll()
+    private static $languages = null;
+
+    public static function findAll()
     {
-        log_message('debug', 'INDEX languages called');
-        $languages = $this->supportedLanguages();
+        log_message('debug', 'findAll called');
+        $languages = self::supportedLanguages();
         $langs = array();
         foreach ($languages as $lang => $version) {
             $langs[] = array($lang, $version);
@@ -39,8 +41,11 @@ class LanguagesModel
 
     // Return an associative array mapping language name to language version
     // string for all supported languages (and only supported languages).
-    public function supportedLanguages()
+    public static function supportedLanguages()
     {
+        if (self::$languages !== null) {
+            return self::$languages;
+        }
         if (file_exists(LANGUAGE_CACHE_FILE)) {
             $langsJson = @file_get_contents(LANGUAGE_CACHE_FILE);
             $langs = json_decode($langsJson, true);
@@ -51,7 +56,7 @@ class LanguagesModel
                     $langs = null; // Looks like the file has been tampered with, re-compute.
                     break;
                 }
-                if (!is_readable($this->getPathForLanguageTask($lang))) {
+                if (!is_readable(self::getPathForLanguageTask($lang))) {
                     $langs = null; // Looks like the file has been tampered with, re-compute.
                     break;
                 }
@@ -77,6 +82,7 @@ class LanguagesModel
             $langsJson = json_encode($langs);
             file_put_contents(LANGUAGE_CACHE_FILE, $langsJson);
         }
+        self::$languages = $langs;
         return $langs;
     }
 
@@ -86,7 +92,7 @@ class LanguagesModel
      * @param $lang the language of interest, e.g. cpp.
      * @return string the corresponding code path.
      */
-    public function getPathForLanguageTask($lang)
+    public static function getPathForLanguageTask($lang)
     {
         return APPPATH . '/Libraries/' . $lang . 'Task.php';
     }

@@ -19,21 +19,15 @@
 
 namespace Jobe;
 
-class JobException extends Exception
+class JobException extends \Exception
 {
     protected $logmessage;
     protected $httpstatuscode;
 
-    public function __construct($message, $logmessage, $httpstatuscode, Throwable $cause = null)
+    public function __construct($message, $httpstatuscode, Throwable $cause = null)
     {
         parent::__construct($message, 0, $cause);
-        $this->logmessage = $logmessage;
         $this->httpstatuscode = $httpstatuscode;
-    }
-
-    public function getLogMessage()
-    {
-        return $this->logmessage;
     }
 
     public function getHttpStatusCode()

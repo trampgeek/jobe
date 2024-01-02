@@ -12,7 +12,7 @@
 
 namespace Jobe;
 
-class PascalTask extends Task
+class PascalTask extends LanguageTask
 {
     public function __construct($filename, $input, $params)
     {

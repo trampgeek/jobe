@@ -12,7 +12,7 @@
 
 namespace Jobe;
 
-class Python3Task extends Task
+class Python3Task extends LanguageTask
 {
 
     // Raise the memory limit for python to allow for numpy, matplolib

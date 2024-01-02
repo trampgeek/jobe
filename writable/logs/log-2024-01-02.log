@@ -1118,3 +1118,703 @@ DEBUG - 2024-01-02 10:34:09 --> runs_post: returning 200 OK for task jobe_6L9z4u
 DEBUG - 2024-01-02 10:34:09 --> runs_post: compiling job jobe_hFS76b
 DEBUG - 2024-01-02 10:34:09 --> runs_post: executing job jobe_hFS76b
 DEBUG - 2024-01-02 10:34:09 --> runs_post: returning 200 OK for task jobe_hFS76b
+DEBUG - 2024-01-02 22:53:07 --> find_all called
+CRITICAL - 2024-01-02 22:53:07 --> Error: Using $this when not in object context
+in APPPATH/Models/LanguagesModel.php on line 59.
+ 1 APPPATH/Models/LanguagesModel.php(34): App\Models\LanguagesModel::supportedLanguages()
+ 2 APPPATH/Controllers/Languages.php(33): App\Models\LanguagesModel::findAll()
+ 3 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Languages->get()
+ 4 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 6 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 22:53:47 --> findAll called
+CRITICAL - 2024-01-02 22:53:47 --> ErrorException: Undefined variable $config
+in APPPATH/Controllers/Runs.php on line 46.
+ 1 APPPATH/Controllers/Runs.php(46): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 22:53:47 --> ErrorException: Undefined variable $config
+in APPPATH/Controllers/Runs.php on line 46.
+ 1 APPPATH/Controllers/Runs.php(46): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 22:53:47 --> ErrorException: Undefined variable $config
+in APPPATH/Controllers/Runs.php on line 46.
+ 1 APPPATH/Controllers/Runs.php(46): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 22:57:17 --> findAll called
+CRITICAL - 2024-01-02 22:57:17 --> ParseError: syntax error, unexpected identifier "debug", expecting variable
+in APPPATH/Libraries/RunSpecifier.php on line 26.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 3 APPPATH/Controllers/Runs.php(37): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 22:57:17 --> ParseError: syntax error, unexpected identifier "debug", expecting variable
+in APPPATH/Libraries/RunSpecifier.php on line 26.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 3 APPPATH/Controllers/Runs.php(37): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 22:57:17 --> ParseError: syntax error, unexpected identifier "debug", expecting variable
+in APPPATH/Libraries/RunSpecifier.php on line 26.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 3 APPPATH/Controllers/Runs.php(37): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 22:57:47 --> findAll called
+CRITICAL - 2024-01-02 22:57:47 --> ErrorException: Undefined variable $language
+in APPPATH/Controllers/Runs.php on line 46.
+ 1 APPPATH/Controllers/Runs.php(46): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 22:57:47 --> ErrorException: Undefined variable $language
+in APPPATH/Controllers/Runs.php on line 46.
+ 1 APPPATH/Controllers/Runs.php(46): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 22:57:47 --> ErrorException: Undefined variable $language
+in APPPATH/Controllers/Runs.php on line 46.
+ 1 APPPATH/Controllers/Runs.php(46): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 22:58:47 --> findAll called
+CRITICAL - 2024-01-02 22:58:47 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 41.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 22:58:47 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 41.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 22:58:47 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 41.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:03:15 --> findAll called
+CRITICAL - 2024-01-02 23:03:15 --> Error: Object of class stdClass could not be converted to string
+in APPPATH/Controllers/Runs.php on line 41.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:03:15 --> Error: Object of class stdClass could not be converted to string
+in APPPATH/Controllers/Runs.php on line 41.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:03:15 --> Error: Object of class stdClass could not be converted to string
+in APPPATH/Controllers/Runs.php on line 41.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:03:52 --> findAll called
+CRITICAL - 2024-01-02 23:03:52 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 42.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:03:52 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 42.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:03:52 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 42.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:04:41 --> findAll called
+CRITICAL - 2024-01-02 23:04:41 --> Error: Class "\Jobe\Python3Taskxx" not found
+in APPPATH/Controllers/Runs.php on line 42.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:04:41 --> Error: Class "\Jobe\CppTaskxx" not found
+in APPPATH/Controllers/Runs.php on line 42.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:04:41 --> Error: Class "\Jobe\JavaTaskxx" not found
+in APPPATH/Controllers/Runs.php on line 42.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:15:56 --> findAll called
+CRITICAL - 2024-01-02 23:15:56 --> Error: Class "Jobe\JobeException" not found
+in APPPATH/Libraries/RunSpecifier.php on line 93.
+ 1 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:15:56 --> Error: Class "Jobe\JobeException" not found
+in APPPATH/Libraries/RunSpecifier.php on line 93.
+ 1 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:15:56 --> Error: Class "Jobe\JobeException" not found
+in APPPATH/Libraries/RunSpecifier.php on line 93.
+ 1 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:16:09 --> findAll called
+CRITICAL - 2024-01-02 23:16:09 --> Error: Class "Jobe\Exception" not found
+in APPPATH/Libraries/JobException.php on line 22.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(309): include_once()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 3 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 4 APPPATH/Libraries/RunSpecifier.php(93): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 5 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 6 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 7 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 9 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:16:09 --> Error: Class "Jobe\Exception" not found
+in APPPATH/Libraries/JobException.php on line 22.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(309): include_once()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 3 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 4 APPPATH/Libraries/RunSpecifier.php(93): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 5 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 6 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 7 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 9 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:16:09 --> Error: Class "Jobe\Exception" not found
+in APPPATH/Libraries/JobException.php on line 22.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(309): include_once()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 3 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 4 APPPATH/Libraries/RunSpecifier.php(93): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 5 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 6 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 7 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 9 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:16:26 --> findAll called
+CRITICAL - 2024-01-02 23:16:26 --> Error: Class "Jobe\Exception" not found
+in APPPATH/Libraries/JobException.php on line 22.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(309): include_once()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 3 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 4 APPPATH/Libraries/RunSpecifier.php(93): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 5 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 6 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 7 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 9 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:16:26 --> Error: Class "Jobe\Exception" not found
+in APPPATH/Libraries/JobException.php on line 22.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(309): include_once()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 3 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 4 APPPATH/Libraries/RunSpecifier.php(93): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 5 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 6 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 7 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 9 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:16:26 --> Error: Class "Jobe\Exception" not found
+in APPPATH/Libraries/JobException.php on line 22.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(309): include_once()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 3 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 4 APPPATH/Libraries/RunSpecifier.php(93): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 5 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 6 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 7 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 9 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:17:01 --> findAll called
+CRITICAL - 2024-01-02 23:17:01 --> Error: Class "Jobe\Exception" not found
+in APPPATH/Libraries/JobException.php on line 22.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(309): include_once()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 3 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 4 APPPATH/Libraries/RunSpecifier.php(93): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 5 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 6 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 7 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 9 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:17:01 --> Error: Class "Jobe\Exception" not found
+in APPPATH/Libraries/JobException.php on line 22.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(309): include_once()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 3 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 4 APPPATH/Libraries/RunSpecifier.php(93): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 5 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 6 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 7 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 9 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:17:01 --> Error: Class "Jobe\Exception" not found
+in APPPATH/Libraries/JobException.php on line 22.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(309): include_once()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 3 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 4 APPPATH/Libraries/RunSpecifier.php(93): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 5 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 6 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 7 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 9 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:18:11 --> findAll called
+CRITICAL - 2024-01-02 23:18:11 --> Error: Class "Jobe\Exception" not found
+in APPPATH/Libraries/JobException.php on line 22.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(309): include_once()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 3 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 4 APPPATH/Libraries/RunSpecifier.php(93): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 5 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 6 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 7 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 9 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:18:11 --> Error: Class "Jobe\Exception" not found
+in APPPATH/Libraries/JobException.php on line 22.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(309): include_once()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 3 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 4 APPPATH/Libraries/RunSpecifier.php(93): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 5 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 6 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 7 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 9 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:18:11 --> Error: Class "Jobe\Exception" not found
+in APPPATH/Libraries/JobException.php on line 22.
+ 1 SYSTEMPATH/Autoloader/Autoloader.php(309): include_once()
+ 2 SYSTEMPATH/Autoloader/Autoloader.php(288): CodeIgniter\Autoloader\Autoloader->includeFile()
+ 3 SYSTEMPATH/Autoloader/Autoloader.php(266): CodeIgniter\Autoloader\Autoloader->loadInNamespace()
+ 4 APPPATH/Libraries/RunSpecifier.php(93): CodeIgniter\Autoloader\Autoloader->loadClass()
+ 5 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 6 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 7 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 9 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:19:53 --> findAll called
+CRITICAL - 2024-01-02 23:19:53 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 42.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:19:53 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 42.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:19:53 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 42.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:21:29 --> findAll called
+WARNING - 2024-01-02 23:21:29 --> [DEPRECATED] Exception::__construct(): Passing null to parameter #1 ($message) of type string is deprecated in APPPATH/Libraries/JobException.php on line 29.
+ 1 APPPATH/Libraries/JobException.php(29): Exception->__construct(null, 0, null)
+ 2 APPPATH/Libraries/RunSpecifier.php(93): Jobe\JobException->__construct(null, 500)
+ 3 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct(Object(stdClass))
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Runs))
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:21:29 --> runs_post: 
+WARNING - 2024-01-02 23:21:29 --> [DEPRECATED] Exception::__construct(): Passing null to parameter #1 ($message) of type string is deprecated in APPPATH/Libraries/JobException.php on line 29.
+ 1 APPPATH/Libraries/JobException.php(29): Exception->__construct(null, 0, null)
+ 2 APPPATH/Libraries/RunSpecifier.php(93): Jobe\JobException->__construct(null, 500)
+ 3 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct(Object(stdClass))
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Runs))
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:21:29 --> runs_post: 
+WARNING - 2024-01-02 23:21:29 --> [DEPRECATED] Exception::__construct(): Passing null to parameter #1 ($message) of type string is deprecated in APPPATH/Libraries/JobException.php on line 29.
+ 1 APPPATH/Libraries/JobException.php(29): Exception->__construct(null, 0, null)
+ 2 APPPATH/Libraries/RunSpecifier.php(93): Jobe\JobException->__construct(null, 500)
+ 3 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct(Object(stdClass))
+ 4 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 5 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Runs))
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:21:29 --> runs_post: 
+DEBUG - 2024-01-02 23:25:34 --> findAll called
+DEBUG - 2024-01-02 23:25:34 --> runs_post: Language: Python3
+DEBUG - 2024-01-02 23:25:34 --> runs_post: Language: Cpp
+DEBUG - 2024-01-02 23:25:34 --> runs_post: Language: Java
+DEBUG - 2024-01-02 23:26:20 --> findAll called
+DEBUG - 2024-01-02 23:26:20 --> runs_post: Language: \Jobe\Python3Task
+DEBUG - 2024-01-02 23:26:20 --> runs_post: Language: \Jobe\CppTask
+DEBUG - 2024-01-02 23:26:20 --> runs_post: Language: \Jobe\JavaTask
+DEBUG - 2024-01-02 23:26:58 --> findAll called
+CRITICAL - 2024-01-02 23:26:58 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 44.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:26:58 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 44.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:26:58 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 44.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:27:48 --> findAll called
+DEBUG - 2024-01-02 23:27:48 --> runs_post: Class: \Jobe\Python3Task
+DEBUG - 2024-01-02 23:27:48 --> runs_post: Class: \Jobe\CppTask
+DEBUG - 2024-01-02 23:27:48 --> runs_post: Class: \Jobe\JavaTask
+DEBUG - 2024-01-02 23:31:05 --> findAll called
+CRITICAL - 2024-01-02 23:31:05 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 43.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:31:05 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 43.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:31:05 --> Error: Class "Jobe\Task" not found
+in APPPATH/Controllers/Runs.php on line 43.
+ 1 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 2 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 4 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:31:36 --> findAll called
+CRITICAL - 2024-01-02 23:31:36 --> ErrorException: Undefined variable $debug
+in APPPATH/Controllers/Runs.php on line 58.
+ 1 APPPATH/Controllers/Runs.php(58): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:31:36 --> [Caused by] ErrorException: Undefined variable $files
+in APPPATH/Controllers/Runs.php on line 49.
+ 1 APPPATH/Controllers/Runs.php(49): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:31:36 --> ErrorException: Undefined variable $debug
+in APPPATH/Controllers/Runs.php on line 58.
+ 1 APPPATH/Controllers/Runs.php(58): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:31:36 --> [Caused by] ErrorException: Undefined variable $files
+in APPPATH/Controllers/Runs.php on line 49.
+ 1 APPPATH/Controllers/Runs.php(49): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:31:36 --> ErrorException: Undefined variable $debug
+in APPPATH/Controllers/Runs.php on line 58.
+ 1 APPPATH/Controllers/Runs.php(58): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:31:36 --> [Caused by] ErrorException: Undefined variable $files
+in APPPATH/Controllers/Runs.php on line 49.
+ 1 APPPATH/Controllers/Runs.php(49): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:32:16 --> findAll called
+CRITICAL - 2024-01-02 23:32:29 --> ErrorException: Undefined variable $files
+in APPPATH/Controllers/Runs.php on line 49.
+ 1 APPPATH/Controllers/Runs.php(49): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:32:29 --> ErrorException: Undefined variable $files
+in APPPATH/Controllers/Runs.php on line 49.
+ 1 APPPATH/Controllers/Runs.php(49): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+CRITICAL - 2024-01-02 23:32:29 --> ErrorException: Undefined variable $files
+in APPPATH/Controllers/Runs.php on line 49.
+ 1 APPPATH/Controllers/Runs.php(49): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 3 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:32:58 --> findAll called
+DEBUG - 2024-01-02 23:32:58 --> runs_post: compiling job jobe_wq9eQa
+DEBUG - 2024-01-02 23:32:58 --> runs_post: executing job jobe_wq9eQa
+DEBUG - 2024-01-02 23:32:58 --> runs_post: returning 200 OK for task jobe_wq9eQa
+DEBUG - 2024-01-02 23:32:58 --> runs_post: compiling job jobe_bbp5yG
+DEBUG - 2024-01-02 23:32:58 --> runs_post: executing job jobe_bbp5yG
+DEBUG - 2024-01-02 23:32:59 --> runs_post: returning 200 OK for task jobe_bbp5yG
+DEBUG - 2024-01-02 23:32:59 --> runs_post: compiling job jobe_Z453Xt
+DEBUG - 2024-01-02 23:32:59 --> runs_post: executing job jobe_Z453Xt
+DEBUG - 2024-01-02 23:33:00 --> runs_post: returning 200 OK for task jobe_Z453Xt
+DEBUG - 2024-01-02 23:34:33 --> findAll called
+DEBUG - 2024-01-02 23:34:33 --> runs_post: compiling job jobe_HHiqdb
+DEBUG - 2024-01-02 23:34:33 --> runs_post: executing job jobe_HHiqdb
+DEBUG - 2024-01-02 23:34:33 --> runs_post: returning 200 OK for task jobe_HHiqdb
+DEBUG - 2024-01-02 23:34:33 --> runs_post: compiling job jobe_HJIGRo
+DEBUG - 2024-01-02 23:34:33 --> runs_post: executing job jobe_HJIGRo
+DEBUG - 2024-01-02 23:34:34 --> runs_post: returning 200 OK for task jobe_HJIGRo
+DEBUG - 2024-01-02 23:34:34 --> runs_post: compiling job jobe_qGjN4g
+DEBUG - 2024-01-02 23:34:34 --> runs_post: returning 200 OK for task jobe_qGjN4g
+DEBUG - 2024-01-02 23:34:34 --> runs_post: compiling job jobe_zkKLG0
+DEBUG - 2024-01-02 23:34:34 --> runs_post: executing job jobe_zkKLG0
+DEBUG - 2024-01-02 23:34:35 --> runs_post: returning 200 OK for task jobe_zkKLG0
+DEBUG - 2024-01-02 23:34:35 --> runs_post: compiling job jobe_luq3sx
+DEBUG - 2024-01-02 23:34:35 --> runs_post: executing job jobe_luq3sx
+DEBUG - 2024-01-02 23:34:35 --> runs_post: returning 200 OK for task jobe_luq3sx
+DEBUG - 2024-01-02 23:34:35 --> runs_post: compiling job jobe_XhuxvM
+DEBUG - 2024-01-02 23:34:35 --> runs_post: executing job jobe_XhuxvM
+DEBUG - 2024-01-02 23:34:36 --> runs_post: returning 200 OK for task jobe_XhuxvM
+DEBUG - 2024-01-02 23:34:36 --> runs_post: compiling job jobe_mxyny7
+DEBUG - 2024-01-02 23:34:36 --> runs_post: executing job jobe_mxyny7
+DEBUG - 2024-01-02 23:34:36 --> runs_post: returning 200 OK for task jobe_mxyny7
+DEBUG - 2024-01-02 23:34:36 --> runs_post: compiling job jobe_FcCZVS
+DEBUG - 2024-01-02 23:34:36 --> runs_post: executing job jobe_FcCZVS
+DEBUG - 2024-01-02 23:34:46 --> runs_post: returning 200 OK for task jobe_FcCZVS
+CRITICAL - 2024-01-02 23:34:46 --> Error: Undefined constant "Jobe\MIN_FILE_IDENTIFIER_SIZE"
+in APPPATH/Libraries/RunSpecifier.php on line 119.
+ 1 APPPATH/Libraries/RunSpecifier.php(78): Jobe\RunSpecifier->isValidFilespec()
+ 2 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 3 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 4 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 6 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:34:46 --> runs_post: compiling job jobe_vjSdHI
+DEBUG - 2024-01-02 23:34:46 --> runs_post: executing job jobe_vjSdHI
+DEBUG - 2024-01-02 23:34:47 --> runs_post: returning 200 OK for task jobe_vjSdHI
+DEBUG - 2024-01-02 23:34:47 --> runs_post: compiling job jobe_j9rBHc
+DEBUG - 2024-01-02 23:34:47 --> runs_post: executing job jobe_j9rBHc
+DEBUG - 2024-01-02 23:34:48 --> runs_post: returning 200 OK for task jobe_j9rBHc
+DEBUG - 2024-01-02 23:34:48 --> runs_post: compiling job jobe_Nx3uv1
+DEBUG - 2024-01-02 23:34:49 --> runs_post: executing job jobe_Nx3uv1
+DEBUG - 2024-01-02 23:34:49 --> runs_post: returning 200 OK for task jobe_Nx3uv1
+DEBUG - 2024-01-02 23:34:49 --> runs_post: compiling job jobe_OKiNwi
+DEBUG - 2024-01-02 23:34:49 --> runs_post: executing job jobe_OKiNwi
+DEBUG - 2024-01-02 23:34:49 --> runs_post: returning 200 OK for task jobe_OKiNwi
+DEBUG - 2024-01-02 23:34:49 --> runs_post: compiling job jobe_KaBj0C
+DEBUG - 2024-01-02 23:34:50 --> runs_post: returning 200 OK for task jobe_KaBj0C
+DEBUG - 2024-01-02 23:34:50 --> runs_post: compiling job jobe_Syl9QV
+DEBUG - 2024-01-02 23:34:50 --> runs_post: returning 200 OK for task jobe_Syl9QV
+DEBUG - 2024-01-02 23:34:50 --> runs_post: compiling job jobe_mnswPr
+DEBUG - 2024-01-02 23:34:50 --> runs_post: executing job jobe_mnswPr
+DEBUG - 2024-01-02 23:34:50 --> runs_post: returning 200 OK for task jobe_mnswPr
+DEBUG - 2024-01-02 23:34:50 --> runs_post: compiling job jobe_Xdad0V
+DEBUG - 2024-01-02 23:34:50 --> runs_post: executing job jobe_Xdad0V
+DEBUG - 2024-01-02 23:34:56 --> runs_post: returning 200 OK for task jobe_Xdad0V
+DEBUG - 2024-01-02 23:34:56 --> runs_post: compiling job jobe_NsZTm3
+DEBUG - 2024-01-02 23:34:56 --> runs_post: executing job jobe_NsZTm3
+DEBUG - 2024-01-02 23:35:01 --> runs_post: returning 200 OK for task jobe_NsZTm3
+DEBUG - 2024-01-02 23:35:01 --> runs_post: compiling job jobe_nOxWYw
+DEBUG - 2024-01-02 23:35:01 --> runs_post: executing job jobe_nOxWYw
+DEBUG - 2024-01-02 23:35:02 --> runs_post: returning 200 OK for task jobe_nOxWYw
+DEBUG - 2024-01-02 23:35:02 --> runs_post: compiling job jobe_sXbDsa
+DEBUG - 2024-01-02 23:35:02 --> runs_post: executing job jobe_sXbDsa
+DEBUG - 2024-01-02 23:35:02 --> runs_post: returning 200 OK for task jobe_sXbDsa
+DEBUG - 2024-01-02 23:35:02 --> runs_post: compiling job jobe_dylOGg
+DEBUG - 2024-01-02 23:35:03 --> runs_post: executing job jobe_dylOGg
+DEBUG - 2024-01-02 23:35:03 --> runs_post: returning 200 OK for task jobe_dylOGg
+DEBUG - 2024-01-02 23:35:03 --> runs_post: compiling job jobe_eWhlx1
+DEBUG - 2024-01-02 23:35:03 --> runs_post: executing job jobe_eWhlx1
+DEBUG - 2024-01-02 23:35:03 --> runs_post: returning 200 OK for task jobe_eWhlx1
+DEBUG - 2024-01-02 23:35:03 --> runs_post: compiling job jobe_svgBhV
+DEBUG - 2024-01-02 23:35:03 --> runs_post: executing job jobe_svgBhV
+DEBUG - 2024-01-02 23:35:04 --> runs_post: returning 200 OK for task jobe_svgBhV
+DEBUG - 2024-01-02 23:35:04 --> runs_post: compiling job jobe_6EUDYJ
+DEBUG - 2024-01-02 23:35:04 --> runs_post: executing job jobe_6EUDYJ
+DEBUG - 2024-01-02 23:35:04 --> runs_post: returning 200 OK for task jobe_6EUDYJ
+DEBUG - 2024-01-02 23:35:04 --> runs_post: compiling job jobe_jCtwYq
+DEBUG - 2024-01-02 23:35:04 --> runs_post: executing job jobe_jCtwYq
+DEBUG - 2024-01-02 23:35:05 --> runs_post: returning 200 OK for task jobe_jCtwYq
+DEBUG - 2024-01-02 23:35:05 --> runs_post: compiling job jobe_KzpbHT
+DEBUG - 2024-01-02 23:35:05 --> runs_post: executing job jobe_KzpbHT
+DEBUG - 2024-01-02 23:35:05 --> runs_post: returning 200 OK for task jobe_KzpbHT
+DEBUG - 2024-01-02 23:35:05 --> runs_post: compiling job jobe_eiyfV4
+DEBUG - 2024-01-02 23:35:05 --> runs_post: executing job jobe_eiyfV4
+DEBUG - 2024-01-02 23:35:05 --> runs_post: returning 200 OK for task jobe_eiyfV4
+DEBUG - 2024-01-02 23:35:05 --> runs_post: compiling job jobe_QIL9Nw
+DEBUG - 2024-01-02 23:35:05 --> runs_post: executing job jobe_QIL9Nw
+DEBUG - 2024-01-02 23:35:06 --> runs_post: returning 200 OK for task jobe_QIL9Nw
+DEBUG - 2024-01-02 23:35:06 --> runs_post: compiling job jobe_Ff1Ky7
+DEBUG - 2024-01-02 23:35:06 --> runs_post: returning 200 OK for task jobe_Ff1Ky7
+DEBUG - 2024-01-02 23:35:06 --> runs_post: compiling job jobe_9Wqcna
+DEBUG - 2024-01-02 23:35:06 --> runs_post: returning 200 OK for task jobe_9Wqcna
+DEBUG - 2024-01-02 23:35:06 --> runs_post: compiling job jobe_LsMr59
+DEBUG - 2024-01-02 23:35:07 --> runs_post: executing job jobe_LsMr59
+DEBUG - 2024-01-02 23:35:08 --> runs_post: returning 200 OK for task jobe_LsMr59
+DEBUG - 2024-01-02 23:35:08 --> runs_post: compiling job jobe_0dxuWn
+DEBUG - 2024-01-02 23:35:08 --> runs_post: executing job jobe_0dxuWn
+DEBUG - 2024-01-02 23:35:09 --> runs_post: returning 200 OK for task jobe_0dxuWn
+DEBUG - 2024-01-02 23:35:09 --> runs_post: compiling job jobe_Qa7HC9
+DEBUG - 2024-01-02 23:35:09 --> runs_post: returning 200 OK for task jobe_Qa7HC9
+CRITICAL - 2024-01-02 23:35:09 --> Error: Undefined constant "Jobe\MIN_FILE_IDENTIFIER_SIZE"
+in APPPATH/Libraries/RunSpecifier.php on line 119.
+ 1 APPPATH/Libraries/RunSpecifier.php(78): Jobe\RunSpecifier->isValidFilespec()
+ 2 APPPATH/Controllers/Runs.php(38): Jobe\RunSpecifier->__construct()
+ 3 SYSTEMPATH/CodeIgniter.php(941): App\Controllers\Runs->post()
+ 4 SYSTEMPATH/CodeIgniter.php(502): CodeIgniter\CodeIgniter->runController()
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest()
+ 6 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH/Commands/Server/rewrite.php(47): require_once('/var/www/html/jobe/public/index.php')
+DEBUG - 2024-01-02 23:35:09 --> runs_post: compiling job jobe_cX64ih
+DEBUG - 2024-01-02 23:35:10 --> runs_post: executing job jobe_cX64ih
+DEBUG - 2024-01-02 23:35:10 --> runs_post: returning 200 OK for task jobe_cX64ih
+DEBUG - 2024-01-02 23:35:10 --> runs_post: compiling job jobe_DkRE6Q
+DEBUG - 2024-01-02 23:35:11 --> runs_post: executing job jobe_DkRE6Q
+DEBUG - 2024-01-02 23:35:11 --> runs_post: returning 200 OK for task jobe_DkRE6Q
+DEBUG - 2024-01-02 23:35:11 --> runs_post: compiling job jobe_FcKEcw
+DEBUG - 2024-01-02 23:35:11 --> runs_post: returning 200 OK for task jobe_FcKEcw
+DEBUG - 2024-01-02 23:35:11 --> runs_post: compiling job jobe_Vl5sIh
+DEBUG - 2024-01-02 23:35:11 --> runs_post: executing job jobe_Vl5sIh
+DEBUG - 2024-01-02 23:35:12 --> runs_post: returning 200 OK for task jobe_Vl5sIh
+DEBUG - 2024-01-02 23:35:12 --> runs_post: compiling job jobe_n0HN0j
+DEBUG - 2024-01-02 23:35:12 --> runs_post: returning 200 OK for task jobe_n0HN0j
+DEBUG - 2024-01-02 23:35:12 --> runs_post: compiling job jobe_7fRxId
+DEBUG - 2024-01-02 23:35:12 --> runs_post: executing job jobe_7fRxId
+DEBUG - 2024-01-02 23:35:12 --> runs_post: returning 200 OK for task jobe_7fRxId
+DEBUG - 2024-01-02 23:35:12 --> runs_post: compiling job jobe_wmcG4M
+DEBUG - 2024-01-02 23:35:13 --> runs_post: executing job jobe_wmcG4M
+DEBUG - 2024-01-02 23:35:13 --> runs_post: returning 200 OK for task jobe_wmcG4M
+DEBUG - 2024-01-02 23:35:13 --> runs_post: compiling job jobe_1Lmrv3
+DEBUG - 2024-01-02 23:35:13 --> runs_post: executing job jobe_1Lmrv3
+DEBUG - 2024-01-02 23:35:13 --> runs_post: returning 200 OK for task jobe_1Lmrv3
+DEBUG - 2024-01-02 23:35:13 --> runs_post: compiling job jobe_K2vfkE
+DEBUG - 2024-01-02 23:35:13 --> runs_post: executing job jobe_K2vfkE
+DEBUG - 2024-01-02 23:35:14 --> runs_post: returning 200 OK for task jobe_K2vfkE
+DEBUG - 2024-01-02 23:35:14 --> runs_post: compiling job jobe_8aXpvT
+DEBUG - 2024-01-02 23:35:14 --> runs_post: executing job jobe_8aXpvT
+DEBUG - 2024-01-02 23:35:14 --> runs_post: returning 200 OK for task jobe_8aXpvT
+DEBUG - 2024-01-02 23:35:14 --> runs_post: compiling job jobe_jfR3Wy
+DEBUG - 2024-01-02 23:35:14 --> runs_post: executing job jobe_jfR3Wy
+DEBUG - 2024-01-02 23:35:14 --> runs_post: returning 200 OK for task jobe_jfR3Wy
+DEBUG - 2024-01-02 23:35:14 --> runs_post: compiling job jobe_XoUpVj
+DEBUG - 2024-01-02 23:35:15 --> runs_post: executing job jobe_XoUpVj
+DEBUG - 2024-01-02 23:35:15 --> runs_post: returning 200 OK for task jobe_XoUpVj
+DEBUG - 2024-01-02 23:35:15 --> runs_post: compiling job jobe_iVRCr2
+DEBUG - 2024-01-02 23:35:15 --> runs_post: executing job jobe_iVRCr2
+DEBUG - 2024-01-02 23:35:15 --> runs_post: returning 200 OK for task jobe_iVRCr2
+DEBUG - 2024-01-02 23:35:15 --> runs_post: compiling job jobe_h0x9dw
+DEBUG - 2024-01-02 23:35:15 --> runs_post: executing job jobe_h0x9dw
+DEBUG - 2024-01-02 23:35:16 --> runs_post: returning 200 OK for task jobe_h0x9dw
+DEBUG - 2024-01-02 23:35:16 --> runs_post: compiling job jobe_bTShtb
+DEBUG - 2024-01-02 23:35:16 --> runs_post: executing job jobe_bTShtb
+DEBUG - 2024-01-02 23:35:16 --> runs_post: returning 200 OK for task jobe_bTShtb
+DEBUG - 2024-01-02 23:35:16 --> runs_post: compiling job jobe_XHch5g
+DEBUG - 2024-01-02 23:35:16 --> runs_post: executing job jobe_XHch5g
+DEBUG - 2024-01-02 23:35:17 --> runs_post: returning 200 OK for task jobe_XHch5g

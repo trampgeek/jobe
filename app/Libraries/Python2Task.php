@@ -12,7 +12,7 @@
 
 namespace Jobe;
 
-class Python2Task extends Task
+class Python2Task extends LanguageTask
 {
     public function __construct($filename, $input, $params)
     {

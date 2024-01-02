@@ -30,8 +30,7 @@ class Languages extends ResourceController
     use ResponseTrait;
     public function get()
     {
-        $model = new LanguagesModel();
-        $data = $model->findAll();
+        $data = LanguagesModel::findAll();
         return $this->respond($data);
     }
 }

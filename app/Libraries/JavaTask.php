@@ -13,7 +13,7 @@
 
 namespace Jobe;
 
-class JavaTask extends Task
+class JavaTask extends LanguageTask
 {
     public string $mainClassName;
     
