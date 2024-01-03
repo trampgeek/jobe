@@ -981,7 +981,7 @@ int main() {
     data = json.dumps({ 'run_spec' : runspec })
     output("\nTesting a submission with an excessive cputime parameter")
     ok, result = do_http('POST', RUNS_RESOURCE, data)
-    if result.startswith("400: cputime exceeds maximum allowed on this Jobe server"):
+    if not ok and result.startswith("400: cputime exceeds maximum allowed on this Jobe server"):
         output("OK")
     else:
         output("********** TEST FAILED **************")
@@ -1081,6 +1081,7 @@ def check_performance(lang):
 
 def main():
     global ARGS
+
     parser = argparse.ArgumentParser(
         prog='python3 testsubmit.py',
         description='Test the Jobe server',
@@ -1114,6 +1115,7 @@ Default 30. Use only with --perf. A value less than about 10 will not give meani
         else:
             langs_to_run = set([testcase['language_id'] for testcase in TEST_SET])
     if not ARGS.perf:
+        check_bad_cputime(); return
         return normal_testing(langs_to_run)
     else:
         for lang in langs_to_run:
