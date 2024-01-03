@@ -32,6 +32,7 @@ class RunSpecifier
         if (!is_object($postDataJson)) {
             throw new JobException('Non-JSON post data received', 400);
         }
+        // throw new JobException(var_dump($postDataJson, true), 500);
         $run = $postDataJson->run_spec;
         if (!is_object($run)) {
             throw new JobException('No run_spec attribute found in post data', 400);
@@ -60,7 +61,8 @@ class RunSpecifier
         $this->parameters = (array) ($run->parameters ?? []);
         $config = config('Jobe');
         $max_cpu_time = $config->cputime_upper_limit_secs;
-        if (intval($this->parameters['max_cpu_time'] ?? 0) > $max_cpu_time) {
+
+        if (intval($this->parameters['cputime'] ?? 0) > $max_cpu_time) {
             throw new JobException("cputime exceeds maximum allowed on this Jobe server ($max_cpu_time secs)", 400);
         }
 
@@ -80,16 +82,7 @@ class RunSpecifier
             if (!$this->isValidFilespec($file)) {
                 throw new JobException("Invalid file specifier: " . print_r($file, true), 400);
             }
-            $files[] = $file;
-        }
-
-        // Get the parameters, and validate.
-        if (isset($run->parameters)) {
-            $this->parameters = (array) $run->parameters;
-        }
-        $max_cpu_time = config('Jobe')->cputime_upper_limit_secs;
-        if (intval($this->parameters['max_cpu_time'] ?? '0') > $max_cpu_time) {
-            throw new JobException("cputime exceeds maximum allowed on this Jobe server ($max_cpu_time secs)", 400);
+            $this->files[] = $file;
         }
     }
 

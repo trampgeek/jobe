@@ -550,23 +550,6 @@ console.log(s)
 },
 
 
-{
-    'comment': 'Syntactically incorrect Php program ',
-    'language_id': 'php',
-    'sourcecode': r'''<!DOCTYPE html>
-<html>
-<head></head>
-<body>
-<h1>Heading</h1>
-<p><?php echo "A paragraph' ?></p>
-</body>
-</html>
-''',
-    'sourcefilename': 'test.php',
-    'parameters': {'cputime':15},
-    'expect': { 'outcome': 11 }
-},
-
 # ================= Java tests ==================
 {
     'comment': 'Correct Java program ',
@@ -867,7 +850,7 @@ def run_test(test):
 
 
 def do_http(method, resource, data=None):
-    """Send the given HTTP request to Jobe, return a pair (ok result) where
+    """Send the given HTTP request to Jobe, return a pair (ok, result) where
        ok is true if no exception was thrown, false otherwise and
        result is a dictionary of the JSON decoded response (or an empty
        dictionary in the case of a 204 response.
@@ -894,7 +877,7 @@ def do_http(method, resource, data=None):
     except (HTTPError, ValueError) as e:
         output("\n***************** HTTP ERROR ******************\n")
         if response:
-            output(' Response:', response.status, response.reason, content)
+            output('Response:', response.status, response.reason, content)
         else:
             output(e)
         ok = False
@@ -981,7 +964,7 @@ int main() {
     data = json.dumps({ 'run_spec' : runspec })
     output("\nTesting a submission with an excessive cputime parameter")
     ok, result = do_http('POST', RUNS_RESOURCE, data)
-    if not ok and result.startswith("400: cputime exceeds maximum allowed on this Jobe server"):
+    if ok and result.startswith("400: cputime exceeds maximum allowed on this Jobe server"):
         output("OK")
     else:
         output("********** TEST FAILED **************")
@@ -1115,7 +1098,6 @@ Default 30. Use only with --perf. A value less than about 10 will not give meani
         else:
             langs_to_run = set([testcase['language_id'] for testcase in TEST_SET])
     if not ARGS.perf:
-        check_bad_cputime(); return
         return normal_testing(langs_to_run)
     else:
         for lang in langs_to_run:

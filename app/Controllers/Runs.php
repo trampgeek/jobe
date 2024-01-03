@@ -31,7 +31,6 @@ class Runs extends ResourceController
     public function post()
     {
         // Extract the run object from the post data and validate.
-
         try {
             // Extract info from the POST data, raising JobException if bad.
             $json = $this->request->getJSON();

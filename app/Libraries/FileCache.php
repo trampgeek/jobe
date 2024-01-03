@@ -29,7 +29,7 @@
  *
  * ==============================================================
  *
- * @copyright  2019 Richard Lobb, University of Canterbury
+ * @copyright  2019, 2024 Richard Lobb, University of Canterbury
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

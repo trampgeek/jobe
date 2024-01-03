@@ -88,7 +88,6 @@ trait ResponseTrait
     {
         if ($data === null && $status === null) {
             $status = 404;
-            $output = null;
             $this->format($data);
         } elseif ($data === null && is_numeric($status)) {
             $output = null;
@@ -304,6 +303,8 @@ trait ResponseTrait
         // If the data is a string, there's not much we can do to it...
         if (is_string($data)) {
             // The content type should be text/... and not application/...
+            // ******************???????????????????? **************
+            return json_encode($data); // ********* RJL *************
             $contentType = $this->response->getHeaderLine('Content-Type');
             $contentType = str_replace('application/json', 'text/html', $contentType);
             $contentType = str_replace('application/', 'text/', $contentType);
