@@ -27,7 +27,7 @@ abstract class LanguageTask
     const RESULT_ILLEGAL_SYSCALL = 19;
     const RESULT_INTERNAL_ERR = 20;
     const RESULT_SERVER_OVERLOAD = 21;
-
+    const SEM_KEY_FILE_PATH = APPPATH . '/../public/index.php';
     const PROJECT_KEY = 'j';  // For ftok function. Irrelevant (?)
 
     // Global default parameter values. Can be overridden by subclasses,
@@ -207,12 +207,15 @@ abstract class LanguageTask
     {
         $numUsers = config('Jobe')->jobe_max_users;
         $jobe_wait_timeout = config('Jobe')->jobe_wait_timeout;
-        $key = ftok(__FILE__, LanguageTask::PROJECT_KEY);
+        $key = ftok(LanguageTask::SEM_KEY_FILE_PATH, LanguageTask::PROJECT_KEY);
         $sem = sem_get($key);
         $user = -1;
         $retries = 0;
         while ($user == -1) {  // Loop until we have a user (or an OverloadException is thrown)
-            sem_acquire($sem);
+            $gotIt = sem_acquire($sem);
+            if ($key === -1 || $sem === false || $gotIt === false) {
+                throw new JobException("Semaphore code failed in getFreeUser", 500);
+            }
             // Change default permission to 600 (read/write only by owner)
             // 10000 is the default shm size
             $shm = shm_attach($key, 10000, 0600);
@@ -251,10 +254,13 @@ abstract class LanguageTask
     // Mark the given user number (0 to jobe_max_users - 1) as free.
     private function freeUser($userNum)
     {
-        $key = ftok(__FILE__, 'j');
+        $key = ftok(LanguageTask::SEM_KEY_FILE_PATH, LanguageTask::PROJECT_KEY);
         $sem = sem_get($key);
-        sem_acquire($sem);
+        $gotIt = sem_acquire($sem);
         $shm = shm_attach($key);
+        if ($key === -1 || $sem === false || $gotIt === false || $shm === false) {
+            throw new JobException("Semaphore code failed in freeUser", 500);
+        }
         $active = shm_get_var($shm, ACTIVE_USERS);
         $active[$userNum] = false;
         shm_put_var($shm, ACTIVE_USERS, $active);
