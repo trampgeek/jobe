@@ -11,8 +11,18 @@ class Jobe extends BaseConfig
     | Jobe parameters
     |--------------------------------------------------------------------------
     |
-    | This config file Jobe-server specific constants.
+    | This config file contains Jobe-server specific constants.
     */
+
+    /**
+     * API keys.
+     * If $require_api_keys is true, the array $api_keys is a map from api
+     * key to allowed rate of requests per hour. A value of 0 means unlimited.
+     */
+    public bool $require_api_keys = false;
+    public array $api_keys = [
+        '2AAA7A5415B4A9B394B54BF1D2E9D'=> 60 // 60 runs per minute for Jobe2.
+    ];
 
     /*
     | jobe_max_users controls how many jobs can be run by the server at any

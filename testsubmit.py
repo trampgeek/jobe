@@ -42,9 +42,11 @@ from hashlib import md5
 import copy
 from base64 import b64encode
 
-API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (100/hr) key on Jobe2
+API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (60/hr) key on Jobe2
 DEBUGGING = False  # If true, all runs are saved on the Jobe server. Not recommended (there are lots!)
-RESOURCE_BASE = '' #'/jobe/index.php/restapi'
+RESOURCE_BASE = '/jobe/index.php/restapi'
+
+
 RUNS_RESOURCE = f'{RESOURCE_BASE}/runs/'
 
 # The next constant controls the maximum number of parallel submissions to
@@ -756,7 +758,7 @@ def check_file(file_id):
     '''
 
     resource = f'{RESOURCE_BASE}/files/' + file_id
-    headers = {"Accept": "text/plain"}
+    headers = {"Accept": "application/json"}
     try:
         connect = http_request('HEAD', resource, '', headers)
         response = connect.getresponse()
@@ -786,7 +788,7 @@ def put_file(file_desc):
     data = json.dumps({ 'file_contents' : contentsb64 })
     resource = f'{RESOURCE_BASE}/files/' + file_id
     headers = {"Content-type": "application/json",
-               "Accept": "text/plain"}
+               "Accept": "application/json"}
     connect = http_request('PUT', resource, data, headers)
     response = connect.getresponse()
     if ARGS.verbose or response.status != 204:
@@ -938,8 +940,8 @@ def do_get_languages():
     if not ok:
         output("**** An exception occurred when getting languages ****")
     else:
-        for lang, version in lang_versions:
-            output("    {}: {}".format(lang, version))
+        for lang, version, *rest in lang_versions:
+            output(f"    {lang}: {version} {rest}")
     output()
 
 
