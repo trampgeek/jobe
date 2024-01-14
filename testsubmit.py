@@ -383,18 +383,20 @@ int main() {
     'language_id': 'c',
     'sourcecode': r'''#include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 
-void silly(int i) {
-    int j = i + 1;
-    if (j != 0) {
-        silly(j);
+void silly(int i, int increment) {
+    // Some fiddling needed to avoid compiler detecting
+    // infinite recursion.
+    if (i == 0) {
+        puts("Won't get here with positive increment");
     } else {
-        silly(j + 1);
+        silly(i + increment, increment);
     }
 }
 
 int main() {
-    silly(3);
+    silly(3, 1);
 }
 ''',
     'sourcefilename': 'prog.c',
