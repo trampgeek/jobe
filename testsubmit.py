@@ -42,12 +42,9 @@ from hashlib import md5
 import copy
 from base64 import b64encode
 
-API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (60/hr) key on Jobe2
+API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (100/hr) key on Jobe2
 DEBUGGING = False  # If true, all runs are saved on the Jobe server. Not recommended (there are lots!)
-RESOURCE_BASE = '/jobe/index.php/restapi'
-
-
-RUNS_RESOURCE = f'{RESOURCE_BASE}/runs/'
+RUNS_RESOURCE = '/jobe/index.php/restapi/runs/'
 
 # The next constant controls the maximum number of parallel submissions to
 # throw at Jobe at once. Numbers less than or equal to the number of Jobe
@@ -360,44 +357,46 @@ int main() {
 },
 
 {
-    'comment': 'Memory limit exceeded in C (killed by OOM handler)',
+    'comment': 'Memory limit exceeded in C (seg faults)',
     'language_id': 'c',
     'sourcecode': r'''#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-// Will try to allocate and use 2000MB - should be above the default on all systems (?).
+// Will try to allocate 2000MB - should be above the default on all systems (?).
 #define CHUNKSIZE 2000000000
 
 int main() {
     char* p = malloc(CHUNKSIZE);
-    if (p != NULL) { // Probably the OOM handler hasn't killed us yet
-        memset(p, 0, CHUNKSIZE); // Now we really should get killed.
+    if (p == NULL) {
+        printf("Memory limit worked\n");
+    } else {
+        printf("Oh dear, the malloc worked");
     }
-    puts("Oh dear. We shouldn't have got here.");
 }
 
 ''',
     'sourcefilename': 'prog.c',
-    'expect': { 'outcome': 12, 'stdout': '' }
+    'expect': { 'outcome': 15, 'stdout': 'Memory limit worked\n' }
 },
 
 {
     'comment': 'Infinite recursion (stack error) on C',
     'language_id': 'c',
     'sourcecode': r'''#include <stdlib.h>
+#include <assert.h>
 #include <stdio.h>
 
-void silly(int i) {
-    int j = i + 1;
-    if (j == 0) {
-        puts("I don't expect to get here");
+void silly(int i, int increment) {
+    // Some fiddling needed to avoid compiler detecting
+    // infinite recursion.
+    if (i == 0) {
+        puts("Won't get here with positive increment");
     } else {
-        silly(j);
+        silly(i + increment, increment);
     }
 }
 
 int main() {
-    silly(3);
+    silly(3, 1);
 }
 ''',
     'sourcefilename': 'prog.c',
@@ -551,6 +550,23 @@ console.log(s)
     'expect': { 'outcome': 11 }
 },
 
+
+{
+    'comment': 'Syntactically incorrect Php program ',
+    'language_id': 'php',
+    'sourcecode': r'''<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+<h1>Heading</h1>
+<p><?php echo "A paragraph' ?></p>
+</body>
+</html>
+''',
+    'sourcefilename': 'test.php',
+    'parameters': {'cputime':15},
+    'expect': { 'outcome': 11 }
+},
 
 # ================= Java tests ==================
 {
@@ -757,8 +773,8 @@ def check_file(file_id):
        Returns status: 204 denotes file exists, 404 denotes file not found.
     '''
 
-    resource = f'{RESOURCE_BASE}/files/' + file_id
-    headers = {"Accept": "application/json"}
+    resource = '/jobe/index.php/restapi/files/' + file_id
+    headers = {"Accept": "text/plain"}
     try:
         connect = http_request('HEAD', resource, '', headers)
         response = connect.getresponse()
@@ -786,9 +802,9 @@ def put_file(file_desc):
     file_id, contents = file_desc
     contentsb64 = b64encode(contents.encode('utf8')).decode(encoding='UTF-8')
     data = json.dumps({ 'file_contents' : contentsb64 })
-    resource = f'{RESOURCE_BASE}/files/' + file_id
+    resource = '/jobe/index.php/restapi/files/' + file_id
     headers = {"Content-type": "application/json",
-               "Accept": "application/json"}
+               "Accept": "text/plain"}
     connect = http_request('PUT', resource, data, headers)
     response = connect.getresponse()
     if ARGS.verbose or response.status != 204:
@@ -844,7 +860,7 @@ def run_test(test):
         return GOOD_TEST
     else:
         output("\n***************** FAILED TEST ******************\n")
-        # output(result)
+        output(result)
         display_result(test['comment'], result)
         output("\n************************************************\n")
         return FAIL_TEST
@@ -852,7 +868,7 @@ def run_test(test):
 
 
 def do_http(method, resource, data=None):
-    """Send the given HTTP request to Jobe, return a pair (ok, result) where
+    """Send the given HTTP request to Jobe, return a pair (ok result) where
        ok is true if no exception was thrown, false otherwise and
        result is a dictionary of the JSON decoded response (or an empty
        dictionary in the case of a 204 response.
@@ -879,7 +895,7 @@ def do_http(method, resource, data=None):
     except (HTTPError, ValueError) as e:
         output("\n***************** HTTP ERROR ******************\n")
         if response:
-            output('Response:', response.status, response.reason, content)
+            output(' Response:', response.status, response.reason, content)
         else:
             output(e)
         ok = False
@@ -908,7 +924,7 @@ def display_result(comment, ro):
         12: 'Runtime error',
         13: 'Time limit exceeded',
         15: 'Successful run',
-        17: 'Memory limit exceeded', # Can never actually get this?
+        17: 'Memory limit exceeded',
         19: 'Illegal system call',
         20: 'Internal error, please report',
         21: 'Server overload. Excessive parallelism?'}
@@ -935,13 +951,13 @@ def display_result(comment, ro):
 def do_get_languages():
     """List all languages available on the jobe server"""
     output("Supported languages:")
-    resource = f'{RESOURCE_BASE}/languages'
+    resource = '/jobe/index.php/restapi/languages'
     ok, lang_versions = do_http('GET', resource)
     if not ok:
         output("**** An exception occurred when getting languages ****")
     else:
-        for lang, version, *rest in lang_versions:
-            output(f"    {lang}: {version} {rest}")
+        for lang, version in lang_versions:
+            output("    {}: {}".format(lang, version))
     output()
 
 
@@ -966,7 +982,7 @@ int main() {
     data = json.dumps({ 'run_spec' : runspec })
     output("\nTesting a submission with an excessive cputime parameter")
     ok, result = do_http('POST', RUNS_RESOURCE, data)
-    if ok and result.startswith("400: cputime exceeds maximum allowed on this Jobe server"):
+    if result.startswith("400: cputime exceeds maximum allowed on this Jobe server"):
         output("OK")
     else:
         output("********** TEST FAILED **************")
@@ -1001,11 +1017,11 @@ def normal_testing(langs_to_run):
 
 def check_sustained_load(lang, starting_rate):
     """Check the achievable sustained load in the given language.
-       Starting at 80% of the given rate, send jobs at a steady rate
+       Starting at the given rate less 5 jobs/sec, send jobs at a steady rate
        over a 30 second time window, making sure all are successful. Increase the rate until
        a single failure occurs. Report the maximum achieved sustained rate.
     """
-    rate = max(1, int(starting_rate * 0.8))  # Jobs per sec
+    rate = max(1, int(starting_rate - 5))  # Jobs per sec
     best_rate = None
     job = [job for job in TEST_SET if job['language_id'] == lang][0]
 
@@ -1066,7 +1082,6 @@ def check_performance(lang):
 
 def main():
     global ARGS
-
     parser = argparse.ArgumentParser(
         prog='python3 testsubmit.py',
         description='Test the Jobe server',
