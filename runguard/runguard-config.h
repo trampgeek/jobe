@@ -8,7 +8,7 @@
 #ifndef _RUNGUARD_CONFIG_
 #define _RUNGUARD_CONFIG_
 
-// #define DOMJUDGE_VERSION "3"
+#define DOMJUDGE_VERSION "3"
 #define REVISION "3.3"
 
 #define VALID_USERS "domjudge,jobe,jobe00,jobe01,jobe02,jobe03,jobe04,jobe05,jobe06,jobe07"
