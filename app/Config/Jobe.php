@@ -21,7 +21,7 @@ class Jobe extends BaseConfig
      */
     public bool $require_api_keys = false;
     public array $api_keys = [
-        '2AAA7A5415B4A9B394B54BF1D2E9D'=> 60 // 60 runs per minute for Jobe2.
+        '2AAA7A5415B4A9B394B54BF1D2E9D'=> 60 // 60 runs per hour for Jobe2.
     ];
 
     /*
