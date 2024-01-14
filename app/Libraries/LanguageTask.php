@@ -305,13 +305,14 @@ abstract class LanguageTask
                 "--user={$this->user}",
                 "--group=jobe",
                 "--cputime=$cputime",      // Seconds of execution time allowed
-                "--walltime=$killtime",    // Wall clock kill time
+                "--time=$killtime",    // Wall clock kill time
                 "--filesize=$filesize",    // Max file sizes
                 "--nproc=$numProcs",       // Max num processes/threads for this *user*
                 "--no-core",
                 "--streamsize=$streamsize");   // Max stdout/stderr sizes
 
         // Prepend CPU pinning command if enabled
+
         $sandboxCommandBits = array_merge($sandboxCpuPinning, $sandboxCommandBits);
 
         if ($memsize != 0) {  // Special case: Matlab won't run with a memsize set. TODO: WHY NOT!
