@@ -12,7 +12,7 @@ API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (100/hr) key on Jobe2
 USE_API_KEY = False
 #JOBE_SERVER = 'jobe2.cosc.canterbury.ac.nz'
 JOBE_SERVER = 'localhost'
-RESOURCE_BASE = ''  # /index.php/restapi/
+RESOURCE_BASE = '/jobe/index.php/restapi'
 
 PYTHON_CODE = """
 MESSAGE = 'Hello Jobe!'
@@ -84,7 +84,9 @@ def do_http(method, resource, data=None):
     try:
         connect = http_request(method, resource, data, headers)
         response = connect.getresponse()
-        if response.status != 204:
+        if response.status not in [200, 204]:
+            print(f"do_http({method}, {resource}) returned status of {response.status}")
+        elif response.status == 200:
             content = response.read().decode('utf8')
             if content:
                 result = json.loads(content)
