@@ -86,6 +86,7 @@ def do_http(method, resource, data=None):
         response = connect.getresponse()
         if response.status not in [200, 204]:
             print(f"do_http({method}, {resource}) returned status of {response.status}")
+            print(f"content = '{response.read().decode('utf8')}'")
         elif response.status == 200:
             content = response.read().decode('utf8')
             if content:
