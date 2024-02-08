@@ -1047,18 +1047,17 @@ def check_performance(lang):
        using the first of the test jobs in that language (usually about the
        simplest possible job in that language).
        First, repeatedly double the number of parallel submissions until a
-       failure occurs. Report on the maximum achieved peak burst rate
-       across all bursts.
+       failure occurs, then use binary search to find the limit.
+       Report on the maximum achieved peak burst rate across all bursts.
        Using the maximum throughput across all bursts as a starting point, then
        try finding the maximum sustainable rate over a 20 second window by
        sending jobs at that rate less 10%, increasing in steps of 20%,
        until failure occurs."""
     num_submits = 1
-    outcome = GOOD_TEST
     best_rate = 0
     job = [job for job in TEST_SET if job['language_id'] == lang][0]
 
-    while outcome == GOOD_TEST:
+    while True:
         t0 = perf_counter()
         outcome = check_multiple_submissions(job, num_submits, 0)
         t1 = perf_counter()
@@ -1070,10 +1069,31 @@ def check_performance(lang):
             num_submits *= 2
         else:
             print("FAIL.")
+            break
+
+    # Backtrack and find the exact limit
+    lower_limit = num_submits // 2
+    upper_limit = num_submits
+
+    while lower_limit < upper_limit - 1:
+        num_submits = (lower_limit + upper_limit) // 2
+        t0 = perf_counter()
+        outcome = check_multiple_submissions(job, num_submits, 0)
+        t1 = perf_counter()
+        print(f"{num_submits} parallel submits: ", end='')
+
+        if outcome == GOOD_TEST:
+            rate = int(num_submits / (t1 - t0))
+            print(f"OK. {rate} jobs/sec")
+            best_rate = max(rate, best_rate)
+            lower_limit = num_submits
+        else:
+            print("FAIL.")
+            upper_limit = num_submits
+
 
     print()
-    peak_burst_rate = num_submits // 2
-    print(f"Maximum burst handled with no errors = {peak_burst_rate} jobs")
+    print(f"Maximum burst handled with no errors = {lower_limit} jobs")
     print(f"\nChecking maximum sustained throughput over {ARGS.window} sec window")
     check_sustained_load(lang, best_rate)
 
