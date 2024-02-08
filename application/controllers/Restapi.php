@@ -235,11 +235,11 @@ class Restapi extends REST_Controller {
 
         // Report any errors.
         } catch (JobException $e) {
-            $this->log('debug', 'runs_post: ' . $e->getLogMessage());
+            $this->log('error', 'runs_post: ' . $e->getLogMessage());
             $this->response($e->getMessage(), $e->getHttpStatusCode());
 
         } catch (OverloadException $e) {
-            $this->log('debug', 'runs_post: overload exception occurred');
+            $this->log('error', 'runs_post: overload exception occurred');
             $resultobject = new ResultObject(0, Task::RESULT_SERVER_OVERLOAD);
             $this->response($resultobject, 200);
 
