@@ -1,0 +1,19 @@
+#include <stdio.h>
+
+int main() {
+    // Store student details
+    char name[] = "Wanjiku";
+    int age = 25;
+    float height = 5.2;
+    float weight = 67.67;
+    char kcse_grade = 'B';
+
+    // Print student details
+    printf("Names:%s\n", name);
+    printf("Age:%d\n", age);
+    printf("Height:%.1f\n", height);
+    printf("Weight:%.2f\n", weight);
+    printf("KCSE Grade:%c\n", kcse_grade);
+
+    return 0;
+}
