@@ -479,7 +479,7 @@ abstract class LanguageTask
         }
 
         // Refine RuntimeError if possible
-        if (preg_match("time ?limit exceeded", $this->stderr) !== false) {
+        if (preg_match("/time ?limit exceeded/", $this->stderr) !== 0) {
             $this->result = LanguageTask::RESULT_TIME_LIMIT;
             $this->signal = 9;
             $this->stderr = '';

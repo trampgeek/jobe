@@ -1,4 +1,11 @@
 <?php
+namespace App\Filters;
+
+use CodeIgniter\Filters\FilterInterface;
+use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
+use Config\Services;
+
 class Cors implements FilterInterface
 {
     /**
@@ -16,5 +23,17 @@ class Cors implements FilterInterface
         if($method == "OPTIONS") {
             die();
         }
+    }
+
+    /**
+     * We don't have anything to do here.
+     *
+     * @param array|null $arguments
+     *
+     * @return mixed
+     */
+    public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
+    {
+        // ...
     }
 }
