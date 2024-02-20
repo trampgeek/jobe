@@ -63,13 +63,14 @@ class Runs extends ResourceController
 
             // Report any errors.
         } catch (JobException $e) {
-            log_message('debug', 'runs_post: ' . $e->getMessage());
+            log_message('error', 'runs_post: ' . $e->getMessage());
             return $this->respond($e->getMessage(), $e->getHttpStatusCode());
         } catch (OverloadException $e) {
-            log_message('debug', 'runs_post: overload exception occurred');
+            log_message('error', 'runs_post: overload exception occurred');
             $resultobject = new ResultObject(0, Task::RESULT_SERVER_OVERLOAD);
             return $this->respond($resultobject, 200);
         } catch (Exception $e) {
+            log_message('error', 'server exception: ' . $e->getMessage());
             return $this->respond('Server exception (' . $e->getMessage() . ')', 500);
         }
     }
