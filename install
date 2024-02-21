@@ -6,7 +6,6 @@
 # If run with the parameter --purge, all files and users set up by a previous
 # run of the script are deleted at the start.
 
-from __future__ import print_function
 import os
 import subprocess
 import re
@@ -132,7 +131,7 @@ def make_runguard(install_dir):
     """Make the runguard application"""
     runguard_commands = [
         "cd {0}".format(install_dir + '/runguard'),
-        "gcc -o runguard runguard.c -lm -lcgroup",
+        "gcc -o runguard runguard.c -lm",
         "chmod 700 runguard"
     ]
     cmd = ';'.join(runguard_commands)
