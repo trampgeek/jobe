@@ -42,11 +42,13 @@ class Filters extends BaseConfig
             // 'invalidchars',
         ],
         'after' => [
+            'cors',
             'toolbar',
             // 'honeypot',
             // 'secureheaders',
         ],
     ];
+
 
     /**
      * List of filter aliases that works on a

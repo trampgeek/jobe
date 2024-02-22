@@ -16,17 +16,17 @@ class Cors implements FilterInterface
      * @return mixed
      */
     public function before(RequestInterface $request, $arguments = null) {
-        header('Access-Control-Allow-Origin: *');
-        header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method");
-        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, HEAD, DELETE");
-        $method = $_SERVER['REQUEST_METHOD'];
-        if($method == "OPTIONS") {
-            die();
+        // If it's a preflight request, return all the required headers for CORS access.
+        if ($request->getMethod(true) === 'OPTIONS' && $request->hasHeader('Access-Control-Request-Method')) {
+            $response = Services::response()->setStatusCode(204);
+            $response = $response->setHeader('Access-Control-Allow-Origin', '*');
+            $response = $response->setHeader('Access-Control-Allow-Headers', 'X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method');
+            $response = $response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, HEAD, DELETE');
+            return $response;
         }
     }
-
     /**
-     * We don't have anything to do here.
+     * Called after processing of all requests to add all CORS filter if not present.
      *
      * @param array|null $arguments
      *
@@ -34,6 +34,11 @@ class Cors implements FilterInterface
      */
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
-        // ...
+        if (! $response->hasHeader('Access-Control-Allow-Origin')) {
+            $response = $response->setHeader('Access-Control-Allow-Origin', '*');
+            $response = $response->setHeader('Access-Control-Allow-Headers', 'X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method');
+            $response = $response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, HEAD, DELETE');
+        }
+        return $response;
     }
 }

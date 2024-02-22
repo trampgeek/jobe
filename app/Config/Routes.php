@@ -20,3 +20,4 @@ $routes->get('/restapi/languages', 'Languages::get');
 $routes->post('/restapi/runs', 'Runs::post');
 $routes->put('/restapi/files/(:alphanum)', 'Files::put/$1');
 $routes->head('/restapi/files/(:alphanum)', 'Files::head/$1');
+$routes->options('(:any)', '', ['filter' => 'cors']);
