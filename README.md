@@ -1,6 +1,6 @@
 # JOBE
 
-Version: 2.0.0, 240 February 2024
+Version: 2.0.0, 24 February 2024
 
 Note: this is a new version, with lots of changes.
 If you find errors in this document, please email me. My gmail
