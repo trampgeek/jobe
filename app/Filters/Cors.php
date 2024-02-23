@@ -19,10 +19,7 @@ class Cors implements FilterInterface
         // If it's a preflight request, return all the required headers for CORS access.
         if ($request->getMethod(true) === 'OPTIONS' && $request->hasHeader('Access-Control-Request-Method')) {
             $response = Services::response()->setStatusCode(204);
-            $response = $response->setHeader('Access-Control-Allow-Origin', '*');
-            $response = $response->setHeader('Access-Control-Allow-Headers', 'X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method');
-            $response = $response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, HEAD, DELETE');
-            return $response;
+            return addCorsHeaders($response);
         }
     }
     /**
@@ -34,11 +31,6 @@ class Cors implements FilterInterface
      */
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
-        if (! $response->hasHeader('Access-Control-Allow-Origin')) {
-            $response = $response->setHeader('Access-Control-Allow-Origin', '*');
-            $response = $response->setHeader('Access-Control-Allow-Headers', 'X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method');
-            $response = $response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, HEAD, DELETE');
-        }
-        return $response;
+        return addCorsHeaders($response);
     }
 }

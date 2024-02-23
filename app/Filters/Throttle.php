@@ -27,13 +27,15 @@ class Throttle implements FilterInterface
         if ($api_keys_in_use) {
             $keys = config('Jobe')->api_keys;
             if (!$request->hasHeader('X-API-KEY')) {
-                return Services::response()->setStatusCode(403)->setBody('Missing API key');
+                $response = Services::response()->setStatusCode(403)->setBody("Missing API key");
+                return addCorsHeaders($response);
             }
             
             $api_key_hdr = $request->header('X-API-KEY');
             $api_key = explode(': ', $api_key_hdr)[1];
             if (!array_key_exists($api_key, $keys)) {
-                return Services::response()->setStatusCode(403)->setBody("Unknown API key ($api_key)");
+                $response = Services::response()->setStatusCode(403)->setBody("Unknown API key");
+                return addCorsHeaders($response);
             }
             $rate_limit = $keys[$api_key];
 
@@ -41,7 +43,8 @@ class Throttle implements FilterInterface
                 $throttler = Services::throttler();
                 // Restrict an IP address to no more than the configured hourly rate limit for RUN requests only.
                 if ($throttler->check(md5($request->getIPAddress()), $rate_limit, HOUR) === false) {
-                    return Services::response()->setStatusCode(429)->setBody("Max RUN rate for this server exceeded");
+                    $response = Services::response()->setStatusCode(429)->setBody("Max RUN rate for this server exceeded");
+                    return addCorsHeaders($response);
                 }
             }
         }
