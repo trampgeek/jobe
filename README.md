@@ -1,7 +1,10 @@
 # JOBE
 
-Version: 1.9.0, 10 October 2023
+Version: 2.0.0, 240 February 2024
 
+Note: this is a new version, with lots of changes.
+If you find errors in this document, please email me. My gmail
+name is trampgeek.
 
 Author: Richard Lobb, University of Canterbury, New Zealand
 
@@ -87,9 +90,7 @@ If Jobe is to correctly handle utf-8 output from programs, the Apache LANG
 environment variable must be set to a UTF-8 compatible value. See
 the section *Setting the locale* below.
 
-Jobe is implemented using Ellis Lab's [codeigniter](http://codeigniter.com) plus the
-[RESTserver plugin](https://github.com/chriskacerguis/codeigniter-restserver) originally
-written by Phil Sturgeon and now maintained by Chris Kacerguis.
+Jobe is implemented using [codeigniter4](http://codeigniter.com).
 
 ## Installation
 
@@ -100,7 +101,7 @@ and do not control access with API keys (see later),
 anyone will be able to connect to your machine and run their own code
 on it! **CAVEAT EMPTOR!**
 
-NOTE: a video walkthrough of the process of setting up a Jobe server
+NOTE: a (rather old) video walkthrough of the process of setting up a Jobe server
 on a DigitalOcean droplet is [here](https://www.youtube.com/watch?v=dGpnQpLnERw).
 
 Installation on Ubuntu 22.04 systems should be
@@ -111,9 +112,7 @@ Linux administrator skills.
 An alternative approach, and probably the simplest way to get up and running,
 is to use the [JobeInABox](https://hub.docker.com/r/trampgeek/jobeinabox/)
 Docker image, which should be runnable with a single terminal command
-on any Linux system that has docker installed. Thanks to David Bowes for the initial work on this.
-Please be aware that while this Docker image has been around for a couple of years
-the developer has not himself used it in a production environment. Feedback is welcomed.
+on any Linux system that has docker installed.
 The steps to fire up a Jobe Server on Digital Ocean using JobeInAbox are given below in section
 *Setting up a JobeInAbox Digital Ocean server*.
 
@@ -135,19 +134,13 @@ installed.
 On Ubuntu-22.04, the commands to set up all the necessary web tools plus
 all currently-supported languages is the following:
 
-    sudo apt-get install apache2 php libapache2-mod-php php-cli\
-        php-mbstring nodejs git python3 build-essential default-jdk\
-        libcgroup-dev python3-pip fp-compiler acl sudo sqlite3
+    sudo apt-get --no-install-recommends install acl apache2 php \
+        libapache2-mod-php php-cli nodejs git \
+        php-mbstring nodejs python3 build-essential default-jdk \
+        octave php-intl python3-pip fp-compiler acl sudo sqlite3
 
-    sudo apt-get install --no-install-suggests --no-install-recommends  octave
-
-Octave and fp are required only if you need to run Octave or Pascal
+Octave and fp-compiler are required only if you need to run Octave or Pascal
 programs respectively.
-
-If you wish to use API-authentication, which is generally pointless when setting
-up a private Jobe server, you also need the following:
-
-    sudo apt install mysql-server php-mysql
 
 Similar commands should work on other Debian-based Linux distributions,
 although some differences are inevitable (e.g.: acl is preinstalled in Ubuntu,
@@ -183,10 +176,10 @@ older versions of pylint), try instead
 ### Installing Jobe
 
 Clone the Jobe project in the web root directory WEBROOT
-(usually /var/www/html).
+(usually `/var/www/html``).
 Do not clone it elsewhere and attempt to add it to web root with
-symbolic links. That breaks this installer. In what follows, replace
-WEBROOT with either /var/www or /var/www/html as appropriate.
+symbolic links. That breaks the installer. In what follows, replace
+WEBROOT with either `/var/www`` or `/var/www/html`` as appropriate.
 
 To clone Jobe:
 
@@ -201,11 +194,11 @@ processes from the run.
 
 Before running the install script, you might wish to edit the file
 
-    /var/www/html/jobe/application/config/config.php
+    /var/www/html/jobe/app/Config/Jobe.php
 
 Find the line
 
-    $config['jobe_max_users'] = 8;
+    public int $jobe_max_users = 8;
 
 and decide if that value, which sets the maximum number of jobs that can be run
 at once, is appropriate for your hardware set up. A rule of thumb is to set this
@@ -270,11 +263,10 @@ Other cloud servers, such as Amazon ECS, can of course also be used.
  1. Set yourself up with an account on [Digital Ocean](https://cloud.digitalocean.com).
  2. Create new Droplet: Ubuntu 22.04. x64, minimal config (1GB CPI, 25GB disk)
  3. Connect to the server with an SSH client.
- 4. Install docker (see https://phoenixnap.com/kb/how-to-install-docker-on-ubuntu-18-04):
-    sudo apt update; sudo apt install docker.io
- 5. Launch JobeInABox with Docker: sudo docker run -d -p 80:80 --name jobe trampgeek/jobeinabox:latest
+ 4. Install docker (see https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-22-04).
+ 5. Launch JobeInABox with Docker: sudo docker run -d -p 80:80 --name jobe trampgeek/jobeinabox
 
-At this point you have a running Jobe server. You can check it's working by browsing to
+At this point you have a running Jobe server on port 80. You can check it's working by browsing to
 
     http://<hostname>/jobe/index.php/restapi/languages
 
@@ -398,34 +390,26 @@ If the install script fails, check the error message. You should be able
  1. Make sure there exist users jobe and jobe00 through jobe09.
  1. Make sure there is a directory /home/jobe/runs owned by jobe and writeable
     by the webserver. It should not be readable or writeable by all.
- 1. Make sure there is a directory /var/log/jobe.
 
 If the install appears OK but testsubmit.py fails:
 
  1. If you get messages "Bad result object", something is fundamentally broken.
     Start by rebooting your server, and make sure Apache is running, e.g.
     by browsing to http://\<jobehost\>.
-1.  Try pointing your browser at http://\<jobehost\>/jobe/index.php/restapi/languages
+ 1.  Try pointing your browser at `http://\<jobehost\>/jobe/index.php/restapi/languages``
     This should return a JSON list of languages. If not, you may at least get
     a readable error message.
  1. You are running testsubmit.py with Python3, right?
  1. Check the apache error log.
- 1. If something unexpected happened with the actual run of a program, find
-    the run in /home/jobe/runs and try executing the program manually. [The
+ 1. Check the most recent error log file in the directory `app/writable/logs`.
+ 1. Try raising the error log level in file `app/Config/Logger.php`,
+    rerun the failed request and again check the log files.
+ 1. If something unexpected happened with the actual run of a program, turn on debugging in
+    the file `app/Config/Jobe.php`. Find
+    the run in `/home/jobe/runs` and try executing the program manually. [When
+    debugging is turned on, the
     run directory contains the source file, the bash command used to run it,
     plus the compile output and (if it ran) the stderr and stdout outputs.
- 1. Check for any error messages in /var/log/jobe/*.
- 1. Turn on debug level of logging in jobe/application/config/config.php by
-    setting the log_threshold to 2 (around line 183). You should now get
-    screeds of log info in the directory /var/log/jobe. Most of this comes
-    from the framework; look for lines beginning *jobe*. These are all issued
-    by restapi.php in application/controllers, which is the top level handler
-    for all http requests.
- 1. If you are getting Overloaded errors, then you can display the in-memory
-    locks on the Jobe users with this PHP one-liner:
-
-    ```php -r 'print_r(shm_get_var(shm_attach(ftok
-      ("/var/www/html/jobe/application/libraries/LanguageTask.php", "j")), 1));```
 
 If you still can't figure it out, email me (Richard Lobb; my gmail name is
 trampgeek).
@@ -435,9 +419,9 @@ trampgeek).
 [For paranoid sysadmins only].
 
 Submitted jobs can generally write files only into the temporary directory
-created for their run within the '/home/jobe/runs'
-directory. Exceptions to this rule are the /tmp, /var/tmp, /var/crash and
-/run/lock directories all of which
+created for their run within the `/home/jobe/runs``
+directory. Exceptions to this rule are the `/tmp`, `/var/tmp`, `/var/crash` and
+`/run/lock` directories all of which
 conventionally can be written into by any Linux process.
 
 The temporary working directory and any files in the writable directories
@@ -460,7 +444,7 @@ is not a problem we have ever observed in
 practice. However, it should be possible to protect against such an outcome by
 setting disk quotas for the users jobe00, jobe01, ... jobe09 [The number
 of such user accounts is defined by the parameter `jobe_max_users` in
-`application/config/config.php`. The default value is 8.]
+`app/Config/Jobe.php`. The default value is 8.]
 Instructions for installing the quota
 management system and setting quotas are given in various places on the web, e.g.
 [here](https://www.digitalocean.com/community/tutorials/how-to-enable-user-and-group-quotas).
@@ -502,68 +486,44 @@ student code. In the absence of such a server, that line should be omitted.
 
 If you wish Jobe to serve multiple clients and do not wish to open a
 specific port for each one you will need to configure the firewall to allow
-incoming connections from anywhere but you should then also configure the rest-server
-to require some form of authentication and authorisation. The various
-ways of achieving this are discussed in the documentation of the
-[rest-server plugin](https://github.com/chriskacerguis/codeigniter-restserver).
+incoming connections from anywhere. This of course means that anyone
+anywhere in the world can connect to your Jobe server to run jobs on it.
+To reduce the risk of abuse, you should also set up one or more API keys
+(e.g. one per Moodle client). You might also wish to set a per-hour rate limit
+on the requests coming in from any particular IP number.
 
-The simplest authorisation approach is to provide an API key on each request.
-The client must then provide the key with each request in an X-API-Key header of
-the form
+To enable API keys and to set throttle rates, edit the `app/Config/Jobe.php`
+to turn on API keys and set desired throttle rates for each API key. A rate
+of 0 means no throttling. 
 
-    X-API-KEY: <key>
-
-To set up Jobe to run in this way, proceed as follows:
-
- 1. Make sure you installed the additional dependencies for API-key authentication
-    given in the section "Installing the necessary dependencies". You need
-    to be running a PHP version prior to PHP 7.2 (like that on Ubuntu 16.04 for
-    example).
-
- 1. Create a database called *jobe* and define a user with full access to it.
-
- 1. Edit *application/config/database.php* to access your mysql server and
-    the jobe database with the user credentials you defined in the previous
-    step.
-
- 1. Edit the file *application/config/rest.php* and set the configuration
-    parameter *rest_enable_keys* to 1.
-
- 1. Set up tables `keys` and `limits` as explained in *rest.php*. Populate
-    the `keys` table with one or more API keys, which must then be used by
-    any requests to the Jobe server.
+If using API-keys, your CodeRunner plugin(s) will need to be configured with
+API keys matching those on your Jobe server(s).
 
 If running in API-Key mode, you should still firewall the Jobe server to
 prevent it opening any sockets to other machines.
 
-### Other security mechanisms
+### Enabling SSL (port 443) access to Jobe
+Jobe is configured to use the standard port 80 for its RESTful protocol. 
+This is convenient because most servers and proxy servers are configured to allow
+port 80 traffic. However, some school and university IT departments ban use of
+port 80 because of the security risks when accessing normal web sites in this way.
+Jobe is *not* a normal web site and does not have much in the way of interesting
+data stored in it or flowing in or out. So, most if not all the security concerns
+of IT departments relating to the use of port 80 with Jobe are unfounded. However, if your
+IT department policies are too bureaucratic and intractable, you might need to
+access Jobe via port 443 (SSL) instead.
 
-If serving multiple clients, you may wish to restrict the use made of the
-server by one or more clients. This can be done by
-setting the *rest_enable_limits* parameter
-in *application/config/rest.php* to non-zero.
-Jobe will then limit the number of requests made
-with any given key to the values set in
-*application/config/per_method_limits.php*.
+The easiest way to achieve this is to use a JobeInABox Docker container on your
+Jobe server, running on some port like 5000. Then, assuming the Jobe host server
+also runs Apache, enable the site `000-default-le-ssl.conf` and edit the VirtualHost entry
+to include lines like
 
-For this to work, the *jobe* database must contain an additional table *limits*,
-defined with an SQL command like
+    # Proxy configuration for /jobe ...
+    ProxyPass "/jobe" "http://localhost:5000/jobe"
+    ProxyPassReverse "/jobe" "http://localhost:5000/jobe"
 
-	CREATE TABLE `limits` (
-	  `id` int(11) NOT NULL AUTO_INCREMENT,
-	  `uri` varchar(255) NOT NULL,
-	  `count` int(10) NOT NULL,
-	  `hour_started` int(11) NOT NULL,
-	  `api_key` varchar(40) NOT NULL,
-	  PRIMARY KEY (`id`)
-	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-You can turn off limit checking on a key-by-key basis by setting the *ignore_limits*
-to TRUE (1) in the *keys* table.
-
-You should read the REST-server plugin documentation and the file
-*application/config/rest.php* for other features available.
-
+You will then need to configure the CodeRunner plugin settings in your Moodle server to 
+prefix the Jobe server name with `https://`.
 
 ## Run_spec parameters
 
@@ -1028,3 +988,11 @@ that results in multiple error messages when a python syntax check fails.
   1. Update runguard to latest version from domjudge. It uses cgroups to limit
      CPU time and memory, so should be much more robust in dealing with Java,
      which allocates itself vast amounts of memory that it never uses.
+
+### 2.0.0 (24 February 2024)
+
+This version is a major rewrite, using CodeIgniter version 4 as the framework.
+Differences:
+
+  1. Configuration is very different, mostly involving editing the file
+     `/var/www/html/jobe/app/Config/Jobe.php`.
