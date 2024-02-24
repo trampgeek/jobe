@@ -1,2 +1,0 @@
-************* Module junk.py
-F:  1, 0: No module named junk.py (fatal)

@@ -6,7 +6,6 @@
 # If run with the parameter --purge, all files and users set up by a previous
 # run of the script are deleted at the start.
 
-from __future__ import print_function
 import os
 import subprocess
 import re
@@ -22,22 +21,23 @@ LANGUAGE_CACHE_FILE = '/tmp/jobe_language_cache_file'
 FILE_CACHE_BASE = '/home/jobe/files'
 
 def get_config(param_name, install_dir):
-    '''Get a config parameter from <<install_dir>>/application/config/config.php.
+    '''Get a config parameter from <<install_dir>>/app/Config/Jobe.php.
        An exception occurs if either the file or the required parameter
        is not found.
     '''
-    with open(f'{install_dir}/application/config/config.php') as config:
+    with open(f'{install_dir}/app/Config/Jobe.php') as config:
         lines = config.readlines()
+    dollar_param = r'\$' + param_name  # PHP variable name for config parameter
     patterns = [
-        r" *\$config\[ *'{}' *\] *= *\"([^\"]+)\";.*\n".format(param_name), # Double-quoted string
-        r" *\$config\[ *'{}' *\] *= *'([^']+)';.*\n".format(param_name),    # Single-quoted string
-        r" *\$config\[ *'{}' *\] *= *([^;]+);.*\n".format(param_name)       # Non-string literal
+        rf"\s*public\s+(string)\s+{dollar_param}\s*=\s*\"([^\"]+)\";.*\n",      # Double-quoted string
+        rf"\s*public\s+(string)\s+{dollar_param}\s*=\s*'([^']+)';.*\n",         # Single-quoted string
+        rf"\s*public\s+(int|bool|float)\s+{dollar_param}\s*=\s*([^;]+);.*\n"    # Non-string literal
     ]
     for line in lines:
         for pattern in patterns:
             match = re.match(pattern, line)
             if match:
-                return match.group(1)
+                return match.group(2)
     raise Exception('Config param ' + param_name + ' not found')
 
 
@@ -48,14 +48,14 @@ def fail():
 
 
 def get_webserver():
-    '''Find the user name used to run the Apache web server'''
-    ps_cmd = "ps aux | grep -E '/usr/sbin/(apache2|httpd)'"
+    '''Find the user name used to run the Apache or nginx web server'''
+    ps_cmd = "ps aux | grep -E '/usr/sbin/(apache2|httpd)|nginx: worker'"
     try:
         ps_lines = subprocess.check_output(ps_cmd, shell=True).decode('utf8').split('\n')
     except subprocess.CalledProcessError:
         raise Exception("ps command to find web-server user id failed. Is the web server running?")
     names = {ps_line.split(' ')[0] for ps_line in ps_lines}
-    candidates = names.intersection(set(['apache', 'www-data']))
+    candidates = names.intersection(set(['apache', 'www-data', 'nginx']))
     if len(candidates) != 1:
         raise Exception("Couldn't determine web-server user id. Is the web server running?")
     webserver_user = list(candidates)[0]
@@ -131,11 +131,16 @@ def make_runguard(install_dir):
     """Make the runguard application"""
     runguard_commands = [
         "cd {0}".format(install_dir + '/runguard'),
-        "gcc -o runguard runguard.c", # TODO Add -lcgroups  if using cgroups
+        "gcc -o runguard runguard.c -lm",
         "chmod 700 runguard"
     ]
     cmd = ';'.join(runguard_commands)
-    do_command(cmd)
+    try:
+        do_command(cmd)
+    except OSError as e:
+        print("Compile of runguard failed.")
+        print("Check all dependencies are installed, particularly libcgroup-dev")
+        raise OSError("Runguard build failed")
 
 
 def do_purge(install_dir):

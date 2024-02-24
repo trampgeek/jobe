@@ -9,9 +9,10 @@ import json
 import http.client
 
 API_KEY = '2AAA7A5415B4A9B394B54BF1D2E9D'  # A working (100/hr) key on Jobe2
-USE_API_KEY = True
+USE_API_KEY = False
 #JOBE_SERVER = 'jobe2.cosc.canterbury.ac.nz'
 JOBE_SERVER = 'localhost'
+RESOURCE_BASE = '/jobe/index.php/restapi'
 
 PYTHON_CODE = """
 MESSAGE = 'Hello Jobe!'
@@ -65,7 +66,7 @@ def run_test(language, code, filename):
         'sourcecode': code,
     }
 
-    resource = '/jobe/index.php/restapi/runs/'
+    resource = f'{RESOURCE_BASE}/runs'
     data = json.dumps({ 'run_spec' : runspec })
     response = None
     content = ''
@@ -83,7 +84,10 @@ def do_http(method, resource, data=None):
     try:
         connect = http_request(method, resource, data, headers)
         response = connect.getresponse()
-        if response.status != 204:
+        if response.status not in [200, 204]:
+            print(f"do_http({method}, {resource}) returned status of {response.status}")
+            print(f"content = '{response.read().decode('utf8')}'")
+        elif response.status == 200:
             content = response.read().decode('utf8')
             if content:
                 result = json.loads(content)
@@ -95,6 +99,7 @@ def do_http(method, resource, data=None):
             print(' Response:', response.status, response.reason, content)
         else:
             print(e)
+    print('Got:' + json.dumps(result));
     return result
 
 
@@ -147,7 +152,7 @@ def display_result(ro):
 def main():
     '''Demo or get languages, a run of Python3 then C++ then Java'''
     print("Supported languages:")
-    resource = '/jobe/index.php/restapi/languages'
+    resource = f'{RESOURCE_BASE}/languages'
     lang_versions = do_http('GET', resource)
     for lang, version in lang_versions:
         print("    {}: {}".format(lang, version))
