@@ -48,7 +48,7 @@ class RunSpecifier
         $this->language_id = ucwords($this->language_id); // Normalise it.
         $languages = LanguagesModel::supportedLanguages();
         if (!array_key_exists($this->language_id, $languages)) {
-            throw new JobException("Language '$language_id' is not known", 400);
+            throw new JobException("Language '{$this->language_id}' is not known", 400);
         }
 
         // Get any input.
