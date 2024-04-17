@@ -79,11 +79,11 @@ def do_command(cmd, ignore_errors=False):
 
 
 def check_php_version():
-    '''Check that the installed PHP version is at least 5.5.
+    '''Check that the installed PHP version is at least 7.4.
        Raise an exception on failure.
     '''
-    if subprocess.call("php -r 'exit(version_compare(PHP_VERSION, \"5.5.0\", \"lt\"));'", shell=True) != 0:
-            raise OSError("Jobe requires at least PHP 5.5.")
+    if subprocess.call("php -r 'exit(version_compare(PHP_VERSION, \"7.4.0\", \"lt\"));'", shell=True) != 0:
+            raise OSError("Jobe requires at least PHP 7.4.")
 
 
 def make_sudoers(install_dir, webserver_user, num_jobe_users):
