@@ -42,7 +42,9 @@ class Throttle implements FilterInterface
             if ($rate_limit) {
                 $throttler = Services::throttler();
                 // Restrict an IP address to no more than the configured hourly rate limit for RUN requests only.
-                if ($throttler->check(md5($request->getIPAddress()), $rate_limit, HOUR) === false) {
+                $ip = $request->getIPAddress();
+                if ($throttler->check(md5($ip), $rate_limit, HOUR) === false) {
+                    log_message('debug', "Throttled IP $ip");
                     $response = Services::response()->setStatusCode(429)->setBody("Max RUN rate for this server exceeded");
                     return addCorsHeaders($response);
                 }
