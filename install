@@ -164,7 +164,7 @@ def update_runguard_config(install_dir, num_jobe_users):
 
     runguard_valid_users = ",".join(runguard_users)
 
-    runguard_config = re.sub("#define\s+VALID_USERS[^\n]+", '#define VALID_USERS "' + runguard_valid_users + '"', runguard_config)
+    runguard_config = re.sub(r"#define\s+VALID_USERS[^\n]+", '#define VALID_USERS "' + runguard_valid_users + '"', runguard_config)
     with open(os.path.join(install_dir, "runguard/runguard-config.h"), "w") as runguard_config_out:
         runguard_config_out.write(runguard_config)
 
