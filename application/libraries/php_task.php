@@ -32,7 +32,7 @@ class Php_Task extends Task {
             $this->executableFileName = $this->sourceFileName;
         } else {
             if ($output) {
-                $this->cmpinfo = $output . '\n' . $compileErrs;
+                $this->cmpinfo = $output . "\n" . $compileErrs;
             } else {
                 $this->cmpinfo = $compileErrs;
             }
