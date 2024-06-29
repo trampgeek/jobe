@@ -74,7 +74,7 @@ class LanguagesModel
                     $class = "\\Jobe\\" . $lang . 'Task';
                     $version = $class::getVersion();
                     if ($version) {
-                        $langs[$lang] = $version;
+                        $langs[strtolower($lang)] = $version;
                     }
                 }
             }

@@ -309,14 +309,18 @@ command with a line of the form
 
     python3 testsubmit.py --host='jobe.somehow.somewhere' --port=4000
 
-where the host and port are set to reference the jobe server.
+where the host and port are set to reference the jobe server. In the default
+install, the port number is 80, and the *port* parameter can be omitted,
+but will be needed if the port number is mapped to something different, e.g.
+by changing the default Apache configuration or when testing Jobe in a 
+container.
 
 ### Testing performance
 
 To test the performance of your new Jobe server, run the testsubmit program
 on your client machine again, this time with a --perf command line argument, e.g.
 
-    python3 testsubmit.py --perf --host='jobe.somehow.somewhere' --port=4000
+    python3 testsubmit.py --perf --host='jobe.somehow.somewhere'
 
 The test will print information on the maximum burst of C compile-and-run submissions the server
 can handle in isolation and the sustained rate of submissions over a 30 second
@@ -329,7 +333,7 @@ and server overheads dominate the performance. For slower languages like C++
 and particularly Java however, you will much lower throughput. To test Java,
 for example, type add the argument 'java' to the above command, i.e.
 
-    python3 testsubmit.py --perf --host='jobe.somehow.somewhere' --port=4000 java
+    python3 testsubmit.py --perf --host='jobe.somehow.somewhere' java
 
 *WARNING*: you should not run the performance test on a live production server,
 as it repeatedly pushes the server into overload, which will result in other
@@ -521,6 +525,14 @@ to include lines like
     # Proxy configuration for /jobe ...
     ProxyPass "/jobe" "http://localhost:5000/jobe"
     ProxyPassReverse "/jobe" "http://localhost:5000/jobe"
+
+Then, enable mod proxy, mod_proxy_http and mod_ssl with the commands
+
+    sudo a2enmod proxy
+    sudo a2enmod proxy_http
+    sudo a2enmod ssl
+    
+and restart Apache.
 
 You will then need to configure the CodeRunner plugin settings in your Moodle server to 
 prefix the Jobe server name with `https://`.
