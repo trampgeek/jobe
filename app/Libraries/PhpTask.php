@@ -36,7 +36,7 @@ class PhpTask extends LanguageTask
             $this->executableFileName = $this->sourceFileName;
         } else {
             if ($output) {
-                $this->cmpinfo = $output . '\n' . $compileErrs;
+                $this->cmpinfo = $output . "\n" . $compileErrs;
             } else {
                 $this->cmpinfo = $compileErrs;
             }
