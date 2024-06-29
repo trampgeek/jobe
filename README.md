@@ -156,7 +156,7 @@ which may help with broken installs on other systems, too.
 Firstly, install pylint for your required version of python (assumed here to
 be python3) with the command:
 
-    sudo -H python3 -m pip install pylint
+    sudo apt install pylint
 
 You also need to build the /etc/pylintrc file
 to set the default options with one of the following commands, which must be

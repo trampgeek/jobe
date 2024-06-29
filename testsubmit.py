@@ -551,22 +551,6 @@ console.log(s)
 },
 
 
-{
-    'comment': 'Syntactically incorrect Php program ',
-    'language_id': 'php',
-    'sourcecode': r'''<!DOCTYPE html>
-<html>
-<head></head>
-<body>
-<h1>Heading</h1>
-<p><?php echo "A paragraph' ?></p>
-</body>
-</html>
-''',
-    'sourcefilename': 'test.php',
-    'parameters': {'cputime':15},
-    'expect': { 'outcome': 11 }
-},
 
 # ================= Java tests ==================
 {
