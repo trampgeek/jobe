@@ -1,6 +1,5 @@
 # JOBE
-
-Version: 2.0.0, 24 February 2024
+Version: 2.0.1, 29 June 2024
 
 Note: this is a new version, with lots of changes.
 If you find errors in this document, please email me. My gmail
@@ -1004,7 +1003,24 @@ that results in multiple error messages when a python syntax check fails.
 ### 2.0.0 (24 February 2024)
 
 This version is a major rewrite, using CodeIgniter version 4 as the framework.
-Differences:
+The code is very difference but should be functionally mostly the same.
 
+Known differences in functionality.
   1. Configuration is very different, mostly involving editing the file
      `/var/www/html/jobe/app/Config/Jobe.php`.
+    
+  1. python2 is not longer supported.
+
+  1. Rate limiting when using API keys is on a per-IP basis, not world-wide. It
+     uses CodeIgniter 4's 'leaky bucket' algorithm, where the per-hour submission
+     rate limit isn't a simple rate checked each hour but some sort of 'average
+     submission rate' that also allows bursts of up to the maximum per-hour rate
+     in one burst provided there are very long gaps before and after.
+
+  1. Some extra PHP modules are required - see install instructions.
+
+### 2.0.1 (29 June 2024)
+
+Some minor bug fixes (e.g. bad error message when language unknown) and documentation tweaks.
+Most significantly, this is when the JobeV2 branch was finally merged into master. Anyone
+still wanting the old version can clone the JobeV1 branch.
