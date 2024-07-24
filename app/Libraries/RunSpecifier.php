@@ -55,7 +55,7 @@ class RunSpecifier
         $this->input = $run->input ?? '';
 
         // Get debug flag.
-        $this->debug = $run->debug ?? false;
+        $this->debug = $run->debug ?? config('Jobe')->debugging;
 
         // Get the parameters, and validate.
         $this->parameters = (array) ($run->parameters ?? []);
