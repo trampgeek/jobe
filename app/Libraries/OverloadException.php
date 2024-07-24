@@ -12,6 +12,6 @@
 
 namespace Jobe;
 
-class OverloadException extends Exception
+class OverloadException extends \Exception
 {
 }
