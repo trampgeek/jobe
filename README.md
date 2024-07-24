@@ -1024,3 +1024,8 @@ Known differences in functionality.
 Some minor bug fixes (e.g. bad error message when language unknown) and documentation tweaks.
 Most significantly, this is when the JobeV2 branch was finally merged into master. Anyone
 still wanting the old version can clone the JobeV1 branch.
+
+### 2.0.2 (25 July 2024)
+
+Two bug fixes: use of the 'debugging' configuration parameter was not working and
+jobe server overloads were generating an erroneous Jobe\Exception not found error.
