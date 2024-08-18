@@ -1,10 +1,13 @@
 #! /usr/bin/env python3
 """ minimaltest.py - the simplest test of jobe. Runs a C program using a Jobe
-    server on localhost.
+    server on localhost. Mainly for use by Docker's HEALTHCHECK.
+    Prints just a "Passed minimal test" message if test passes.
+    If test fails, prints some diagnostic info and exits with return code 1.
 """
 
 from urllib.error import HTTPError
 import json
+import sys
 import http.client
 
 JOBE_SERVER = 'localhost'
@@ -37,7 +40,7 @@ def run_test(language, code, filename):
                "Accept": "application/json"}
     try:
         connect = http.client.HTTPConnection(JOBE_SERVER)
-        print("POST data:\n", data)
+        # print("POST data:\n", data)
         connect.request('POST', resource, data, headers)
         response = connect.getresponse()
         if response.status != 204:
@@ -53,7 +56,6 @@ def run_test(language, code, filename):
         else:
             print(e)
     return result
-
 
 
 def display_result(ro):
@@ -94,9 +96,11 @@ def display_result(ro):
 
 def main():
     '''Demo of a C program run'''
-    print("Running C program")
-    result_obj = run_test('c', C_CODE, 'test.c')
-    display_result(result_obj)
-
+    result = run_test('c', C_CODE, 'test.c')
+    if not isinstance(result, dict) or result.get('outcome', 20) not in [0, 15]:
+        print("Failed minimal test")
+        display_result(result) # Diagnostic info if you can find a way to read it
+        sys.exit(1)
+    else:
+        print("Passed minimal test")
 main()
-
