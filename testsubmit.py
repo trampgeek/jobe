@@ -747,7 +747,10 @@ def http_request(method, resource, data, headers):
        Return the connection object. '''
     headers["X-API-KEY"] = API_KEY  # Relevant only when testing on UCan jobe2
     url = f"{ARGS.host}:{ARGS.port}"
-    connect = http.client.HTTPConnection(url)
+    if ARGS.ssl:
+        connect = http.client.HTTPSConnection(url)
+    else:
+        connect = http.client.HTTPConnection(url)
     connect.request(method, resource, data, headers)
     return connect
 
@@ -1101,6 +1104,8 @@ other users' submissions to fail."""
         help="The hostname of the Jobe server (default localhost)")
     parser.add_argument('--port', default='80',
         help="The port number on the Jobe host (default 80)")
+    parser.add_argument('--ssl', action='store_true',
+        help="Use SSL to connect to the Jobe server (default false)")
     parser.add_argument('--perf', action='store_true',
         help='Measure performance instead of correctness')
     parser.add_argument('-v', '--verbose', action='store_true',
