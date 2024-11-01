@@ -46,8 +46,10 @@ class LanguagesModel
         if (self::$languages !== null) {
             return self::$languages;
         }
-        if (file_exists(LANGUAGE_CACHE_FILE)) {
-            $langsJson = @file_get_contents(LANGUAGE_CACHE_FILE);
+
+        $langCacheFile = LANGUAGE_CACHE_FILE;
+        if (file_exists($langCacheFile)) {
+            $langsJson = @file_get_contents($langCacheFile);
             $langs = json_decode($langsJson, true);
 
             // Security check, since this file is stored in /tmp where anyone could write it.
@@ -80,7 +82,7 @@ class LanguagesModel
             }
 
             $langsJson = json_encode($langs);
-            file_put_contents(LANGUAGE_CACHE_FILE, $langsJson);
+            file_put_contents($langCacheFile, $langsJson);
         }
         self::$languages = $langs;
         return $langs;
@@ -94,6 +96,6 @@ class LanguagesModel
      */
     public static function getPathForLanguageTask($lang)
     {
-        return APPPATH . '/Libraries/' . $lang . 'Task.php';
+        return APPPATH . '/Libraries/' . ucfirst($lang) . 'Task.php';
     }
 }

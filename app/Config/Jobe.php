@@ -43,11 +43,13 @@ class Jobe extends BaseConfig
     public bool $debugging = false;  // If True, the workspace folder for a run is not deleted.
 
     /*
-     | /usr/bin/<python3_version> is the python to run
+     | $python3_version is either a full path to the required python interpreter
+     | or a single token. In the latter case the token is prefixed by /usr/bin/ when
+     | running Python tasks.
      | Warning: if you modify the python3_version configuration you will also need to
      | reboot the server or delete the file /tmp/jobe_language_cache_file (which
      | might be hidden away in a systemd-private directory, depending on your Linux
-     | version
+     | version)
      */
     public string $python3_version = 'python3';
 

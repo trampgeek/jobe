@@ -22,21 +22,23 @@ class Python3Task extends LanguageTask
     public function __construct($filename, $input, $params)
     {
         parent::__construct($filename, $input, $params);
-        $this->default_params['memorylimit'] = 1000; // Nnumpy+matplotlib is getting greedier.
+        $this->default_params['memorylimit'] = 1000; // NumpPy+matplotlib is getting greedier.
         $this->default_params['interpreterargs'] = array('-BE');
-        $config = config('Jobe');
-        $this->PYTHON3_VERSION = $config->python3_version;
     }
 
     public static function getVersionCommand()
     {
         $python = config('Jobe')->python3_version;
+        if (!file_exists($python)) {
+            $python = '/usr/bin/' . $python;
+        }
         return array("$python --version", '/Python ([0-9._]*)/');
     }
 
     public function compile()
     {
-        $cmd = config('Jobe')->python3_version . " -m py_compile {$this->sourceFileName}";
+        $python = Python3Task::pythonExecutable();
+        $cmd =  "$python -m py_compile {$this->sourceFileName}";
         $this->executableFileName = $this->sourceFileName;
         list($output, $this->cmpinfo) = $this->runInSandbox($cmd);
         if (!empty($this->cmpinfo) && !empty($output)) {
@@ -54,7 +56,7 @@ class Python3Task extends LanguageTask
 
     public function getExecutablePath()
     {
-        return "/usr/bin/" . config('Jobe')->python3_version;
+        return Python3Task::pythonExecutable();
     }
 
 
@@ -62,4 +64,14 @@ class Python3Task extends LanguageTask
     {
         return $this->sourceFileName;
     }
+
+    private static function pythonExecutable()
+    {
+        $python = config('Jobe')->python3_version;
+        if (!file_exists($python)) {
+            $python = '/usr/bin/' . $python;
+        }
+        return $python;
+    }
+
 }

@@ -1,5 +1,5 @@
 # JOBE
-Version: 2.0.1, 29 June 2024
+Version: 2.0.3, 2 November 2024
 
 Note: this is a new version, with lots of changes.
 If you find errors in this document, please email me. My gmail
@@ -1029,3 +1029,15 @@ still wanting the old version can clone the JobeV1 branch.
 
 Two bug fixes: use of the 'debugging' configuration parameter was not working and
 jobe server overloads were generating an erroneous Jobe\Exception not found error.
+
+### 2.0.3 (2 November 2024)
+
+  1. Minor enhancement: the python3_version config parameter now allows a full
+     path specification rather than requiring that the python interpreter be
+     installed at /usr/bin.
+
+  1. Bug fix: The Language Cache file was getting rebuilt on every task, reducing
+throughput.
+
+  1. Bug fix: Under some configurations of python3 when using the python3_version
+     config parameter, the current Python version was being incorrectly reported.
