@@ -779,10 +779,12 @@ def check_file(file_id):
                 content =  response.read(4096)
             output(f"{response.status} {response.reason} {content}")
 
-        connect.close()
 
     except HTTPError:
         return -1
+    finally:
+        if connect:
+            connect.close()
 
     return response.status
 
@@ -883,7 +885,6 @@ def do_http(method, resource, data=None):
                 result = json.loads(content)
         if isinstance(result, str):
             result = str(response.status) + ': ' + result
-        connect.close()
 
     except (HTTPError, ValueError) as e:
         output("\n***************** HTTP ERROR ******************\n")
@@ -892,6 +893,10 @@ def do_http(method, resource, data=None):
         else:
             output(e)
         ok = False
+    finally:
+        if connect:
+            connect.close()
+
     return (ok, result)
 
 
