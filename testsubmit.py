@@ -1063,6 +1063,12 @@ def check_performance(lang):
         outcome = check_multiple_submissions(job, num_submits, 0)
         t1 = perf_counter()
         print(f"{num_submits} parallel submits: ", end='')
+        sys.stdout.flush()
+
+        if int(t1 - t0) > 30:
+            print("TIMEOUT.")
+            break
+
         if outcome == GOOD_TEST:
             rate = int(num_submits / (t1 - t0))
             print(f"OK. {rate} jobs/sec")
@@ -1075,26 +1081,38 @@ def check_performance(lang):
     # Backtrack and find the exact limit
     lower_limit = num_submits // 2
     upper_limit = num_submits
+    num_bisects = 0
+    max_bisects = int(ARGS.bisect)
 
-    while lower_limit < upper_limit - 1:
-        num_submits = (lower_limit + upper_limit) // 2
-        t0 = perf_counter()
-        outcome = check_multiple_submissions(job, num_submits, 0)
-        t1 = perf_counter()
-        print(f"{num_submits} parallel submits: ", end='')
+    if max_bisects > 0:
+        while  (lower_limit < upper_limit) and (num_bisects < max_bisects) :
+            num_submits = (lower_limit + upper_limit) // 2
+            t0 = perf_counter()
+            outcome = check_multiple_submissions(job, num_submits, 0)
+            t1 = perf_counter()
+            print(f"{num_submits} parallel submits: ", end='')
+            sys.stdout.flush()
 
-        if outcome == GOOD_TEST:
-            rate = int(num_submits / (t1 - t0))
-            print(f"OK. {rate} jobs/sec")
-            best_rate = max(rate, best_rate)
-            lower_limit = num_submits
-        else:
-            print("FAIL.")
-            upper_limit = num_submits
+            if int(t1 - t0) > 30:
+                print("TIMEOUT.")
+                num_bisects += 1
+                upper_limit = num_submits
+                continue
+
+            if outcome == GOOD_TEST:
+                rate = int(num_submits / (t1 - t0))
+                print(f"OK. {rate} jobs/sec")
+                best_rate = max(rate, best_rate)
+                lower_limit = num_submits
+            else:
+                print("FAIL.")
+                upper_limit = num_submits
+
+            num_bisects += 1
 
 
     print()
-    print(f"Maximum burst handled with no errors = {lower_limit} jobs")
+    print(f"Maximum burst handled with no errors = {lower_limit} jobs at a rate of {rate} jobs/sec")
     print(f"\nChecking maximum sustained throughput over {ARGS.window} sec window")
     check_sustained_load(lang, best_rate)
 
@@ -1123,6 +1141,10 @@ other users' submissions to fail."""
         help='Print extra info during tests')
     parser.add_argument('langs', nargs='*',
         help='Language(s) to check. One or more of: c cpp python3 java php pascal octave nodejs')
+    parser.add_argument('-b', '--bisect',
+        default='5',
+        help='''Number of bisects do to after a fail to get maximum burst-handling rate..
+Default 5. Use only with --perf. A value of 0 disables the bisect backtrack after a failure.''')
     parser.add_argument('-w', '--window',
         default='30',
         help='''The time window in secs over which to measure sustainable throughput.
@@ -1139,7 +1161,7 @@ Default 30. Use only with --perf. A value less than about 10 will not give meani
         return normal_testing(langs_to_run)
     else:
         for lang in langs_to_run:
-            print(f"Measuring performance in {lang}")
+            print(f"Measuring performance in {lang} with {ARGS.bisect} bisects.")
             check_performance(lang)
         return 0
 
