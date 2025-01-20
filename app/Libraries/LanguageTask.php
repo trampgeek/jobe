@@ -102,7 +102,11 @@ abstract class LanguageTask
     // server user is) and has access rights of 771. If it's readable by
     // any of the jobe<n> users, running programs will be able
     // to hoover up other students' submissions.
-    public function prepareExecutionEnvironment($sourceCode)
+
+    // HACK ALERT: as a special case for testing, if the source code is the
+    // string "!** TESTING OVERLOAD EXCEPTION **!", an OverloadException is
+    // thrown. 
+    public function prepareExecutionEnvironment($sourceCode, $fileList)
     {
         // Create the temporary directory that will be used.
         $this->workdir = tempnam("/home/jobe/runs", "jobe_");
@@ -120,7 +124,12 @@ abstract class LanguageTask
         }
         file_put_contents($this->workdir . '/' . $this->sourceFileName, $sourceCode);
 
-        // Allocate one of the Jobe users.
+        $this->loadFiles($fileList);
+
+        // Allocate one of the Jobe users (unless it's the special overload exception test).
+        if ($sourceCode == "!** TESTING OVERLOAD EXCEPTION **!") {
+            throw new OverloadException();
+        }
         $this->userId = $this->getFreeUser();
         $this->user = sprintf("jobe%02d", $this->userId);
 
@@ -286,7 +295,8 @@ abstract class LanguageTask
     {
         $output = array();
         $return_value = null;
-        $filesize = 1000 * $this->getParam('disklimit', $iscompile); // MB -> kB
+        $disklimit = $this->getParam('disklimit', $iscompile);
+        $filesize = $disklimit == -1 ? -1 : 1000 * $disklimit; // MB -> kB. -1 is deemed infinity.
         $streamsize = 1000 * $this->getParam('streamsize', $iscompile); // MB -> kB
         $memsize = 1000 * $this->getParam('memorylimit', $iscompile);
         $cputime = $this->getParam('cputime', $iscompile);
@@ -300,23 +310,26 @@ abstract class LanguageTask
             $sandboxCpuPinning = array("taskset --cpu-list " . $taskset_core_id);
         }
 
-        $sandboxCommandBits = array(
+        $sandboxCommandBits = [
                 "sudo " . dirname(__FILE__)  . "/../../runguard/runguard",
                 "--user={$this->user}",
                 "--group=jobe",
                 "--cputime=$cputime",      // Seconds of execution time allowed
-                "--time=$killtime",    // Wall clock kill time
-                "--filesize=$filesize",    // Max file sizes
+                "--time=$killtime",        // Wall clock kill time
                 "--nproc=$numProcs",       // Max num processes/threads for this *user*
                 "--no-core",
-                "--streamsize=$streamsize");   // Max stdout/stderr sizes
+                "--streamsize=$streamsize"
+        ]; 
 
         // Prepend CPU pinning command if enabled
 
         $sandboxCommandBits = array_merge($sandboxCpuPinning, $sandboxCommandBits);
 
-        if ($memsize != 0) {  // Special case: Matlab won't run with a memsize set. TODO: WHY NOT!
+        if ($memsize != 0) { 
             $sandboxCommandBits[] = "--memsize=$memsize";
+        }
+        if ($filesize != -1) {  // Runguard's default filesize ulimit is unlimited.
+            $sandboxCommandBits[] = "--filesize=$filesize";
         }
         $sandboxCmd = implode(' ', $sandboxCommandBits) .
                 ' sh -c ' . escapeshellarg($wrappedCmd) . ' >prog.out 2>prog.err';
@@ -483,7 +496,7 @@ abstract class LanguageTask
             $this->result = LanguageTask::RESULT_TIME_LIMIT;
             $this->signal = 9;
             $this->stderr = '';
-        } elseif (strpos($this->stderr, "warning: command terminated with signal 11")) {
+        } else if (strpos($this->stderr, "warning: command terminated with signal 11")) {
             $this->signal = 11;
             $this->stderr = '';
         }

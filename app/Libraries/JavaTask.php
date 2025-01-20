@@ -41,9 +41,9 @@ class JavaTask extends LanguageTask
         parent::__construct($filename, $input, $params);
     }
 
-    public function prepareExecutionEnvironment($sourceCode)
+    public function prepareExecutionEnvironment($sourceCode, $fileList)
     {
-        parent::prepareExecutionEnvironment($sourceCode);
+        parent::prepareExecutionEnvironment($sourceCode, $fileList);
 
         // Superclass calls subclasses to get filename if it's
         // not provided, so $this->sourceFileName should now be set correctly.

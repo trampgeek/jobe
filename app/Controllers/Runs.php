@@ -1,6 +1,6 @@
 <?php
 /**
-  * Copyright (C) 2014, 2024 Richard Lobb
+ * Copyright (C) 2014, 2024 Richard Lobb
 
  * The controller for managing posts to the 'runs' resource.
  *
@@ -24,7 +24,9 @@ use CodeIgniter\RESTful\ResourceController;
 use CodeIgniter\API\ResponseTrait;
 use Jobe\ResultObject;
 use Jobe\JobException;
+use Jobe\OverloadException;
 use Jobe\RunSpecifier;
+use Jobe\LanguageTask;
 
 class Runs extends ResourceController
 {
@@ -44,8 +46,7 @@ class Runs extends ResourceController
             // The nested tries here are a bit ugly, but the point is that we want to
             // to clean up the task with close() before handling the exception.
             try {
-                $this->task->prepareExecutionEnvironment($run->sourcecode);
-                $this->task->loadFiles($run->files);
+                $this->task->prepareExecutionEnvironment($run->sourcecode, $run->files);
                 log_message('debug', "runs_post: compiling job {$this->task->id}");
                 $this->task->compile();
                 if (empty($this->task->cmpinfo)) {
@@ -53,7 +54,7 @@ class Runs extends ResourceController
                     $this->task->execute();
                 }
             } finally {
-                // Delete task run directory unless it's a debug run
+                // Free user and delete task run directory unless it's a debug run.
                 $this->task->close(!$run->debug);
             }
 
@@ -63,15 +64,17 @@ class Runs extends ResourceController
 
             // Report any errors.
         } catch (JobException $e) {
-            log_message('error', 'runs_post: ' . $e->getMessage());
-            return $this->respond($e->getMessage(), $e->getHttpStatusCode());
+            $message = $e->getMessage();
+            log_message('error', "runs_post: $message");
+            return $this->respond($message, $e->getHttpStatusCode());
         } catch (OverloadException $e) {
             log_message('error', 'runs_post: overload exception occurred');
-            $resultobject = new ResultObject(0, Task::RESULT_SERVER_OVERLOAD);
+            $resultobject = new ResultObject(0, LanguageTask::RESULT_SERVER_OVERLOAD);
             return $this->respond($resultobject, 200);
         } catch (Exception $e) {
-            log_message('error', 'server exception: ' . $e->getMessage());
-            return $this->respond('Server exception (' . $e->getMessage() . ')', 500);
+            $message = 'Server exception (' . $e->getMessage() . ')';
+            log_message('error', $message);
+            return $this->respond($message, 500);
         }
     }
 }
