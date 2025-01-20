@@ -245,6 +245,7 @@ def main():
         do_command('chmod -R o-rwx,g+w {}'.format(install_dir))
 
         num_jobe_users = int(get_config('jobe_max_users', install_dir))
+        print("num jobe users = ", num_jobe_users)
         create_jobe_user_and_files(install_dir, webserver_user, args.max_uid)
         make_workers(num_jobe_users, args.max_uid)
 
