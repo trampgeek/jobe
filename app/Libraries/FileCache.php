@@ -58,6 +58,11 @@ class FileCache
      * Get the given file. Throws FileTooLargeException if the file is
      * likely too large to load into memory. Return false if the file
      * does not exist.
+     * Too large files shouldn't generally be possible, because they
+     * would need to have been uploaded in the PUT request in base64,
+     * which would already have hit the memory limit. However, it can
+     * occur if the memory_limit in php.ini has been reduced since the
+     * upload.
      * @param string $fileid the id of the required file (aka filename)
      * @return the contents of that file or false if no such file exists.
      */
