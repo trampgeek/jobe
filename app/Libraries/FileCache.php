@@ -49,20 +49,62 @@ class FileCache
      */
     public static function fileExists($fileid)
     {
-        $path = self::IdToPath($fileid);
+        $path = self::idToPath($fileid);
         return file_exists($path);
     }
 
 
     /**
-     * Get the given file. Raise FileCacheException if not found.
+     * Get the given file. Throws FileTooLargeException if the file is
+     * likely too large to load into memory. Return false if the file
+     * does not exist.
      * @param string $fileid the id of the required file (aka filename)
      * @return the contents of that file or false if no such file exists.
      */
-    public static function fileGetContents($fileid)
+    public static function fileGetContents($fileid) 
     {
-        $contents = @file_get_contents(self::IdToPath($fileid));
-        return $contents;
+        if (! self::fileExists($fileid)) {
+            throw new FileCacheException("File $fileid not found");
+        }
+        $path = self::idToPath($fileid);
+        $filesize = filesize($path);
+        
+        // Get current memory limit in bytes.
+        // Compare with file size. Assume 20% overhead for PHP.
+        $memoryLimit = self::parse_memory_limit(ini_get('memory_limit'));
+        if ($filesize * 1.2 > $memoryLimit) {
+            throw new FileTooLargeException($filesize, $memoryLimit);
+        }
+        
+        return @file_get_contents($path);
+    }
+    
+    // Helper function to convert PHP ini values (like "128M") to bytes.
+    private static function parse_memory_limit($val) {
+        if (function_exists('ini_parse_quantity')) {
+            return ini_parse_quantity($val); // PHP >=8.2
+        }
+        
+        $val = preg_replace('/\s+/', '', $val); // Remove spaces.
+        // If empty or invalid, throw exception
+        if (!preg_match('/^(-?\d+)([KMGT])?B?$/i', $val, $matches)) {
+            throw new Exception("Invalid php.ini memory limit: $val");
+        }
+        
+        $size = (int)$matches[1];
+        $unit = strtoupper(isset($matches[2]) ? $matches[2] : '');
+        switch ($unit) {
+            case 'T': 
+                $size *= 1024; // Fall through
+            case 'G': 
+                $size *= 1024; // Fall through
+            case 'M': 
+                $size *= 1024; // Fall through
+            case 'K': 
+                $size *= 1024;
+        }
+        
+        return $size;
     }
 
 

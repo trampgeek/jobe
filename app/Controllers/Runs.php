@@ -22,6 +22,7 @@ namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
 use CodeIgniter\API\ResponseTrait;
+use Jobe\FileTooLargeException;
 use Jobe\ResultObject;
 use Jobe\JobException;
 use Jobe\OverloadException;
@@ -62,7 +63,7 @@ class Runs extends ResourceController
             log_message('debug', "runs_post: returning 200 OK for task {$this->task->id}");
             return $this->respond($this->task->resultObject(), 200);
 
-            // Report any errors.
+        // Report any errors.
         } catch (JobException $e) {
             $message = $e->getMessage();
             log_message('error', "runs_post: $message");
@@ -71,9 +72,13 @@ class Runs extends ResourceController
             log_message('error', 'runs_post: overload exception occurred');
             $resultobject = new ResultObject(0, LanguageTask::RESULT_SERVER_OVERLOAD);
             return $this->respond($resultobject, 200);
-        } catch (Exception $e) {
+        } catch (FileTooLargeException $e) {
+            $message = $e->getMessage();
+            log_message('error', "runs_post: $message");
+            return $this->respond($message, 500);
+        } catch (\Throwable $e) {
             $message = 'Server exception (' . $e->getMessage() . ')';
-            log_message('error', $message);
+            log_message('error', "runs_post: $message");
             return $this->respond($message, 500);
         }
     }

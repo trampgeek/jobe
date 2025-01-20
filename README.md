@@ -121,7 +121,7 @@ Jobe on a dedicated server, even when running it in a container.
 Jobe runs only on Linux, which must have the Apache web server
 installed and running. PHP must have been compiled with the System V
 Semaphone and shared-memory functions enabled
-(see here)[http://www.php.net/manual/en/sem.setup.php], but that's the norm.
+([see here](http://www.php.net/manual/en/sem.setup.php)), but that's the norm.
 Access Control Lists (ACLs) must be enabled; they normally are but if the
 `/home/jobe` directory lands up on a mounted volume, you may need to
 explicitly enable ACLs in the `mount` command or in `/etc/fstab`.
