@@ -29,7 +29,7 @@ class Jobe extends BaseConfig
     | one time. It *must* agree with the number of users with names jobe01,
     | jobe02, jobe03 etc (which is how the install script will set things up).
     */
-    public int $jobe_max_users = 8;
+    public int $jobe_max_users = 16;
 
     public int $jobe_wait_timeout = 10;  // Max number of secs to wait for a free Jobe user.
     public int $cputime_upper_limit_secs = 120;
