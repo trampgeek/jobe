@@ -26,6 +26,9 @@
     Enhanced UI to use standard arg parser, with options to set most of the
     control variables formerly edited by hand in this code.
 
+    Modified 20/1/2025 to fix bug in reporting of overload errors and to
+    include tests for serious errors conditions in testsubmit.py
+
     For information type 'python3 testsubmit.py --help'
 
 '''
@@ -686,6 +689,49 @@ end.
 
 ]
 
+
+ERROR_CHECKS = [
+{
+    'comment': "Check 404 response when run requires a file that was not PUT.",
+    'language_id': 'python3',
+    'files': [], # No files will be PUT but file1 will be expected (see file_list).
+    'sourcecode': r'''print(open('file1').read())
+''',
+    'file_list': [('nosuchfileid', 'file1')],
+    'sourcefilename': 'test.py',
+    'expect': { 'response': 404, 'stdout': '''One or more of the specified files is missing/unavailable'''}
+},
+{
+    'comment': 'Check 400 response: non-existent language',
+    'language_id': 'nosuchlanguage',
+    'sourcecode': r'''print("Hello world!")
+''',
+    'sourcefilename': 'test.py',
+    'expect': { 'response': 400, 'stdout': "Language 'nosuchlanguage' is not known" }
+},
+{
+    'comment': 'Check 400 response: missing language_id',
+    'sourcecode': r'''print("Hello world!")
+''',
+    'sourcefilename': 'test.py',
+    'expect': { 'response': 400, 'stdout': "run_spec is missing the required attribute 'language_id'" }
+},
+{
+    'comment': 'Check 400 response: missing sourcecode',
+    'language_id': 'python3',
+    'sourcefilename': 'test.py',
+    'expect': { 'response': 400, 'stdout': "run_spec is missing the required attribute 'sourcecode'" }
+},
+{
+    'comment': 'Testing overload exception',
+    'language_id': 'python3',
+    'sourcecode': "!** TESTING OVERLOAD EXCEPTION **!",  # See hack alert in LanguageTask.php
+    'sourcefilename': 'test.py',
+    'expect': { 'outcome': 21, 'stdout': "" }
+},
+
+]
+
 #==========================================================================
 #
 # Now the tester code
@@ -731,12 +777,25 @@ def check_multiple_submissions(job, num_submits, sleep_time=0):
 
 
 def is_correct_result(expected, got):
-    '''True iff every key in the expected outcome exists in the
-       actual outcome and the associated values are equal, too'''
-    for key in expected:
-        if key not in got or expected[key] != got[key]:
+    '''If got is a dictionary (the usual case), return true iff every key
+       in the expected outcome exists in the
+       actual outcome and the associated values are equal, too.
+       However, if got is a string, the run must have failed (i.e.
+       not a 200 return code). In that case, expected should have a 
+       'response' key which should match the first token in the got
+       string. The rest of the got string should match the expected 
+       stdout.)
+    '''
+    if isinstance(got, str):
+        if 'response' not in expected:
             return False
-    return True
+        return (got.startswith(str(expected['response']) + ':') and 
+                got[4:].strip() == expected['stdout'].strip())
+    else:
+        for key in expected:
+            if key not in got or expected[key] != got[key]:
+                return False
+        return True
 
 
 # ============================================================
@@ -824,6 +883,7 @@ def run_test(test):
     '''Execute the given test, checking the output'''
 
     runspec = runspec_from_test(test)
+
     # First put any files to the server
     for file_desc in test.get('files', []):
         put_file(file_desc)
@@ -841,6 +901,7 @@ def run_test(test):
     # Do the request, returning EXCEPTION if it broke
     ok, result = do_http('POST', RUNS_RESOURCE, data)
     if not ok:
+        print(f"Exception: {result}")
         return EXCEPTION
 
    # If not an exception, check the response is as specified
@@ -987,6 +1048,8 @@ def normal_testing(langs_to_run):
     do_get_languages()
     counters = [0, 0, 0]  # Passes, fails, exceptions
     tests_run = 0;
+
+    # Run normal tests, i.e. those which should not throw exceptions.
     for test in TEST_SET:
         if test['language_id'] in langs_to_run:
             tests_run += 1
@@ -996,6 +1059,16 @@ def normal_testing(langs_to_run):
                 output('=====================================')
 
     output()
+
+    # Run tests that should throw exceptions or overload.
+    output("Checking serious error conditions")
+    for error_check in ERROR_CHECKS:
+        tests_run += 1
+        result = run_test(error_check)
+        counters[result] += 1
+    output()
+
+    # Summarise.
     output("{} tests, {} passed, {} failed, {} exceptions".format(
         tests_run, counters[0], counters[1], counters[2]))
 
@@ -1010,12 +1083,12 @@ def normal_testing(langs_to_run):
 
 def check_sustained_load(lang, starting_rate):
     """Check the achievable sustained load in the given language.
-       Starting at three quarters of the given rate, send jobs at a steady rate
+       Starting at half of the given rate, send jobs at a steady rate
        over a 30 second time window, making sure all are successful.
        Increase the rate until a single failure occurs.
        Report the maximum achieved sustained rate.
     """
-    rate = max(1, int(starting_rate * 0.75))  # Jobs per sec
+    rate = max(1, int(starting_rate * 0.5))  # Jobs per sec
     best_rate = None
     job = [job for job in TEST_SET if job['language_id'] == lang][0]
 
@@ -1049,6 +1122,7 @@ def check_performance(lang):
        try finding the maximum sustainable rate over a 20 second window by
        sending jobs at that rate less 10%, increasing in steps of 20%,
        until failure occurs."""
+    global ARGS
     num_submits = 1
     best_rate = 0
     job = [job for job in TEST_SET if job['language_id'] == lang][0]
@@ -1067,25 +1141,27 @@ def check_performance(lang):
             print("FAIL.")
             break
 
-    # Backtrack and find the exact limit
     lower_limit = num_submits // 2
-    upper_limit = num_submits
 
-    while lower_limit < upper_limit - 1:
-        num_submits = (lower_limit + upper_limit) // 2
-        t0 = perf_counter()
-        outcome = check_multiple_submissions(job, num_submits, 0)
-        t1 = perf_counter()
-        print(f"{num_submits} parallel submits: ", end='')
+    # If binary-searching, backtrack and find the exact limit
+    if ARGS.binarysearch:
+        upper_limit = num_submits
 
-        if outcome == GOOD_TEST:
-            rate = int(num_submits / (t1 - t0))
-            print(f"OK. {rate} jobs/sec")
-            best_rate = max(rate, best_rate)
-            lower_limit = num_submits
-        else:
-            print("FAIL.")
-            upper_limit = num_submits
+        while lower_limit < upper_limit - 1:
+            num_submits = (lower_limit + upper_limit) // 2
+            t0 = perf_counter()
+            outcome = check_multiple_submissions(job, num_submits, 0)
+            t1 = perf_counter()
+            print(f"{num_submits} parallel submits: ", end='')
+
+            if outcome == GOOD_TEST:
+                rate = int(num_submits / (t1 - t0))
+                print(f"OK. {rate} jobs/sec")
+                best_rate = max(rate, best_rate)
+                lower_limit = num_submits
+            else:
+                print("FAIL.")
+                upper_limit = num_submits
 
 
     print()
@@ -1114,6 +1190,8 @@ other users' submissions to fail."""
         help='The proxy to use and port, like proxy:3128, let empty to not use proxy (default empty)')
     parser.add_argument('--perf', action='store_true',
         help='Measure performance instead of correctness')
+    parser.add_argument('-b', '--binarysearch', action='store_true',
+        help='Use binary search to refine throughoutput estimate')
     parser.add_argument('-v', '--verbose', action='store_true',
         help='Print extra info during tests')
     parser.add_argument('langs', nargs='*',
