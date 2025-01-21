@@ -146,10 +146,7 @@ abstract class LanguageTask
         foreach ($fileList as $file) {
             $fileId = $file[0];
             $filename = $file[1];
-            $destPath = $this->workdir . '/' . $filename;
-            if (!FileCache::fileExists($fileId) ||
-               ($contents = FileCache::fileGetContents($fileId)) === false ||
-               (file_put_contents($destPath, $contents)) === false) {
+            if (FileCache::loadFileToWorkspace($fileId, $filename, $this->workdir) === false) {
                 throw new JobException(
                     'One or more of the specified files is missing/unavailable',
                     404
