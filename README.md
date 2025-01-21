@@ -1,5 +1,5 @@
 # JOBE
-Version: 2.0.3, 2 November 2024
+Version: 2.1.0, 21 January 2025
 
 Note: this is a new version, with lots of changes.
 If you find errors in this document, please email me. My gmail
@@ -1041,3 +1041,21 @@ throughput.
 
   1. Bug fix: Under some configurations of python3 when using the python3_version
      config parameter, the current Python version was being incorrectly reported.
+
+### 2.1.0 (21 January 2025)
+
+  1. Add tests for serious error conditions to testsubmit.py
+
+  1. Report number of jobe users being initialised during install.
+
+  1. Add utilities for admins to report on OS environment and to check/reset shared memory status.
+
+  1. Increase default number of jobe users from 8 to 16.
+
+  1. Regression fix: Jobe server overloads were not being correctly reported.
+
+  1. Add parameter to testsubmit.py to enable/disable binary search for maximum parallel runs
+    
+  1. Bug fix: reducing memory_limits in php.ini after uploading files could result in
+     memory_limit errors when files were copied into the workspace, which crashed
+     PHP and locked out the current Jobe user until a reboot.
