@@ -1,7 +1,9 @@
 <?php
 // Scripts to report status of the Shared Memory variable that
 // controls access to Jobe tasks.
-// For CLI use only.
+// For CLI use only. 
+// You may need to change the value of $key if your Jobe installation
+// is in a different directory.
 try {
 	$key = ftok('/var/www/html/jobe/public/index.php', 'j');
 	$sem = sem_get($key);
