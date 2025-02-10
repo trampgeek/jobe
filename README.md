@@ -1,5 +1,5 @@
 # JOBE
-Version: 2.1.0, 21 January 2025
+Version: 2.1.1, 10 February 2025
 
 Note: this is a new version, with lots of changes.
 If you find errors in this document, please email me. My gmail
@@ -1059,3 +1059,8 @@ throughput.
   1. Bug fix: reducing memory_limits in php.ini after uploading files could result in
      memory_limit errors when files were copied into the workspace, which crashed
      PHP and locked out the current Jobe user until a reboot.
+     
+### 2.1.1 (10 February 2025)
+
+  1. The temporary directory created for Python + matplotlib users was shared by
+     multiple users which could cause occasional concurrency permission errors.

@@ -884,7 +884,10 @@ int main(int argc, char **argv)
 
 		/* Apply all restrictions for child process. */
 		setrestrictions();
-		setenv("MPLCONFIGDIR", "/tmp", 1); // A special case for matplotlib.
+
+		// As a special case for Python running matplotlib, set up a config dir.
+		char template[] = "/tmp/mplwork_XXXXXX";
+		setenv("MPLCONFIGDIR", template, 1);
 
 		/* And execute child command. */
 		execvp(cmdname,cmdargs);
