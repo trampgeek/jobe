@@ -1060,7 +1060,10 @@ throughput.
      memory_limit errors when files were copied into the workspace, which crashed
      PHP and locked out the current Jobe user until a reboot.
      
-### 2.1.1 (10 February 2025)
+### 2.1.2 (10 February 2025)
 
   1. The temporary directory created for Python + matplotlib users was shared by
      multiple users which could cause occasional concurrency permission errors.
+
+  1. Use of numpy + matplotlib could use excessive threads, so set default value
+     of OPENBLAS_NUM_THREADS to just 4.

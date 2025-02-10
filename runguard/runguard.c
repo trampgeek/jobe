@@ -523,7 +523,8 @@ long readoptarg(const char *desc, long minval, long maxval)
 void setrestrictions()
 {
         char* savedEnvironmentVariables[] = {"PATH", "LANG", "LC_ALL", "LC_COLLATE",
-            "LC_CTYPE", "LC_MESSAGES", "LC_MONETARY", "LC_NUMERIC", "LC_TIME"};
+            "LC_CTYPE", "LC_MESSAGES", "LC_MONETARY", "LC_NUMERIC", "LC_TIME",
+			"OPENBLAS_NUM_THREADS"};
         char* savedValues[sizeof(savedEnvironmentVariables) / sizeof(char*)];
         int numSavedVariables = sizeof(savedEnvironmentVariables) / sizeof(char*);
 	char  cwd[PATH_MAX+1];
@@ -886,8 +887,22 @@ int main(int argc, char **argv)
 		setrestrictions();
 
 		// As a special case for Python running matplotlib, set up a config dir.
-		char template[] = "/tmp/mplwork_XXXXXX";
-		setenv("MPLCONFIGDIR", template, 1);
+		for (i = 0; i < 10; i++) {
+			char template[] = "/tmp/mplwork_XXXXXX";
+			char *dirName = mkdtemp(template);
+			if (dirName) {
+				setenv("MPLCONFIGDIR", dirName, 1); // A special case for matplotlib.
+				break;
+			}
+			if (i == 9) { // Something's seriously wrong if this happens!
+				error(errno, "Can't create MPLCONFIGDIR directory for matplotlib");
+			}
+		}
+
+		// Also for Python, limit OPENBLAS to 4 threads. Users can override this in their
+		// own code if necessary, or set it on the Jobe server itself.
+
+		setenv("OPENBLAS_NUM_THREADS", "4", 0);
 
 		/* And execute child command. */
 		execvp(cmdname,cmdargs);
