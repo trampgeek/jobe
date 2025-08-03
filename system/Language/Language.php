@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -11,8 +13,7 @@
 
 namespace CodeIgniter\Language;
 
-use Config\Services;
-use InvalidArgumentException;
+use IntlException;
 use MessageFormatter;
 
 /**
@@ -93,7 +94,7 @@ class Language
     public function getLine(string $line, array $args = [])
     {
         // if no file is given, just parse the line
-        if (strpos($line, '.') === false) {
+        if (! str_contains($line, '.')) {
             return $this->formatMessage($line, $args);
         }
 
@@ -174,7 +175,7 @@ class Language
      * Advanced message formatting.
      *
      * @param array|string $message
-     * @param string[]     $args
+     * @param list<string> $args
      *
      * @return array|string
      */
@@ -194,9 +195,33 @@ class Language
 
         $formatted = MessageFormatter::formatMessage($this->locale, $message, $args);
         if ($formatted === false) {
-            throw new InvalidArgumentException(
-                lang('Language.invalidMessageFormat', [$message, implode(',', $args)])
+            // Format again to get the error message.
+            try {
+                $fmt       = new MessageFormatter($this->locale, $message);
+                $formatted = $fmt->format($args);
+                $fmtError  = '"' . $fmt->getErrorMessage() . '" (' . $fmt->getErrorCode() . ')';
+            } catch (IntlException $e) {
+                $fmtError = '"' . $e->getMessage() . '" (' . $e->getCode() . ')';
+            }
+
+            $argsString = implode(
+                ', ',
+                array_map(static fn ($element): string => '"' . $element . '"', $args),
             );
+            $argsUrlEncoded = implode(
+                ', ',
+                array_map(static fn ($element): string => '"' . rawurlencode($element) . '"', $args),
+            );
+
+            log_message(
+                'error',
+                'Language.invalidMessageFormat: $message: "' . $message
+                . '", $args: ' . $argsString
+                . ' (urlencoded: ' . $argsUrlEncoded . '),'
+                . ' MessageFormatter Error: ' . $fmtError,
+            );
+
+            return $message . "\n【Warning】Also, invalid string(s) was passed to the Language class. See log file for details.";
         }
 
         return $formatted;
@@ -207,7 +232,7 @@ class Language
      * will return the file's contents, otherwise will merge with
      * the existing language lines.
      *
-     * @return array|void
+     * @return list<mixed>|null
      */
     protected function load(string $file, string $locale, bool $return = false)
     {
@@ -240,6 +265,8 @@ class Language
 
         // Merge our string
         $this->language[$locale][$file] = $lang;
+
+        return null;
     }
 
     /**
@@ -248,7 +275,7 @@ class Language
      */
     protected function requireFile(string $path): array
     {
-        $files   = Services::locator()->search($path, 'php', false);
+        $files   = service('locator')->search($path, 'php', false);
         $strings = [];
 
         foreach ($files as $file) {

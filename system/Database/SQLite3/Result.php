@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -145,7 +147,7 @@ class Result extends BaseResult
             return $classObj->injectRawData($row);
         }
 
-        $classSet = Closure::bind(function ($key, $value) {
+        $classSet = Closure::bind(function ($key, $value): void {
             $this->{$key} = $value;
         }, $classObj, $className);
 

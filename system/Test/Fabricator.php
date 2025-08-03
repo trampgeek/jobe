@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -11,14 +13,16 @@
 
 namespace CodeIgniter\Test;
 
+use Closure;
 use CodeIgniter\Exceptions\FrameworkException;
+use CodeIgniter\Exceptions\InvalidArgumentException;
+use CodeIgniter\Exceptions\RuntimeException;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Model;
 use Config\App;
 use Faker\Factory;
 use Faker\Generator;
-use InvalidArgumentException;
-use RuntimeException;
+use InvalidArgumentException as BaseInvalidArgumentException;
 
 /**
  * Fabricator
@@ -87,6 +91,17 @@ class Fabricator
     protected $tempOverrides;
 
     /**
+     * Fields to be modified before applying any formatter.
+     *
+     * @var array{
+     *   unique: array<non-empty-string, array{reset: bool, maxRetries: int}>,
+     *   optional: array<non-empty-string, array{weight: float, default: mixed}>,
+     *   valid: array<non-empty-string, array{validator: Closure(mixed): bool|null, maxRetries: int}>
+     * }
+     */
+    private array $modifiedFields = ['unique' => [], 'optional' => [], 'valid' => []];
+
+    /**
      * Default formatter to use when nothing is detected
      *
      * @var string
@@ -104,8 +119,7 @@ class Fabricator
      */
     public function __construct($model, ?array $formatters = null, ?string $locale = null)
     {
-        if (is_string($model)) {
-            // Create a new model instance
+        if (is_string($model) && class_exists($model)) {
             $model = model($model, false);
         }
 
@@ -139,6 +153,8 @@ class Fabricator
 
     /**
      * Reset internal counts
+     *
+     * @return void
      */
     public static function resetCounts()
     {
@@ -250,6 +266,46 @@ class Fabricator
     }
 
     /**
+     * Set a field to be unique.
+     *
+     * @param bool $reset      If set to true, resets the list of existing values
+     * @param int  $maxRetries Maximum number of retries to find a unique value,
+     *                         After which an OverflowException is thrown.
+     */
+    public function setUnique(string $field, bool $reset = false, int $maxRetries = 10000): static
+    {
+        $this->modifiedFields['unique'][$field] = compact('reset', 'maxRetries');
+
+        return $this;
+    }
+
+    /**
+     * Set a field to be optional.
+     *
+     * @param float $weight A probability between 0 and 1, 0 means that we always get the default value.
+     */
+    public function setOptional(string $field, float $weight = 0.5, mixed $default = null): static
+    {
+        $this->modifiedFields['optional'][$field] = compact('weight', 'default');
+
+        return $this;
+    }
+
+    /**
+     * Set a field to be valid using a callback.
+     *
+     * @param Closure(mixed): bool|null $validator  A function returning true for valid values
+     * @param int                       $maxRetries Maximum number of retries to find a valid value,
+     *                                              After which an OverflowException is thrown.
+     */
+    public function setValid(string $field, ?Closure $validator = null, int $maxRetries = 10000): static
+    {
+        $this->modifiedFields['valid'][$field] = compact('validator', 'maxRetries');
+
+        return $this;
+    }
+
+    /**
      * Returns the current formatters
      */
     public function getFormatters(): ?array
@@ -305,7 +361,7 @@ class Fabricator
             $this->faker->getFormatter($field);
 
             return $field;
-        } catch (InvalidArgumentException $e) {
+        } catch (BaseInvalidArgumentException) {
             // No match, keep going
         }
 
@@ -325,12 +381,12 @@ class Fabricator
 
         // Check some common partials
         foreach (['email', 'name', 'title', 'text', 'date', 'url'] as $term) {
-            if (stripos($field, $term) !== false) {
+            if (str_contains(strtolower($field), strtolower($term))) {
                 return $term;
             }
         }
 
-        if (stripos($field, 'phone') !== false) {
+        if (str_contains(strtolower($field), 'phone')) {
             return 'phoneNumber';
         }
 
@@ -378,7 +434,30 @@ class Fabricator
             $result = [];
 
             foreach ($this->formatters as $field => $formatter) {
-                $result[$field] = $this->faker->{$formatter}();
+                $faker = $this->faker;
+
+                if (isset($this->modifiedFields['unique'][$field])) {
+                    $faker = $faker->unique(
+                        $this->modifiedFields['unique'][$field]['reset'],
+                        $this->modifiedFields['unique'][$field]['maxRetries'],
+                    );
+                }
+
+                if (isset($this->modifiedFields['optional'][$field])) {
+                    $faker = $faker->optional(
+                        $this->modifiedFields['optional'][$field]['weight'],
+                        $this->modifiedFields['optional'][$field]['default'],
+                    );
+                }
+
+                if (isset($this->modifiedFields['valid'][$field])) {
+                    $faker = $faker->valid(
+                        $this->modifiedFields['valid'][$field]['validator'],
+                        $this->modifiedFields['valid'][$field]['maxRetries'],
+                    );
+                }
+
+                $result[$field] = $faker->format($formatter);
             }
         }
         // If no formatters were defined then look for a model fake() method
@@ -497,18 +576,11 @@ class Fabricator
      */
     protected function createMock(?int $count = null)
     {
-        switch ($this->model->dateFormat) {
-            case 'datetime':
-                $datetime = date('Y-m-d H:i:s');
-                break;
-
-            case 'date':
-                $datetime = date('Y-m-d');
-                break;
-
-            default:
-                $datetime = Time::now()->getTimestamp();
-        }
+        $datetime = match ($this->model->dateFormat) {
+            'datetime' => date('Y-m-d H:i:s'),
+            'date'     => date('Y-m-d'),
+            default    => Time::now()->getTimestamp(),
+        };
 
         // Determine which fields we will need
         $fields = [];

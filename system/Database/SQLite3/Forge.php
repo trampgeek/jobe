@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -99,7 +101,7 @@ class Forge extends BaseForge
         }
 
         if (! empty($this->db->dataCache['db_names'])) {
-            $key = array_search(strtolower($dbName), array_map('strtolower', $this->db->dataCache['db_names']), true);
+            $key = array_search(strtolower($dbName), array_map(strtolower(...), $this->db->dataCache['db_names']), true);
             if ($key !== false) {
                 unset($this->db->dataCache['db_names'][$key]);
             }
@@ -109,51 +111,87 @@ class Forge extends BaseForge
     }
 
     /**
-     * @param array|string $field
+     * @param list<string>|string $columnNames
      *
-     * @return array|string|null
+     * @throws DatabaseException
      */
-    protected function _alterTable(string $alterType, string $table, $field)
+    public function dropColumn(string $table, $columnNames): bool
+    {
+        $columns = is_array($columnNames) ? $columnNames : array_map(trim(...), explode(',', $columnNames));
+        $result  = (new Table($this->db, $this))
+            ->fromTable($this->db->DBPrefix . $table)
+            ->dropColumn($columns)
+            ->run();
+
+        if (! $result && $this->db->DBDebug) {
+            throw new DatabaseException(sprintf(
+                'Failed to drop column%s "%s" on "%s" table.',
+                count($columns) > 1 ? 's' : '',
+                implode('", "', $columns),
+                $table,
+            ));
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array|string $processedFields Processed column definitions
+     *                                      or column names to DROP
+     *
+     * @return ($alterType is 'DROP' ? string : list<string>|null)
+     */
+    protected function _alterTable(string $alterType, string $table, $processedFields)
     {
         switch ($alterType) {
-            case 'DROP':
-                $sqlTable = new Table($this->db, $this);
-
-                $sqlTable->fromTable($table)
-                    ->dropColumn($field)
-                    ->run();
-
-                return '';
-
             case 'CHANGE':
+                $fieldsToModify = [];
+
+                foreach ($processedFields as $processedField) {
+                    $name    = $processedField['name'];
+                    $newName = $processedField['new_name'];
+
+                    $field             = $this->fields[$name];
+                    $field['name']     = $name;
+                    $field['new_name'] = $newName;
+
+                    // Unlike when creating a table, if `null` is not specified,
+                    // the column will be `NULL`, not `NOT NULL`.
+                    if ($processedField['null'] === '') {
+                        $field['null'] = true;
+                    }
+
+                    $fieldsToModify[] = $field;
+                }
+
                 (new Table($this->db, $this))
                     ->fromTable($table)
-                    ->modifyColumn($field)
+                    ->modifyColumn($fieldsToModify)
                     ->run();
 
-                return null;
+                return null; // Why null?
 
             default:
-                return parent::_alterTable($alterType, $table, $field);
+                return parent::_alterTable($alterType, $table, $processedFields);
         }
     }
 
     /**
      * Process column
      */
-    protected function _processColumn(array $field): string
+    protected function _processColumn(array $processedField): string
     {
-        if ($field['type'] === 'TEXT' && strpos($field['length'], "('") === 0) {
-            $field['type'] .= ' CHECK(' . $this->db->escapeIdentifiers($field['name'])
-                . ' IN ' . $field['length'] . ')';
+        if ($processedField['type'] === 'TEXT' && str_starts_with($processedField['length'], "('")) {
+            $processedField['type'] .= ' CHECK(' . $this->db->escapeIdentifiers($processedField['name'])
+                . ' IN ' . $processedField['length'] . ')';
         }
 
-        return $this->db->escapeIdentifiers($field['name'])
-            . ' ' . $field['type']
-            . $field['auto_increment']
-            . $field['null']
-            . $field['unique']
-            . $field['default'];
+        return $this->db->escapeIdentifiers($processedField['name'])
+            . ' ' . $processedField['type']
+            . $processedField['auto_increment']
+            . $processedField['null']
+            . $processedField['unique']
+            . $processedField['default'];
     }
 
     /**
@@ -183,8 +221,11 @@ class Forge extends BaseForge
      */
     protected function _attributeAutoIncrement(array &$attributes, array &$field)
     {
-        if (! empty($attributes['AUTO_INCREMENT']) && $attributes['AUTO_INCREMENT'] === true
-            && stripos($field['type'], 'int') !== false) {
+        if (
+            ! empty($attributes['AUTO_INCREMENT'])
+            && $attributes['AUTO_INCREMENT'] === true
+            && str_contains(strtolower($field['type']), 'int')
+        ) {
             $field['type']           = 'INTEGER PRIMARY KEY';
             $field['default']        = '';
             $field['null']           = '';

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -11,9 +13,9 @@
 
 namespace CodeIgniter\Database\SQLSRV;
 
-use BadMethodCallException;
 use CodeIgniter\Database\BasePreparedQuery;
 use CodeIgniter\Database\Exceptions\DatabaseException;
+use CodeIgniter\Exceptions\BadMethodCallException;
 
 /**
  * Prepared query for Postgre
@@ -57,7 +59,7 @@ class PreparedQuery extends BasePreparedQuery
         // Prepare parameters for the query
         $queryString = $this->getQueryString();
 
-        $parameters = $this->parameterize($queryString);
+        $parameters = $this->parameterize($queryString, $options);
 
         // Prepare the query
         $this->statement = sqlsrv_prepare($this->db->connID, $sql, $parameters);
@@ -118,8 +120,10 @@ class PreparedQuery extends BasePreparedQuery
 
     /**
      * Handle parameters.
+     *
+     * @param array<int, mixed> $options
      */
-    protected function parameterize(string $queryString): array
+    protected function parameterize(string $queryString, array $options): array
     {
         $numberOfVariables = substr_count($queryString, '?');
 
@@ -127,7 +131,11 @@ class PreparedQuery extends BasePreparedQuery
 
         for ($c = 0; $c < $numberOfVariables; $c++) {
             $this->parameters[$c] = null;
-            $params[]             = &$this->parameters[$c];
+            if (isset($options[$c])) {
+                $params[] = [&$this->parameters[$c], SQLSRV_PARAM_IN, $options[$c]];
+            } else {
+                $params[] = &$this->parameters[$c];
+            }
         }
 
         return $params;

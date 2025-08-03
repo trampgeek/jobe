@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -12,16 +14,15 @@
 namespace CodeIgniter\Validation;
 
 use Closure;
+use CodeIgniter\Database\BaseConnection;
+use CodeIgniter\Exceptions\InvalidArgumentException;
+use CodeIgniter\Exceptions\LogicException;
 use CodeIgniter\HTTP\Exceptions\HTTPException;
 use CodeIgniter\HTTP\IncomingRequest;
+use CodeIgniter\HTTP\Method;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\Validation\Exceptions\ValidationException;
 use CodeIgniter\View\RendererInterface;
-use Config\Services;
-use Config\Validation as ValidationConfig;
-use InvalidArgumentException;
-use LogicException;
-use TypeError;
 
 /**
  * Validator
@@ -47,7 +48,7 @@ class Validation implements ValidationInterface
     /**
      * Stores the actual rules that should be run against $data.
      *
-     * @var array
+     * @var array<array-key, array{label?: string, rules: list<string>}>
      *
      * [
      *     field1 => [
@@ -94,7 +95,7 @@ class Validation implements ValidationInterface
     /**
      * Our configuration.
      *
-     * @var ValidationConfig
+     * @var object{ruleSets: list<class-string>}
      */
     protected $config;
 
@@ -108,7 +109,7 @@ class Validation implements ValidationInterface
     /**
      * Validation constructor.
      *
-     * @param ValidationConfig $config
+     * @param object{ruleSets: list<class-string>} $config
      */
     public function __construct($config, RendererInterface $view)
     {
@@ -125,14 +126,11 @@ class Validation implements ValidationInterface
      * Runs the validation process, returning true/false determining whether
      * validation was successful or not.
      *
-     * @param array|null  $data    The array of data to validate.
-     * @param string|null $group   The predefined group of rules to apply.
-     * @param string|null $dbGroup The database group to use.
-     *
-     * @TODO Type ?string for $dbGroup should be removed.
-     *      See https://github.com/codeigniter4/CodeIgniter4/issues/6723
+     * @param array|null                                 $data    The array of data to validate.
+     * @param string|null                                $group   The predefined group of rules to apply.
+     * @param array|BaseConnection|non-empty-string|null $dbGroup The database group to use.
      */
-    public function run(?array $data = null, ?string $group = null, ?string $dbGroup = null): bool
+    public function run(?array $data = null, ?string $group = null, $dbGroup = null): bool
     {
         if ($data === null) {
             $data = $this->data;
@@ -162,42 +160,45 @@ class Validation implements ValidationInterface
         // Run through each rule. If we have any field set for
         // this rule, then we need to run them through!
         foreach ($this->rules as $field => $setup) {
+            //  An array key might be int.
+            $field = (string) $field;
+
             $rules = $setup['rules'];
 
             if (is_string($rules)) {
                 $rules = $this->splitRules($rules);
             }
 
-            if (strpos($field, '*') !== false) {
+            if (str_contains($field, '*')) {
                 $flattenedArray = array_flatten_with_dots($data);
 
                 $values = array_filter(
                     $flattenedArray,
-                    static fn ($key) => preg_match(self::getRegex($field), $key),
-                    ARRAY_FILTER_USE_KEY
+                    static fn ($key): bool => preg_match(self::getRegex($field), $key) === 1,
+                    ARRAY_FILTER_USE_KEY,
                 );
 
                 // if keys not found
-                $values = $values ?: [$field => null];
+                $values = $values !== [] ? $values : [$field => null];
             } else {
                 $values = dot_array_search($field, $data);
             }
 
             if ($values === []) {
                 // We'll process the values right away if an empty array
-                $this->processRules($field, $setup['label'] ?? $field, $values, $rules, $data);
+                $this->processRules($field, $setup['label'] ?? $field, $values, $rules, $data, $field);
 
                 continue;
             }
 
-            if (strpos($field, '*') !== false) {
+            if (str_contains($field, '*')) {
                 // Process multiple fields
                 foreach ($values as $dotField => $value) {
                     $this->processRules($dotField, $setup['label'] ?? $field, $value, $rules, $data, $field);
                 }
             } else {
                 // Process single field
-                $this->processRules($field, $setup['label'] ?? $field, $values, $rules, $data);
+                $this->processRules($field, $setup['label'] ?? $field, $values, $rules, $data, $field);
             }
         }
 
@@ -205,7 +206,7 @@ class Validation implements ValidationInterface
             // Store data that was actually validated.
             $this->validated = DotArrayFilter::run(
                 array_keys($this->rules),
-                $this->data
+                $this->data,
             );
 
             return true;
@@ -223,7 +224,7 @@ class Validation implements ValidationInterface
             . str_replace(
                 ['\.\*', '\*\.'],
                 ['\.[^.]+', '[^.]+\.'],
-                preg_quote($field, '/')
+                preg_quote($field, '/'),
             )
             . '\z/';
     }
@@ -234,7 +235,7 @@ class Validation implements ValidationInterface
      *
      * @param array|bool|float|int|object|string|null $value   The data to validate.
      * @param array|string                            $rules   The validation rules.
-     * @param string[]                                $errors  The custom error message.
+     * @param list<string>                            $errors  The custom error message.
      * @param string|null                             $dbGroup The database group to use.
      */
     public function check($value, $rules, array $errors = [], $dbGroup = null): bool
@@ -245,11 +246,11 @@ class Validation implements ValidationInterface
             'check',
             null,
             $rules,
-            $errors
+            $errors,
         )->run(
             ['check' => $value],
             null,
-            $dbGroup
+            $dbGroup,
         );
     }
 
@@ -278,7 +279,7 @@ class Validation implements ValidationInterface
         $value,
         $rules = null,       // @TODO remove `= null`
         ?array $data = null, // @TODO remove `= null`
-        ?string $originalField = null
+        ?string $originalField = null,
     ): bool {
         if ($data === null) {
             throw new InvalidArgumentException('You must supply the parameter: data.');
@@ -295,10 +296,13 @@ class Validation implements ValidationInterface
         }
 
         foreach ($rules as $i => $rule) {
-            $isCallable = is_callable($rule);
+            $isCallable     = is_callable($rule);
+            $stringCallable = $isCallable && is_string($rule);
+            $arrayCallable  = $isCallable && is_array($rule);
 
             $passed = false;
-            $param  = false;
+            /** @var string|null $param */
+            $param = null;
 
             if (! $isCallable && preg_match('/(.*?)\[(.*)\]/', $rule, $match)) {
                 $rule  = $match[1];
@@ -312,7 +316,7 @@ class Validation implements ValidationInterface
             if ($this->isClosure($rule)) {
                 $passed = $rule($value, $data, $error, $field);
             } elseif ($isCallable) {
-                $passed = $param === false ? $rule($value) : $rule($value, $param, $data);
+                $passed = $stringCallable ? $rule($value) : $rule($value, $data, $error, $field);
             } else {
                 $found = false;
 
@@ -322,10 +326,15 @@ class Validation implements ValidationInterface
                         continue;
                     }
 
-                    $found  = true;
-                    $passed = $param === false
-                        ? $set->{$rule}($value, $error)
-                        : $set->{$rule}($value, $param, $data, $error, $field);
+                    $found = true;
+
+                    if ($rule === 'field_exists') {
+                        $passed = $set->{$rule}($value, $param, $data, $error, $originalField);
+                    } else {
+                        $passed = ($param === null)
+                            ? $set->{$rule}($value, $error)
+                            : $set->{$rule}($value, $param, $data, $error, $field);
+                    }
 
                     break;
                 }
@@ -348,16 +357,16 @@ class Validation implements ValidationInterface
                     $value = json_encode($value);
                 }
 
-                $param = ($param === false) ? '' : $param;
+                $fieldForErrors = ($rule === 'field_exists') ? $originalField : $field;
 
                 // @phpstan-ignore-next-line $error may be set by rule methods.
-                $this->errors[$field] = $error ?? $this->getErrorMessage(
-                    $this->isClosure($rule) ? $i : $rule,
+                $this->errors[$fieldForErrors] = $error ?? $this->getErrorMessage(
+                    ($this->isClosure($rule) || $arrayCallable) ? (string) $i : $rule,
                     $field,
                     $label,
                     $param,
                     (string) $value,
-                    $originalField
+                    $originalField,
                 );
 
                 return false;
@@ -378,7 +387,7 @@ class Validation implements ValidationInterface
             $flattenedData = array_flatten_with_dots($data);
             $ifExistField  = $field;
 
-            if (strpos($field, '.*') !== false) {
+            if (str_contains($field, '.*')) {
                 // We'll change the dot notation into a PCRE pattern that can be used later
                 $ifExistField   = str_replace('\.\*', '\.(?:[^\.]+)', preg_quote($field, '/'));
                 $dataIsExisting = false;
@@ -390,8 +399,10 @@ class Validation implements ValidationInterface
                         break;
                     }
                 }
-            } else {
+            } elseif (str_contains($field, '.')) {
                 $dataIsExisting = array_key_exists($ifExistField, $flattenedData);
+            } else {
+                $dataIsExisting = array_key_exists($ifExistField, $data);
             }
 
             if (! $dataIsExisting) {
@@ -400,7 +411,7 @@ class Validation implements ValidationInterface
             }
 
             // Otherwise remove the if_exist rule and continue the process
-            $rules = array_filter($rules, static fn ($rule) => $rule instanceof Closure || $rule !== 'if_exist');
+            $rules = array_filter($rules, static fn ($rule): bool => $rule instanceof Closure || $rule !== 'if_exist');
         }
 
         return $rules;
@@ -442,19 +453,19 @@ class Validation implements ValidationInterface
                     }
                 }
 
-                if ($passed === true) {
+                if ($passed) {
                     return true;
                 }
             }
 
-            $rules = array_filter($rules, static fn ($rule) => $rule instanceof Closure || $rule !== 'permit_empty');
+            $rules = array_filter($rules, static fn ($rule): bool => $rule instanceof Closure || $rule !== 'permit_empty');
         }
 
         return $rules;
     }
 
     /**
-     * @param Closure|string $rule
+     * @param Closure(bool|float|int|list<mixed>|object|string|null, bool|float|int|list<mixed>|object|string|null, string|null, string|null): (bool|string) $rule
      */
     private function isClosure($rule): bool
     {
@@ -494,7 +505,7 @@ class Validation implements ValidationInterface
     public function withRequest(RequestInterface $request): ValidationInterface
     {
         /** @var IncomingRequest $request */
-        if (strpos($request->getHeaderLine('Content-Type'), 'application/json') !== false) {
+        if (str_contains($request->getHeaderLine('Content-Type'), 'application/json')) {
             $this->data = $request->getJSON(true);
 
             if (! is_array($this->data)) {
@@ -504,8 +515,8 @@ class Validation implements ValidationInterface
             return $this;
         }
 
-        if (in_array(strtolower($request->getMethod()), ['put', 'patch', 'delete'], true)
-            && strpos($request->getHeaderLine('Content-Type'), 'multipart/form-data') === false
+        if (in_array($request->getMethod(), [Method::PUT, Method::PATCH, Method::DELETE], true)
+            && ! str_contains($request->getHeaderLine('Content-Type'), 'multipart/form-data')
         ) {
             $this->data = $request->getRawInput();
         } else {
@@ -531,12 +542,12 @@ class Validation implements ValidationInterface
      *
      * @return $this
      *
-     * @throws TypeError
+     * @throws InvalidArgumentException
      */
     public function setRule(string $field, ?string $label, $rules, array $errors = [])
     {
         if (! is_array($rules) && ! is_string($rules)) {
-            throw new TypeError('$rules must be of type string|array');
+            throw new InvalidArgumentException('$rules must be of type string|array');
         }
 
         $ruleSet = [
@@ -626,7 +637,7 @@ class Validation implements ValidationInterface
      *
      * @param string $group Group.
      *
-     * @return string[] Rule group.
+     * @return list<string> Rule group.
      *
      * @throws ValidationException If group not found.
      */
@@ -782,7 +793,7 @@ class Validation implements ValidationInterface
                     $placeholderFields = $this->retrievePlaceholders($row, $data);
 
                     foreach ($placeholderFields as $field) {
-                        $validator ??= Services::validation(null, false);
+                        $validator ??= service('validation', null, false);
                         assert($validator instanceof Validation);
 
                         $placeholderRules = $rules[$field]['rules'] ?? null;
@@ -790,7 +801,9 @@ class Validation implements ValidationInterface
                         // Check if the validation rule for the placeholder exists
                         if ($placeholderRules === null) {
                             throw new LogicException(
-                                'No validation rules for the placeholder: ' . $field
+                                'No validation rules for the placeholder: "' . $field
+                                . '". You must set the validation rules for the field.'
+                                . ' See <https://codeigniter4.github.io/userguide/libraries/validation.html#validation-placeholders>.',
                             );
                         }
 
@@ -798,7 +811,7 @@ class Validation implements ValidationInterface
                         foreach ($placeholderRules as $placeholderRule) {
                             if ($this->retrievePlaceholders($placeholderRule, $data) !== []) {
                                 throw new LogicException(
-                                    'The placeholder field cannot use placeholder: ' . $field
+                                    'The placeholder field cannot use placeholder: ' . $field,
                                 );
                             }
                         }
@@ -811,7 +824,7 @@ class Validation implements ValidationInterface
                         }
 
                         // Replace the placeholder in the rule
-                        $ruleSet = str_replace('{' . $field . '}', $data[$field], $ruleSet);
+                        $ruleSet = str_replace('{' . $field . '}', (string) $data[$field], $ruleSet);
                     }
                 }
             }
@@ -852,11 +865,11 @@ class Validation implements ValidationInterface
 
         $errors = array_filter(
             $this->getErrors(),
-            static fn ($key) => preg_match(self::getRegex($field), $key),
-            ARRAY_FILTER_USE_KEY
+            static fn ($key): bool => preg_match(self::getRegex($field), $key) === 1,
+            ARRAY_FILTER_USE_KEY,
         );
 
-        return $errors === [] ? '' : implode("\n", $errors);
+        return implode("\n", $errors);
     }
 
     /**
@@ -899,30 +912,28 @@ class Validation implements ValidationInterface
         ?string $label = null,
         ?string $param = null,
         ?string $value = null,
-        ?string $originalField = null
+        ?string $originalField = null,
     ): string {
         $param ??= '';
 
+        $args = [
+            'field' => ($label === null || $label === '') ? $field : lang($label),
+            'param' => (! isset($this->rules[$param]['label'])) ? $param : lang($this->rules[$param]['label']),
+            'value' => $value ?? '',
+        ];
+
         // Check if custom message has been defined by user
         if (isset($this->customErrors[$field][$rule])) {
-            $message = lang($this->customErrors[$field][$rule]);
-        } elseif (null !== $originalField && isset($this->customErrors[$originalField][$rule])) {
-            $message = lang($this->customErrors[$originalField][$rule]);
-        } else {
-            // Try to grab a localized version of the message...
-            // lang() will return the rule name back if not found,
-            // so there will always be a string being returned.
-            $message = lang('Validation.' . $rule);
+            return lang($this->customErrors[$field][$rule], $args);
+        }
+        if (null !== $originalField && isset($this->customErrors[$originalField][$rule])) {
+            return lang($this->customErrors[$originalField][$rule], $args);
         }
 
-        $message = str_replace('{field}', ($label === null || $label === '') ? $field : lang($label), $message);
-        $message = str_replace(
-            '{param}',
-            (! isset($this->rules[$param]['label'])) ? $param : lang($this->rules[$param]['label']),
-            $message
-        );
-
-        return str_replace('{value}', $value ?? '', $message);
+        // Try to grab a localized version of the message...
+        // lang() will return the rule name back if not found,
+        // so there will always be a string being returned.
+        return lang('Validation.' . $rule, $args);
     }
 
     /**
@@ -930,7 +941,7 @@ class Validation implements ValidationInterface
      */
     protected function splitRules(string $rules): array
     {
-        if (strpos($rules, '|') === false) {
+        if (! str_contains($rules, '|')) {
             return [$rules];
         }
 

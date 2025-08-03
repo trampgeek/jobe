@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -20,6 +22,11 @@ use Config\Encryption as EncryptionConfig;
  * Provides two-way keyed encryption via PHP's Sodium and/or OpenSSL extensions.
  * This class determines the driver, cipher, and mode to use, and then
  * initializes the appropriate encryption handler.
+ *
+ * @property-read string       $digest
+ * @property-read string       $driver
+ * @property-read list<string> $drivers
+ * @property-read string       $key
  *
  * @see \CodeIgniter\Encryption\EncryptionTest
  */

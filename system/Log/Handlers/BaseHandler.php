@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -19,7 +21,7 @@ abstract class BaseHandler implements HandlerInterface
     /**
      * Handles
      *
-     * @var array
+     * @var list<string>
      */
     protected $handles;
 
@@ -31,7 +33,7 @@ abstract class BaseHandler implements HandlerInterface
     protected $dateFormat = 'Y-m-d H:i:s';
 
     /**
-     * Constructor
+     * @param array{handles?: list<string>} $config
      */
     public function __construct(array $config)
     {

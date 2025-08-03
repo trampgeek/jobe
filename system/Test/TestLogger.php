@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -12,22 +14,26 @@
 namespace CodeIgniter\Test;
 
 use CodeIgniter\Log\Logger;
+use Stringable;
 
 /**
  * @see \CodeIgniter\Test\TestLoggerTest
  */
 class TestLogger extends Logger
 {
+    /**
+     * @var list<array{level: mixed, message: string, file: string|null}>
+     */
     protected static $op_logs = [];
 
     /**
      * The log method is overridden so that we can store log history during
      * the tests to allow us to check ->assertLogged() methods.
      *
-     * @param string $level
+     * @param mixed  $level
      * @param string $message
      */
-    public function log($level, $message, array $context = []): bool
+    public function log($level, string|Stringable $message, array $context = []): void
     {
         // While this requires duplicate work, we want to ensure
         // we have the final message to test against.
@@ -52,7 +58,7 @@ class TestLogger extends Logger
         ];
 
         // Let the parent do it's thing.
-        return parent::log($level, $message, $context);
+        parent::log($level, $message, $context);
     }
 
     /**
@@ -79,23 +85,11 @@ class TestLogger extends Logger
                 continue;
             }
 
-            if (strpos($log['message'], $message) !== false) {
+            if (str_contains($log['message'], $message)) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    /**
-     * Expose filenames.
-     *
-     * @param string $file
-     *
-     * @deprecated No longer needed as underlying protected method is also deprecated.
-     */
-    public function cleanup($file)
-    {
-        return clean_path($file);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -11,9 +13,9 @@
 
 namespace CodeIgniter\Database\Postgre;
 
-use BadMethodCallException;
 use CodeIgniter\Database\BasePreparedQuery;
 use CodeIgniter\Database\Exceptions\DatabaseException;
+use CodeIgniter\Exceptions\BadMethodCallException;
 use Exception;
 use PgSql\Connection as PgSqlConnection;
 use PgSql\Result as PgSqlResult;
@@ -85,6 +87,12 @@ class PreparedQuery extends BasePreparedQuery
             throw new BadMethodCallException('You must call prepare before trying to execute a prepared statement.');
         }
 
+        foreach ($data as &$item) {
+            if (is_string($item) && $this->isBinary($item)) {
+                $item = pg_escape_bytea($this->db->connID, $item);
+            }
+        }
+
         $this->result = pg_execute($this->db->connID, $this->name, $data);
 
         return (bool) $this->result;
@@ -93,8 +101,7 @@ class PreparedQuery extends BasePreparedQuery
     /**
      * Returns the result object for the prepared query or false on failure.
      *
-     * @return resource|null
-     * @phpstan-return PgSqlResult|null
+     * @return PgSqlResult|null
      */
     public function _getResult()
     {
@@ -118,7 +125,7 @@ class PreparedQuery extends BasePreparedQuery
         // Track our current value
         $count = 0;
 
-        return preg_replace_callback('/\?/', static function () use (&$count) {
+        return preg_replace_callback('/\?/', static function () use (&$count): string {
             $count++;
 
             return "\${$count}";

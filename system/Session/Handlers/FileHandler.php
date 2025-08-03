@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -73,7 +75,7 @@ class FileHandler extends BaseHandler
         } else {
             $sessionPath = rtrim(ini_get('session.save_path'), '/\\');
 
-            if (! $sessionPath) {
+            if ($sessionPath === '') {
                 $sessionPath = WRITEPATH . 'session';
             }
 
@@ -199,7 +201,9 @@ class FileHandler extends BaseHandler
         if (($length = strlen($data)) > 0) {
             $result = null;
 
-            for ($written = 0; $written < $length; $written += $result) {
+            $written = 0;
+
+            for (; $written < $length; $written += $result) {
                 if (($result = fwrite($this->fileHandle, substr($data, $written))) === false) {
                     break;
                 }
@@ -281,14 +285,14 @@ class FileHandler extends BaseHandler
 
         $pattern = sprintf(
             '#\A%s' . $pattern . $this->sessionIDRegex . '\z#',
-            preg_quote($this->cookieName, '#')
+            preg_quote($this->cookieName, '#'),
         );
 
         $collected = 0;
 
         while (($file = readdir($directory)) !== false) {
             // If the filename doesn't match this pattern, it's either not a session file or is not ours
-            if (! preg_match($pattern, $file)
+            if (preg_match($pattern, $file) !== 1
                 || ! is_file($this->savePath . DIRECTORY_SEPARATOR . $file)
                 || ($mtime = filemtime($this->savePath . DIRECTORY_SEPARATOR . $file)) === false
                 || $mtime > $ts
@@ -307,32 +311,28 @@ class FileHandler extends BaseHandler
 
     /**
      * Configure Session ID regular expression
+     *
+     * To make life easier, we force the PHP defaults. Because PHP9 forces them.
+     *
+     * @see https://wiki.php.net/rfc/deprecations_php_8_4#sessionsid_length_and_sessionsid_bits_per_character
+     *
+     * @return void
      */
     protected function configureSessionIDRegex()
     {
         $bitsPerCharacter = (int) ini_get('session.sid_bits_per_character');
-        $SIDLength        = (int) ini_get('session.sid_length');
+        $sidLength        = (int) ini_get('session.sid_length');
 
-        if (($bits = $SIDLength * $bitsPerCharacter) < 160) {
-            // Add as many more characters as necessary to reach at least 160 bits
-            $SIDLength += (int) ceil((160 % $bits) / $bitsPerCharacter);
-            ini_set('session.sid_length', (string) $SIDLength);
+        // We force the PHP defaults.
+        if (PHP_VERSION_ID < 90000) {
+            if ($bitsPerCharacter !== 4) {
+                ini_set('session.sid_bits_per_character', '4');
+            }
+            if ($sidLength !== 32) {
+                ini_set('session.sid_length', '32');
+            }
         }
 
-        switch ($bitsPerCharacter) {
-            case 4:
-                $this->sessionIDRegex = '[0-9a-f]';
-                break;
-
-            case 5:
-                $this->sessionIDRegex = '[0-9a-v]';
-                break;
-
-            case 6:
-                $this->sessionIDRegex = '[0-9a-zA-Z,-]';
-                break;
-        }
-
-        $this->sessionIDRegex .= '{' . $SIDLength . '}';
+        $this->sessionIDRegex = '[0-9a-f]{32}';
     }
 }

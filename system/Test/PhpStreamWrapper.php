@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -28,29 +30,38 @@ final class PhpStreamWrapper
     private static string $content = '';
     private int $position          = 0;
 
+    /**
+     * @return void
+     */
     public static function setContent(string $content)
     {
         self::$content = $content;
     }
 
+    /**
+     * @return void
+     */
     public static function register()
     {
         stream_wrapper_unregister('php');
         stream_wrapper_register('php', self::class);
     }
 
+    /**
+     * @return void
+     */
     public static function restore()
     {
         stream_wrapper_restore('php');
     }
 
-    public function stream_open(string $path): bool
+    public function stream_open(): bool
     {
         return true;
     }
 
     /**
-     * @return false|string
+     * @return string
      */
     public function stream_read(int $count)
     {
@@ -61,7 +72,7 @@ final class PhpStreamWrapper
     }
 
     /**
-     * @return array|false
+     * @return array{}
      */
     public function stream_stat()
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -29,6 +31,8 @@ class MockResult extends BaseResult
 
     /**
      * Generates an array of column names in the result set.
+     *
+     * @return array{}
      */
     public function getFieldNames(): array
     {
@@ -37,6 +41,8 @@ class MockResult extends BaseResult
 
     /**
      * Generates an array of objects representing field meta-data.
+     *
+     * @return array{}
      */
     public function getFieldData(): array
     {
@@ -71,22 +77,21 @@ class MockResult extends BaseResult
      *
      * Overridden by driver classes.
      *
-     * @return mixed
+     * @return array{}
      */
     protected function fetchAssoc()
     {
+        return [];
     }
 
     /**
      * Returns the result set as an object.
      *
-     * Overridden by child classes.
+     * @param class-string $className
      *
-     * @param string $className
-     *
-     * @return object|stdClass
+     * @return object
      */
-    protected function fetchObject($className = 'stdClass')
+    protected function fetchObject($className = stdClass::class)
     {
         return new $className();
     }

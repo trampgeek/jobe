@@ -17,8 +17,6 @@ use CodeIgniter\Config\AutoloadConfig;
  *
  * NOTE: This class is required prior to Autoloader instantiation,
  *       and does not extend BaseConfig.
- *
- * @immutable
  */
 class Autoload extends AutoloadConfig
 {
@@ -30,22 +28,18 @@ class Autoload extends AutoloadConfig
      * their location on the file system. These are used by the autoloader
      * to locate files the first time they have been instantiated.
      *
-     * The '/app' and '/system' directories are already mapped for you.
-     * you may change the name of the 'App' namespace if you wish,
+     * The 'Config' (APPPATH . 'Config') and 'CodeIgniter' (SYSTEMPATH) are
+     * already mapped for you.
+     *
+     * You may change the name of the 'App' namespace if you wish,
      * but this should be done prior to creating any namespaced classes,
      * else you will need to modify all of those classes for this to work.
-     *
-     * Prototype:
-     *   $psr4 = [
-     *       'CodeIgniter' => SYSTEMPATH,
-     *       'App'         => APPPATH
-     *   ];
      *
      * @var array<string, list<string>|string>
      */
     public $psr4 = [
         'Jobe'     => APPPATH . 'Libraries', // For custom app namespace
-        'Config'   => APPPATH . 'Config',
+        APP_NAMESPACE => APPPATH,
     ];
 
     /**
@@ -95,5 +89,5 @@ class Autoload extends AutoloadConfig
      *
      * @var list<string>
      */
-    public $helpers = ['MY_cors_helper'];
+    public $helpers = [];
 }

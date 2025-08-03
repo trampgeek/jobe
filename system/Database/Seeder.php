@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -12,10 +14,10 @@
 namespace CodeIgniter\Database;
 
 use CodeIgniter\CLI\CLI;
+use CodeIgniter\Exceptions\InvalidArgumentException;
 use Config\Database;
 use Faker\Factory;
 use Faker\Generator;
-use InvalidArgumentException;
 
 /**
  * Class Seeder
@@ -103,7 +105,7 @@ class Seeder
      */
     public static function faker(): ?Generator
     {
-        if (self::$faker === null && class_exists(Factory::class)) {
+        if (! self::$faker instanceof Generator && class_exists(Factory::class)) {
             self::$faker = Factory::create();
         }
 
@@ -112,6 +114,8 @@ class Seeder
 
     /**
      * Loads the specified seeder and runs it.
+     *
+     * @return void
      *
      * @throws InvalidArgumentException
      */
@@ -123,7 +127,7 @@ class Seeder
             throw new InvalidArgumentException('No seeder was specified.');
         }
 
-        if (strpos($class, '\\') === false) {
+        if (! str_contains($class, '\\')) {
             $path = $this->seedPath . str_replace('.php', '', $class) . '.php';
 
             if (! is_file($path)) {
@@ -181,7 +185,7 @@ class Seeder
      * Child classes must implement this method and take care
      * of inserting their data here.
      *
-     * @return mixed
+     * @return void
      *
      * @codeCoverageIgnore
      */

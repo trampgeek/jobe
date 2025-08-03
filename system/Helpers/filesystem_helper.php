@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -8,6 +10,8 @@
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
  */
+
+use CodeIgniter\Exceptions\InvalidArgumentException;
 
 // CodeIgniter File System Helpers
 
@@ -53,7 +57,7 @@ if (! function_exists('directory_map')) {
             closedir($fp);
 
             return $fileData;
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return [];
         }
     }
@@ -85,7 +89,7 @@ if (! function_exists('directory_mirror')) {
          */
         foreach (new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($originDir, FilesystemIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::SELF_FIRST
+            RecursiveIteratorIterator::SELF_FIRST,
         ) as $file) {
             $origin = $file->getPathname();
             $target = $targetDir . substr($origin, $dirLen);
@@ -94,7 +98,7 @@ if (! function_exists('directory_mirror')) {
                 if (! is_dir($target)) {
                     mkdir($target, 0755);
                 }
-            } elseif (! is_file($target) || ($overwrite && is_file($target))) {
+            } elseif ($overwrite || ! is_file($target)) {
                 copy($origin, $target);
             }
         }
@@ -119,7 +123,9 @@ if (! function_exists('write_file')) {
 
             flock($fp, LOCK_EX);
 
-            for ($result = $written = 0, $length = strlen($data); $written < $length; $written += $result) {
+            $result = 0;
+
+            for ($written = 0, $length = strlen($data); $written < $length; $written += $result) {
                 if (($result = fwrite($fp, substr($data, $written))) === false) {
                     break;
                 }
@@ -129,7 +135,7 @@ if (! function_exists('write_file')) {
             fclose($fp);
 
             return is_int($result);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return false;
         }
     }
@@ -157,14 +163,14 @@ if (! function_exists('delete_files')) {
         try {
             foreach (new RecursiveIteratorIterator(
                 new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS),
-                RecursiveIteratorIterator::CHILD_FIRST
+                RecursiveIteratorIterator::CHILD_FIRST,
             ) as $object) {
                 $filename = $object->getFilename();
                 if (! $hidden && $filename[0] === '.') {
                     continue;
                 }
 
-                if (! $htdocs || ! preg_match('/^(\.htaccess|index\.(html|htm|php)|web\.config)$/i', $filename)) {
+                if (! $htdocs || preg_match('/^(\.htaccess|index\.(html|htm|php)|web\.config)$/i', $filename) !== 1) {
                     $isDir = $object->isDir();
                     if ($isDir && $delDir) {
                         rmdir($object->getPathname());
@@ -178,7 +184,7 @@ if (! function_exists('delete_files')) {
             }
 
             return true;
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return false;
         }
     }
@@ -200,7 +206,7 @@ if (! function_exists('get_filenames')) {
         string $sourceDir,
         ?bool $includePath = false,
         bool $hidden = false,
-        bool $includeDir = true
+        bool $includeDir = true,
     ): array {
         $files = [];
 
@@ -210,7 +216,7 @@ if (! function_exists('get_filenames')) {
         try {
             foreach (new RecursiveIteratorIterator(
                 new RecursiveDirectoryIterator($sourceDir, RecursiveDirectoryIterator::SKIP_DOTS | FilesystemIterator::FOLLOW_SYMLINKS),
-                RecursiveIteratorIterator::SELF_FIRST
+                RecursiveIteratorIterator::SELF_FIRST,
             ) as $name => $object) {
                 $basename = pathinfo($name, PATHINFO_BASENAME);
                 if (! $hidden && $basename[0] === '.') {
@@ -227,7 +233,7 @@ if (! function_exists('get_filenames')) {
                     }
                 }
             }
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return [];
         }
 
@@ -249,6 +255,14 @@ if (! function_exists('get_dir_file_info')) {
      * @param string $sourceDir    Path to source
      * @param bool   $topLevelOnly Look only at the top level directory specified?
      * @param bool   $recursion    Internal variable to determine recursion status - do not use in calls
+     *
+     * @return array<string, array{
+     *  name: string,
+     *  server_path: string,
+     *  size: int,
+     *  date: int,
+     *  relative_path: string,
+     * }>
      */
     function get_dir_file_info(string $sourceDir, bool $topLevelOnly = true, bool $recursion = false): array
     {
@@ -258,13 +272,13 @@ if (! function_exists('get_dir_file_info')) {
         try {
             $fp = opendir($sourceDir);
 
-            // reset the array and make sure $source_dir has a trailing slash on the initial call
+            // reset the array and make sure $sourceDir has a trailing slash on the initial call
             if ($recursion === false) {
                 $fileData  = [];
                 $sourceDir = rtrim(realpath($sourceDir), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
             }
 
-            // Used to be foreach (scandir($source_dir, 1) as $file), but scandir() is simply not as fast
+            // Used to be foreach (scandir($sourceDir, 1) as $file), but scandir() is simply not as fast
             while (false !== ($file = readdir($fp))) {
                 if (is_dir($sourceDir . $file) && $file[0] !== '.' && $topLevelOnly === false) {
                     get_dir_file_info($sourceDir . $file . DIRECTORY_SEPARATOR, $topLevelOnly, true);
@@ -277,7 +291,7 @@ if (! function_exists('get_dir_file_info')) {
             closedir($fp);
 
             return $fileData;
-        } catch (Throwable $fe) {
+        } catch (Throwable) {
             return [];
         }
     }
@@ -292,10 +306,19 @@ if (! function_exists('get_file_info')) {
      * Options are: name, server_path, size, date, readable, writable, executable, fileperms
      * Returns false if the file cannot be found.
      *
-     * @param string       $file           Path to file
-     * @param array|string $returnedValues Array or comma separated string of information returned
+     * @param string              $file           Path to file
+     * @param list<string>|string $returnedValues Array or comma separated string of information returned
      *
-     * @return array|null
+     * @return array{
+     *  name?: string,
+     *  server_path?: string,
+     *  size?: int,
+     *  date?: int,
+     *  readable?: bool,
+     *  writable?: bool,
+     *  executable?: bool,
+     *  fileperms?: int
+     * }|null
      */
     function get_file_info(string $file, $returnedValues = ['name', 'server_path', 'size', 'date'])
     {
@@ -379,19 +402,19 @@ if (! function_exists('symbolic_permissions')) {
         }
 
         // Owner
-        $symbolic .= (($perms & 0x0100) ? 'r' : '-')
-                . (($perms & 0x0080) ? 'w' : '-')
-                . (($perms & 0x0040) ? (($perms & 0x0800) ? 's' : 'x') : (($perms & 0x0800) ? 'S' : '-'));
+        $symbolic .= ((($perms & 0x0100) !== 0) ? 'r' : '-')
+                . ((($perms & 0x0080) !== 0) ? 'w' : '-')
+                . ((($perms & 0x0040) !== 0) ? ((($perms & 0x0800) !== 0) ? 's' : 'x') : ((($perms & 0x0800) !== 0) ? 'S' : '-'));
 
         // Group
-        $symbolic .= (($perms & 0x0020) ? 'r' : '-')
-                . (($perms & 0x0010) ? 'w' : '-')
-                . (($perms & 0x0008) ? (($perms & 0x0400) ? 's' : 'x') : (($perms & 0x0400) ? 'S' : '-'));
+        $symbolic .= ((($perms & 0x0020) !== 0) ? 'r' : '-')
+                . ((($perms & 0x0010) !== 0) ? 'w' : '-')
+                . ((($perms & 0x0008) !== 0) ? ((($perms & 0x0400) !== 0) ? 's' : 'x') : ((($perms & 0x0400) !== 0) ? 'S' : '-'));
 
         // World
-        $symbolic .= (($perms & 0x0004) ? 'r' : '-')
-                . (($perms & 0x0002) ? 'w' : '-')
-                . (($perms & 0x0001) ? (($perms & 0x0200) ? 't' : 'x') : (($perms & 0x0200) ? 'T' : '-'));
+        $symbolic .= ((($perms & 0x0004) !== 0) ? 'r' : '-')
+                . ((($perms & 0x0002) !== 0) ? 'w' : '-')
+                . ((($perms & 0x0001) !== 0) ? ((($perms & 0x0200) !== 0) ? 't' : 'x') : ((($perms & 0x0200) !== 0) ? 'T' : '-'));
 
         return $symbolic;
     }

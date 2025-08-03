@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -21,19 +23,8 @@ use Config\Format as FormatConfig;
  */
 class Format
 {
-    /**
-     * Configuration instance
-     *
-     * @var FormatConfig
-     */
-    protected $config;
-
-    /**
-     * Constructor.
-     */
-    public function __construct(FormatConfig $config)
+    public function __construct(protected FormatConfig $config)
     {
-        $this->config = $config;
     }
 
     /**

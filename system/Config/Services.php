@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -49,6 +51,7 @@ use CodeIgniter\Router\RouteCollection;
 use CodeIgniter\Router\RouteCollectionInterface;
 use CodeIgniter\Router\Router;
 use CodeIgniter\Security\Security;
+use CodeIgniter\Session\Handlers\BaseHandler as SessionBaseHandler;
 use CodeIgniter\Session\Handlers\Database\MySQLiHandler;
 use CodeIgniter\Session\Handlers\Database\PostgreHandler;
 use CodeIgniter\Session\Handlers\DatabaseHandler;
@@ -86,6 +89,7 @@ use Config\Session as SessionConfig;
 use Config\Toolbar as ToolbarConfig;
 use Config\Validation as ValidationConfig;
 use Config\View as ViewConfig;
+use InvalidArgumentException;
 use Locale;
 
 /**
@@ -198,7 +202,7 @@ class Services extends BaseService
      */
     public static function curlrequest(array $options = [], ?ResponseInterface $response = null, ?App $config = null, bool $getShared = true)
     {
-        if ($getShared === true) {
+        if ($getShared) {
             return static::getSharedInstance('curlrequest', $options, $response, $config);
         }
 
@@ -207,9 +211,9 @@ class Services extends BaseService
 
         return new CURLRequest(
             $config,
-            new URI($options['base_uri'] ?? null),
+            new URI($options['baseURI'] ?? null),
             $response,
-            $options
+            $options,
         );
     }
 
@@ -226,7 +230,7 @@ class Services extends BaseService
             return static::getSharedInstance('email', $config);
         }
 
-        if (empty($config) || ! (is_array($config) || $config instanceof EmailConfig)) {
+        if (empty($config) || (! is_array($config) && ! $config instanceof EmailConfig)) {
             $config = config(EmailConfig::class);
         }
 
@@ -263,7 +267,7 @@ class Services extends BaseService
      */
     public static function exceptions(
         ?ExceptionsConfig $config = null,
-        bool $getShared = true
+        bool $getShared = true,
     ) {
         if ($getShared) {
             return static::getSharedInstance('exceptions', $config);
@@ -290,7 +294,7 @@ class Services extends BaseService
 
         $config ??= config(FiltersConfig::class);
 
-        return new Filters($config, AppServices::request(), AppServices::response());
+        return new Filters($config, AppServices::get('request'), AppServices::get('response'));
     }
 
     /**
@@ -328,7 +332,7 @@ class Services extends BaseService
 
     /**
      * Acts as a factory for ImageHandler classes and returns an instance
-     * of the handler. Used like Services::image()->withFile($path)->rotate(90)->save();
+     * of the handler. Used like service('image')->withFile($path)->rotate(90)->save();
      *
      * @return BaseHandler
      */
@@ -341,7 +345,7 @@ class Services extends BaseService
         $config ??= config(Images::class);
         assert($config instanceof Images);
 
-        $handler = $handler ?: $config->defaultHandler;
+        $handler = $handler !== null && $handler !== '' && $handler !== '0' ? $handler : $config->defaultHandler;
         $class   = $config->handlers[$handler];
 
         return new $class($config);
@@ -374,14 +378,14 @@ class Services extends BaseService
             return static::getSharedInstance('language', $locale)->setLocale($locale);
         }
 
-        if (AppServices::request() instanceof IncomingRequest) {
-            $requestLocale = AppServices::request()->getLocale();
+        if (AppServices::get('request') instanceof IncomingRequest) {
+            $requestLocale = AppServices::get('request')->getLocale();
         } else {
             $requestLocale = Locale::getDefault();
         }
 
         // Use '?:' for empty string check
-        $locale = $locale ?: $requestLocale;
+        $locale = $locale !== null && $locale !== '' && $locale !== '0' ? $locale : $requestLocale;
 
         return new Language($locale);
     }
@@ -430,7 +434,7 @@ class Services extends BaseService
             return static::getSharedInstance('negotiator', $request);
         }
 
-        $request ??= AppServices::request();
+        $request ??= AppServices::get('request');
 
         return new Negotiate($request);
     }
@@ -447,7 +451,7 @@ class Services extends BaseService
         }
 
         $config ??= config(Cache::class);
-        $cache ??= AppServices::cache();
+        $cache ??= AppServices::get('cache');
 
         return new ResponseCache($config, $cache);
     }
@@ -480,10 +484,10 @@ class Services extends BaseService
             return static::getSharedInstance('parser', $viewPath, $config);
         }
 
-        $viewPath = $viewPath ?: (new Paths())->viewDirectory;
+        $viewPath = $viewPath !== null && $viewPath !== '' && $viewPath !== '0' ? $viewPath : (new Paths())->viewDirectory;
         $config ??= config(ViewConfig::class);
 
-        return new Parser($config, $viewPath, AppServices::locator(), CI_DEBUG, AppServices::logger());
+        return new Parser($config, $viewPath, AppServices::get('locator'), CI_DEBUG, AppServices::get('logger'));
     }
 
     /**
@@ -499,10 +503,10 @@ class Services extends BaseService
             return static::getSharedInstance('renderer', $viewPath, $config);
         }
 
-        $viewPath = $viewPath ?: (new Paths())->viewDirectory;
+        $viewPath = $viewPath !== null && $viewPath !== '' && $viewPath !== '0' ? $viewPath : (new Paths())->viewDirectory;
         $config ??= config(ViewConfig::class);
 
-        return new View($config, $viewPath, AppServices::locator(), CI_DEBUG, AppServices::logger());
+        return new View($config, $viewPath, AppServices::get('locator'), CI_DEBUG, AppServices::get('logger'));
     }
 
     /**
@@ -542,7 +546,7 @@ class Services extends BaseService
             $request->setProtocolVersion($_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1');
         }
 
-        // Inject the request object into Services::request().
+        // Inject the request object into Services.
         static::$instances['request'] = $request;
     }
 
@@ -563,9 +567,9 @@ class Services extends BaseService
 
         return new IncomingRequest(
             $config,
-            AppServices::uri(),
+            AppServices::get('uri'),
             'php://input',
-            new UserAgent()
+            new UserAgent(),
         );
     }
 
@@ -598,7 +602,7 @@ class Services extends BaseService
 
         $config ??= config(App::class);
         $response = new RedirectResponse($config);
-        $response->setProtocolVersion(AppServices::request()->getProtocolVersion());
+        $response->setProtocolVersion(AppServices::get('request')->getProtocolVersion());
 
         return $response;
     }
@@ -615,7 +619,7 @@ class Services extends BaseService
             return static::getSharedInstance('routes');
         }
 
-        return new RouteCollection(AppServices::locator(), config(Modules::class), config(Routing::class));
+        return new RouteCollection(AppServices::get('locator'), new Modules(), config(Routing::class));
     }
 
     /**
@@ -630,8 +634,8 @@ class Services extends BaseService
             return static::getSharedInstance('router', $routes, $request);
         }
 
-        $routes ??= AppServices::routes();
-        $request ??= AppServices::request();
+        $routes ??= AppServices::get('routes');
+        $request ??= AppServices::get('request');
 
         return new Router($routes, $request);
     }
@@ -666,30 +670,48 @@ class Services extends BaseService
 
         $config ??= config(SessionConfig::class);
 
-        $logger = AppServices::logger();
+        $logger = AppServices::get('logger');
 
         $driverName = $config->driver;
 
         if ($driverName === DatabaseHandler::class) {
             $DBGroup = $config->DBGroup ?? config(Database::class)->defaultGroup;
-            $db      = Database::connect($DBGroup);
 
-            $driver = $db->getPlatform();
+            $driverPlatform = Database::connect($DBGroup)->getPlatform();
 
-            if ($driver === 'MySQLi') {
+            if ($driverPlatform === 'MySQLi') {
                 $driverName = MySQLiHandler::class;
-            } elseif ($driver === 'Postgre') {
+            } elseif ($driverPlatform === 'Postgre') {
                 $driverName = PostgreHandler::class;
+            } else {
+                throw new InvalidArgumentException(sprintf(
+                    'Invalid session database handler "%s" provided. Only "MySQLi" and "Postgre" are supported.',
+                    $driverPlatform,
+                ));
             }
         }
 
-        $driver = new $driverName($config, AppServices::request()->getIPAddress());
+        if (! class_exists($driverName) || ! is_a($driverName, SessionBaseHandler::class, true)) {
+            throw new InvalidArgumentException(sprintf(
+                'Invalid session handler "%s" provided.',
+                $driverName,
+            ));
+        }
+
+        /** @var SessionBaseHandler $driver */
+        $driver = new $driverName($config, AppServices::get('request')->getIPAddress());
         $driver->setLogger($logger);
 
         $session = new Session($driver, $config);
         $session->setLogger($logger);
 
         if (session_status() === PHP_SESSION_NONE) {
+            // PHP Session emits the headers according to `session.cache_limiter`.
+            // See https://www.php.net/manual/en/function.session-cache-limiter.php.
+            // The headers are not managed by CI's Response class.
+            // So, we remove CI's default Cache-Control header.
+            AppServices::get('response')->removeHeader('Cache-Control');
+
             $session->start();
         }
 
@@ -704,14 +726,14 @@ class Services extends BaseService
     public static function siteurifactory(
         ?App $config = null,
         ?Superglobals $superglobals = null,
-        bool $getShared = true
+        bool $getShared = true,
     ) {
         if ($getShared) {
             return static::getSharedInstance('siteurifactory', $config, $superglobals);
         }
 
         $config ??= config('App');
-        $superglobals ??= AppServices::superglobals();
+        $superglobals ??= AppServices::get('superglobals');
 
         return new SiteURIFactory($config, $superglobals);
     }
@@ -724,7 +746,7 @@ class Services extends BaseService
     public static function superglobals(
         ?array $server = null,
         ?array $get = null,
-        bool $getShared = true
+        bool $getShared = true,
     ) {
         if ($getShared) {
             return static::getSharedInstance('superglobals', $server, $get);
@@ -745,7 +767,7 @@ class Services extends BaseService
             return static::getSharedInstance('throttler');
         }
 
-        return new Throttler(AppServices::cache());
+        return new Throttler(AppServices::get('cache'));
     }
 
     /**
@@ -794,7 +816,7 @@ class Services extends BaseService
 
         if ($uri === null) {
             $appConfig = config(App::class);
-            $factory   = AppServices::siteurifactory($appConfig, AppServices::superglobals());
+            $factory   = AppServices::siteurifactory($appConfig, AppServices::get('superglobals'));
 
             return $factory->createFromGlobals();
         }
@@ -815,7 +837,7 @@ class Services extends BaseService
 
         $config ??= config(ValidationConfig::class);
 
-        return new Validation($config, AppServices::renderer());
+        return new Validation($config, AppServices::get('renderer'));
     }
 
     /**
@@ -830,7 +852,7 @@ class Services extends BaseService
             return static::getSharedInstance('viewcell');
         }
 
-        return new Cell(AppServices::cache());
+        return new Cell(AppServices::get('cache'));
     }
 
     /**

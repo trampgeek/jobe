@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -15,16 +17,25 @@ use CodeIgniter\RESTful\ResourceController;
 
 class MockResourceController extends ResourceController
 {
+    /**
+     * @return object|null
+     */
     public function getModel()
     {
         return $this->model;
     }
 
+    /**
+     * @return class-string|null
+     */
     public function getModelName()
     {
         return $this->modelName;
     }
 
+    /**
+     * @return 'json'|'xml'|null
+     */
     public function getFormat()
     {
         return $this->format;

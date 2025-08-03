@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -16,7 +18,7 @@ use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Security\Exceptions\SecurityException;
-use Config\Services;
+use CodeIgniter\Security\Security;
 
 /**
  * CSRF filter.
@@ -29,28 +31,22 @@ use Config\Services;
 class CSRF implements FilterInterface
 {
     /**
-     * Do whatever processing this filter needs to do.
-     * By default it should not return anything during
-     * normal execution. However, when an abnormal state
-     * is found, it should return an instance of
-     * CodeIgniter\HTTP\Response. If it does, script
-     * execution will end and that Response will be
-     * sent back to the client, allowing for error pages,
-     * redirects, etc.
+     * CSRF verification.
      *
-     * @param array|null $arguments
+     * @param list<string>|null $arguments
      *
-     * @return RedirectResponse|void
+     * @return RedirectResponse|null
      *
      * @throws SecurityException
      */
     public function before(RequestInterface $request, $arguments = null)
     {
         if (! $request instanceof IncomingRequest) {
-            return;
+            return null;
         }
 
-        $security = Services::security();
+        /** @var Security $security */
+        $security = service('security');
 
         try {
             $security->verify($request);
@@ -61,16 +57,17 @@ class CSRF implements FilterInterface
 
             throw $e;
         }
+
+        return null;
     }
 
     /**
      * We don't have anything to do here.
      *
-     * @param array|null $arguments
-     *
-     * @return void
+     * @param list<string>|null $arguments
      */
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
+        return null;
     }
 }

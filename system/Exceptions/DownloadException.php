@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -11,12 +13,10 @@
 
 namespace CodeIgniter\Exceptions;
 
-use RuntimeException;
-
 /**
  * Class DownloadException
  */
-class DownloadException extends RuntimeException implements ExceptionInterface
+class DownloadException extends RuntimeException
 {
     use DebugTraceableTrait;
 
@@ -45,6 +45,8 @@ class DownloadException extends RuntimeException implements ExceptionInterface
     }
 
     /**
+     * @deprecated Since v4.5.6
+     *
      * @return static
      */
     public static function forCannotSetCache()

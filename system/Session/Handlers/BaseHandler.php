@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -41,7 +43,7 @@ abstract class BaseHandler implements SessionHandlerInterface
      * Cookie prefix
      *
      * The Config\Cookie::$prefix setting is completely ignored.
-     * See https://codeigniter4.github.io/CodeIgniter4/libraries/sessions.html#session-preferences
+     * See https://codeigniter.com/user_guide/libraries/sessions.html#session-preferences
      *
      * @var string
      */
@@ -130,7 +132,7 @@ abstract class BaseHandler implements SessionHandlerInterface
         return setcookie(
             $this->cookieName,
             '',
-            ['expires' => 1, 'path' => $this->cookiePath, 'domain' => $this->cookieDomain, 'secure' => $this->cookieSecure, 'httponly' => true]
+            ['expires' => 1, 'path' => $this->cookiePath, 'domain' => $this->cookieDomain, 'secure' => $this->cookieSecure, 'httponly' => true],
         );
     }
 

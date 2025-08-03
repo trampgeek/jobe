@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -11,7 +13,7 @@
 
 namespace CodeIgniter\Test;
 
-use LogicException;
+use CodeIgniter\Exceptions\LogicException;
 
 trait ConfigFromArrayTrait
 {
@@ -37,7 +39,7 @@ trait ConfigFromArrayTrait
             }
 
             throw new LogicException(
-                'No such property: ' . $classname . '::$' . $key
+                'No such property: ' . $classname . '::$' . $key,
             );
         }
 

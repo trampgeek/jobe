@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -13,7 +15,7 @@ namespace CodeIgniter\Commands\Database;
 
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
-use Config\Services;
+use CodeIgniter\Database\MigrationRunner;
 use Throwable;
 
 /**
@@ -72,15 +74,28 @@ class MigrateRollback extends BaseCommand
             $force = array_key_exists('f', $params) || CLI::getOption('f');
 
             if (! $force && CLI::prompt(lang('Migrations.rollBackConfirm'), ['y', 'n']) === 'n') {
-                return;
+                return null;
             }
             // @codeCoverageIgnoreEnd
         }
 
-        $runner = Services::migrations();
+        /** @var MigrationRunner $runner */
+        $runner = service('migrations');
 
         try {
             $batch = $params['b'] ?? CLI::getOption('b') ?? $runner->getLastBatch() - 1;
+
+            if (is_string($batch)) {
+                if (! ctype_digit($batch)) {
+                    CLI::error('Invalid batch number: ' . $batch, 'light_gray', 'red');
+                    CLI::newLine();
+
+                    return EXIT_ERROR;
+                }
+
+                $batch = (int) $batch;
+            }
+
             CLI::write(lang('Migrations.rollingBack') . ' ' . $batch, 'yellow');
 
             if (! $runner->regress($batch)) {
@@ -100,5 +115,7 @@ class MigrateRollback extends BaseCommand
             $this->showError($e);
             // @codeCoverageIgnoreEnd
         }
+
+        return null;
     }
 }

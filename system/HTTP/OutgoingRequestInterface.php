@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -11,7 +13,7 @@
 
 namespace CodeIgniter\HTTP;
 
-use InvalidArgumentException;
+use CodeIgniter\Exceptions\InvalidArgumentException;
 
 /**
  * Representation of an outgoing, client-side request.
@@ -21,14 +23,11 @@ use InvalidArgumentException;
 interface OutgoingRequestInterface extends MessageInterface
 {
     /**
-     * Get the request method.
-     * An extension of PSR-7's getMethod to allow casing.
+     * Retrieves the HTTP method of the request.
      *
-     * @param bool $upper Whether to return in upper or lower case.
-     *
-     * @deprecated The $upper functionality will be removed and this will revert to its PSR-7 equivalent
+     * @return string Returns the request method.
      */
-    public function getMethod(bool $upper = false): string;
+    public function getMethod(): string;
 
     /**
      * Return an instance with the provided HTTP method.

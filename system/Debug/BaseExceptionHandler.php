@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -59,7 +61,7 @@ abstract class BaseExceptionHandler
         RequestInterface $request,
         ResponseInterface $response,
         int $statusCode,
-        int $exitCode
+        int $exitCode,
     );
 
     /**
@@ -81,8 +83,8 @@ abstract class BaseExceptionHandler
         }
 
         return [
-            'title'   => get_class($exception),
-            'type'    => get_class($exception),
+            'title'   => $exception::class,
+            'type'    => $exception::class,
             'code'    => $statusCode,
             'message' => $exception->getMessage(),
             'file'    => $exception->getFile(),
@@ -114,7 +116,7 @@ abstract class BaseExceptionHandler
             $explode = explode('/', $keyToMask);
             $index   = end($explode);
 
-            if (strpos(strrev($path . '/' . $index), strrev($keyToMask)) === 0) {
+            if (str_starts_with(strrev($path . '/' . $index), strrev($keyToMask))) {
                 if (is_array($args) && array_key_exists($index, $args)) {
                     $args[$index] = '******************';
                 } elseif (
@@ -176,14 +178,21 @@ abstract class BaseExceptionHandler
 
         try {
             $source = file_get_contents($file);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return false;
         }
 
         $source = str_replace(["\r\n", "\r"], "\n", $source);
         $source = explode("\n", highlight_string($source, true));
-        $source = str_replace('<br />', "\n", $source[1]);
-        $source = explode("\n", str_replace("\r\n", "\n", $source));
+
+        if (PHP_VERSION_ID < 80300) {
+            $source = str_replace('<br />', "\n", $source[1]);
+            $source = explode("\n", str_replace("\r\n", "\n", $source));
+        } else {
+            // We have to remove these tags since we're preparing the result
+            // ourselves and these tags are added manually at the end.
+            $source = str_replace(['<pre><code>', '</code></pre>'], '', $source);
+        }
 
         // Get just the part to show
         $start = max($lineNumber - (int) round($lines / 2), 0);
@@ -199,7 +208,7 @@ abstract class BaseExceptionHandler
         // of open and close span tags on one line, we need
         // to ensure we can close them all to get the lines
         // showing correctly.
-        $spans = 1;
+        $spans = 0;
 
         foreach ($source as $n => $row) {
             $spans += substr_count($row, '<span') - substr_count($row, '</span');
@@ -212,10 +221,13 @@ abstract class BaseExceptionHandler
                     "<span class='line highlight'><span class='number'>{$format}</span> %s\n</span>%s",
                     $n + $start + 1,
                     strip_tags($row),
-                    implode('', $tags[0])
+                    implode('', $tags[0]),
                 );
             } else {
                 $out .= sprintf('<span class="line"><span class="number">' . $format . '</span> %s', $n + $start + 1, $row) . "\n";
+                // We're closing only one span tag we added manually line before,
+                // so we have to increment $spans count to close this tag later.
+                $spans++;
             }
         }
 
@@ -233,8 +245,14 @@ abstract class BaseExceptionHandler
      */
     protected function render(Throwable $exception, int $statusCode, $viewFile = null): void
     {
-        if (empty($viewFile) || ! is_file($viewFile)) {
-            echo 'The error view files were not found. Cannot render exception trace.';
+        if ($viewFile === null) {
+            echo 'The error view file was not specified. Cannot display error view.';
+
+            exit(1);
+        }
+
+        if (! is_file($viewFile)) {
+            echo 'The error view file "' . $viewFile . '" was not found. Cannot display error view.';
 
             exit(1);
         }

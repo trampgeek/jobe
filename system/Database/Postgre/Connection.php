@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -14,10 +16,12 @@ namespace CodeIgniter\Database\Postgre;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\Database\RawSql;
+use CodeIgniter\Database\TableName;
 use ErrorException;
 use PgSql\Connection as PgSqlConnection;
 use PgSql\Result as PgSqlResult;
 use stdClass;
+use Stringable;
 
 /**
  * Connection for Postgre
@@ -55,8 +59,7 @@ class Connection extends BaseConnection
     /**
      * Connect to the database.
      *
-     * @return false|resource
-     * @phpstan-return false|PgSqlConnection
+     * @return false|PgSqlConnection
      */
     public function connect(bool $persistent = false)
     {
@@ -65,16 +68,24 @@ class Connection extends BaseConnection
         }
 
         // Convert DSN string
+        // @TODO This format is for PDO_PGSQL.
+        //      https://www.php.net/manual/en/ref.pdo-pgsql.connection.php
+        //      Should deprecate?
         if (mb_strpos($this->DSN, 'pgsql:') === 0) {
             $this->convertDSN();
         }
 
-        $this->connID = $persistent === true ? pg_pconnect($this->DSN) : pg_connect($this->DSN);
+        $this->connID = $persistent ? pg_pconnect($this->DSN) : pg_connect($this->DSN);
 
         if ($this->connID !== false) {
-            if ($persistent === true && pg_connection_status($this->connID) === PGSQL_CONNECTION_BAD && pg_ping($this->connID) === false
+            if (
+                $persistent
+                && pg_connection_status($this->connID) === PGSQL_CONNECTION_BAD
+                && pg_ping($this->connID) === false
             ) {
-                return false;
+                $error = pg_last_error($this->connID);
+
+                throw new DatabaseException($error);
             }
 
             if (! empty($this->schema)) {
@@ -82,7 +93,9 @@ class Connection extends BaseConnection
             }
 
             if ($this->setClientEncoding($this->charset) === false) {
-                return false;
+                $error = pg_last_error($this->connID);
+
+                throw new DatabaseException($error);
             }
         }
 
@@ -91,6 +104,8 @@ class Connection extends BaseConnection
 
     /**
      * Converts the DSN with semicolon syntax.
+     *
+     * @return void
      */
     private function convertDSN()
     {
@@ -130,16 +145,21 @@ class Connection extends BaseConnection
     /**
      * Keep or establish the connection if no queries have been sent for
      * a length of time exceeding the server's idle timeout.
+     *
+     * @return void
      */
     public function reconnect()
     {
-        if (pg_ping($this->connID) === false) {
-            $this->connID = false;
+        if ($this->connID === false || pg_ping($this->connID) === false) {
+            $this->close();
+            $this->initialize();
         }
     }
 
     /**
      * Close the database connection.
+     *
+     * @return void
      */
     protected function _close()
     {
@@ -178,8 +198,7 @@ class Connection extends BaseConnection
     /**
      * Executes the query against the database.
      *
-     * @return false|resource
-     * @phpstan-return false|PgSqlResult
+     * @return false|PgSqlResult
      */
     protected function execute(string $sql)
     {
@@ -209,6 +228,10 @@ class Connection extends BaseConnection
      */
     public function affectedRows(): int
     {
+        if ($this->resultID === false) {
+            return 0;
+        }
+
         return pg_affected_rows($this->resultID);
     }
 
@@ -219,8 +242,7 @@ class Connection extends BaseConnection
      *
      * @param array|bool|float|int|object|string|null $str
      *
-     * @return array|float|int|string
-     * @phpstan-return ($str is array ? array : float|int|string)
+     * @return ($str is array ? array : float|int|string)
      */
     public function escape($str)
     {
@@ -228,12 +250,15 @@ class Connection extends BaseConnection
             $this->initialize();
         }
 
-        /** @psalm-suppress NoValue I don't know why ERROR. */
-        if (is_string($str) || (is_object($str) && method_exists($str, '__toString'))) {
+        if ($str instanceof Stringable) {
             if ($str instanceof RawSql) {
                 return $str->__toString();
             }
 
+            $str = (string) $str;
+        }
+
+        if (is_string($str)) {
             return pg_escape_literal($this->connID, $str);
         }
 
@@ -241,7 +266,6 @@ class Connection extends BaseConnection
             return $str ? 'TRUE' : 'FALSE';
         }
 
-        /** @psalm-suppress NoValue I don't know why ERROR. */
         return parent::escape($str);
     }
 
@@ -270,7 +294,7 @@ class Connection extends BaseConnection
             return $sql . ' AND "table_name" LIKE ' . $this->escape($tableName);
         }
 
-        if ($prefixLimit !== false && $this->DBPrefix !== '') {
+        if ($prefixLimit && $this->DBPrefix !== '') {
             return $sql . ' AND "table_name" LIKE \''
                 . $this->escapeLikeString($this->DBPrefix) . "%' "
                 . sprintf($this->likeEscapeStr, $this->likeEscapeChar);
@@ -281,20 +305,27 @@ class Connection extends BaseConnection
 
     /**
      * Generates a platform-specific query string so that the column names can be fetched.
+     *
+     * @param string|TableName $table
      */
-    protected function _listColumns(string $table = ''): string
+    protected function _listColumns($table = ''): string
     {
+        if ($table instanceof TableName) {
+            $tableName = $this->escape($table->getActualTableName());
+        } else {
+            $tableName = $this->escape($this->DBPrefix . strtolower($table));
+        }
+
         return 'SELECT "column_name"
 			FROM "information_schema"."columns"
-			WHERE LOWER("table_name") = '
-                . $this->escape($this->DBPrefix . strtolower($table))
+			WHERE LOWER("table_name") = ' . $tableName
                 . ' ORDER BY "ordinal_position"';
     }
 
     /**
      * Returns an array of objects with field data
      *
-     * @return stdClass[]
+     * @return list<stdClass>
      *
      * @throws DatabaseException
      */
@@ -318,9 +349,9 @@ class Connection extends BaseConnection
 
             $retVal[$i]->name       = $query[$i]->column_name;
             $retVal[$i]->type       = $query[$i]->data_type;
+            $retVal[$i]->max_length = $query[$i]->character_maximum_length > 0 ? $query[$i]->character_maximum_length : $query[$i]->numeric_precision;
             $retVal[$i]->nullable   = $query[$i]->is_nullable === 'YES';
             $retVal[$i]->default    = $query[$i]->column_default;
-            $retVal[$i]->max_length = $query[$i]->character_maximum_length > 0 ? $query[$i]->character_maximum_length : $query[$i]->numeric_precision;
         }
 
         return $retVal;
@@ -329,7 +360,7 @@ class Connection extends BaseConnection
     /**
      * Returns an array of objects with index data
      *
-     * @return stdClass[]
+     * @return array<string, stdClass>
      *
      * @throws DatabaseException
      */
@@ -351,12 +382,12 @@ class Connection extends BaseConnection
             $obj         = new stdClass();
             $obj->name   = $row->indexname;
             $_fields     = explode(',', preg_replace('/^.*\((.+?)\)$/', '$1', trim($row->indexdef)));
-            $obj->fields = array_map(static fn ($v) => trim($v), $_fields);
+            $obj->fields = array_map(static fn ($v): string => trim($v), $_fields);
 
-            if (strpos($row->indexdef, 'CREATE UNIQUE INDEX pk') === 0) {
+            if (str_starts_with($row->indexdef, 'CREATE UNIQUE INDEX pk')) {
                 $obj->type = 'PRIMARY';
             } else {
-                $obj->type = (strpos($row->indexdef, 'CREATE UNIQUE') === 0) ? 'UNIQUE' : 'INDEX';
+                $obj->type = (str_starts_with($row->indexdef, 'CREATE UNIQUE')) ? 'UNIQUE' : 'INDEX';
             }
 
             $retVal[$obj->name] = $obj;
@@ -368,7 +399,7 @@ class Connection extends BaseConnection
     /**
      * Returns an array of objects with Foreign key data
      *
-     * @return stdClass[]
+     * @return array<string, stdClass>
      *
      * @throws DatabaseException
      */
@@ -443,7 +474,7 @@ class Connection extends BaseConnection
     {
         return [
             'code'    => '',
-            'message' => pg_last_error($this->connID) ?: '',
+            'message' => pg_last_error($this->connID),
         ];
     }
 
@@ -485,6 +516,8 @@ class Connection extends BaseConnection
 
     /**
      * Build a DSN from the provided parameters
+     *
+     * @return void
      */
     protected function buildDSN()
     {
@@ -493,7 +526,7 @@ class Connection extends BaseConnection
         }
 
         // If UNIX sockets are used, we shouldn't set a port
-        if (strpos($this->hostname, '/') !== false) {
+        if (str_contains($this->hostname, '/')) {
             $this->port = '';
         }
 
@@ -566,21 +599,5 @@ class Connection extends BaseConnection
     protected function _transRollback(): bool
     {
         return (bool) pg_query($this->connID, 'ROLLBACK');
-    }
-
-    /**
-     * Determines if a query is a "write" type.
-     *
-     * Overrides BaseConnection::isWriteType, adding additional read query types.
-     *
-     * @param string $sql
-     */
-    public function isWriteType($sql): bool
-    {
-        if (preg_match('#^(INSERT|UPDATE).*RETURNING\s.+(\,\s?.+)*$#is', $sql)) {
-            return false;
-        }
-
-        return parent::isWriteType($sql);
     }
 }

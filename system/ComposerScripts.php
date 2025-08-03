@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -56,7 +58,7 @@ final class ComposerScripts
         ],
         'psr-log' => [
             'license' => __DIR__ . '/../vendor/psr/log/LICENSE',
-            'from'    => __DIR__ . '/../vendor/psr/log/Psr/Log/',
+            'from'    => __DIR__ . '/../vendor/psr/log/src/',
             'to'      => __DIR__ . '/ThirdParty/PSR/Log/',
         ],
     ];
@@ -65,13 +67,13 @@ final class ComposerScripts
      * This static method is called by Composer after every update event,
      * i.e., `composer install`, `composer update`, `composer remove`.
      */
-    public static function postUpdate()
+    public static function postUpdate(): void
     {
         self::recursiveDelete(self::$path);
 
         foreach (self::$dependencies as $key => $dependency) {
             // Kint may be removed.
-            if (! is_dir($dependency['from']) && strpos($key, 'kint') === 0) {
+            if (! is_dir($dependency['from']) && str_starts_with($key, 'kint')) {
                 continue;
             }
 
@@ -84,7 +86,6 @@ final class ComposerScripts
         }
 
         self::copyKintInitFiles();
-        self::recursiveDelete(self::$dependencies['psr-log']['to'] . 'Test/');
     }
 
     /**
@@ -101,7 +102,7 @@ final class ComposerScripts
         /** @var SplFileInfo $file */
         foreach (new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(rtrim($directory, '\\/'), FilesystemIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::CHILD_FIRST
+            RecursiveIteratorIterator::CHILD_FIRST,
         ) as $file) {
             $path = $file->getPathname();
 
@@ -145,7 +146,7 @@ final class ComposerScripts
         /** @var SplFileInfo $file */
         foreach (new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($originDir, FilesystemIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::SELF_FIRST
+            RecursiveIteratorIterator::SELF_FIRST,
         ) as $file) {
             $origin = $file->getPathname();
             $target = $targetDir . substr($origin, $dirLen);

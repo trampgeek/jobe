@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -320,7 +322,7 @@ class GDHandler extends BaseHandler
             // if valid image type, make corresponding image resource
             $this->resource = $this->getImageResource(
                 $this->image()->getPathname(),
-                $this->image()->imageType
+                $this->image()->imageType,
             );
         }
     }
@@ -469,7 +471,7 @@ class GDHandler extends BaseHandler
 
         // shorthand hex, #f00
         if (strlen($color) === 3) {
-            $color = implode('', array_map('str_repeat', str_split($color), [2, 2, 2]));
+            $color = implode('', array_map(str_repeat(...), str_split($color), [2, 2, 2]));
         }
 
         $color = str_split(substr($color, 0, 6), 2);

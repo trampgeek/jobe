@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -36,7 +38,7 @@ class DownloadResponse extends Response
     /**
      * mime set flag
      */
-    private bool $setMime;
+    private readonly bool $setMime;
 
     /**
      * Download for binary
@@ -83,7 +85,7 @@ class DownloadResponse extends Response
      */
     public function setBinary(string $binary)
     {
-        if ($this->file !== null) {
+        if ($this->file instanceof File) {
             throw DownloadException::forCannotSetBinary();
         }
 
@@ -140,7 +142,7 @@ class DownloadResponse extends Response
         $mime    = null;
         $charset = '';
 
-        if ($this->setMime === true && ($lastDotPosition = strrpos($this->filename, '.')) !== false) {
+        if ($this->setMime && ($lastDotPosition = strrpos($this->filename, '.')) !== false) {
             $mime    = Mimes::guessTypeFromExtension(substr($this->filename, $lastDotPosition + 1));
             $charset = $this->charset;
         }
@@ -180,22 +182,21 @@ class DownloadResponse extends Response
     }
 
     /**
-     * get Content-Disposition Header string.
+     * Get Content-Disposition Header string.
      */
-    private function getContentDisposition(): string
+    private function getContentDisposition(bool $inline = false): string
     {
-        $downloadFilename = $this->getDownloadFileName();
-
-        $utf8Filename = $downloadFilename;
+        $downloadFilename = $utf8Filename = $this->getDownloadFileName();
+        $disposition      = $inline ? 'inline' : 'attachment';
 
         if (strtoupper($this->charset) !== 'UTF-8') {
             $utf8Filename = mb_convert_encoding($downloadFilename, 'UTF-8', $this->charset);
         }
 
-        $result = sprintf('attachment; filename="%s"', $downloadFilename);
+        $result = sprintf('%s; filename="%s"', $disposition, addslashes($downloadFilename));
 
-        if ($utf8Filename) {
-            $result .= '; filename*=UTF-8\'\'' . rawurlencode($utf8Filename);
+        if ($utf8Filename !== '') {
+            $result .= sprintf('; filename*=UTF-8\'\'%s', rawurlencode($utf8Filename));
         }
 
         return $result;
@@ -241,16 +242,6 @@ class DownloadResponse extends Response
     }
 
     /**
-     * Disables cache configuration.
-     *
-     * @throws DownloadException
-     */
-    public function setCache(array $options = [])
-    {
-        throw DownloadException::forCannotSetCache();
-    }
-
-    /**
      * {@inheritDoc}
      *
      * @return $this
@@ -288,10 +279,8 @@ class DownloadResponse extends Response
             $this->setHeader('Content-Disposition', $this->getContentDisposition());
         }
 
-        $this->setHeader('Expires-Disposition', '0');
         $this->setHeader('Content-Transfer-Encoding', 'binary');
         $this->setHeader('Content-Length', (string) $this->getContentLength());
-        $this->noCache();
     }
 
     /**
@@ -307,7 +296,7 @@ class DownloadResponse extends Response
             return $this->sendBodyByBinary();
         }
 
-        if ($this->file !== null) {
+        if ($this->file instanceof File) {
             return $this->sendBodyByFilePath();
         }
 
@@ -351,7 +340,7 @@ class DownloadResponse extends Response
      */
     public function inline()
     {
-        $this->setHeader('Content-Disposition', 'inline');
+        $this->setHeader('Content-Disposition', $this->getContentDisposition(true));
 
         return $this;
     }

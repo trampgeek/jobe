@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -11,15 +13,21 @@
 
 namespace CodeIgniter\API;
 
+use CodeIgniter\Format\Format;
 use CodeIgniter\Format\FormatterInterface;
 use CodeIgniter\HTTP\IncomingRequest;
+use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
-use Config\Services;
 
 /**
  * Provides common, more readable, methods to provide
  * consistent HTTP responses under a variety of common
  * situations when working as an API.
+ *
+ * @property RequestInterface  $request
+ * @property ResponseInterface $response
+ * @property bool              $stringAsHtml Whether to treat string data as HTML in JSON response.
+ *                                           Setting `true` is only for backward compatibility.
  */
 trait ResponseTrait
 {
@@ -62,10 +70,10 @@ trait ResponseTrait
 
     /**
      * How to format the response data.
-     * Either 'json' or 'xml'. If blank will be
-     * determined through content negotiation.
+     * Either 'json' or 'xml'. If null is set, it will be determined through
+     * content negotiation.
      *
-     * @var string
+     * @var 'html'|'json'|'xml'|null
      */
     protected $format = 'json';
 
@@ -80,7 +88,7 @@ trait ResponseTrait
      * Provides a single, simple method to return an API response, formatted
      * to match the requested format, with proper content-type and status code.
      *
-     * @param array|string|null $data
+     * @param array<string, mixed>|string|null $data
      *
      * @return ResponseInterface
      */
@@ -88,6 +96,7 @@ trait ResponseTrait
     {
         if ($data === null && $status === null) {
             $status = 404;
+            $output = null;
             $this->format($data);
         } elseif ($data === null && is_numeric($status)) {
             $output = null;
@@ -113,9 +122,9 @@ trait ResponseTrait
     /**
      * Used for generic failures that no custom methods exist for.
      *
-     * @param array|string $messages
-     * @param int          $status   HTTP status code
-     * @param string|null  $code     Custom, API-specific, error code
+     * @param list<string>|string $messages
+     * @param int                 $status   HTTP status code
+     * @param string|null         $code     Custom, API-specific, error code
      *
      * @return ResponseInterface
      */
@@ -141,7 +150,7 @@ trait ResponseTrait
     /**
      * Used after successfully creating a new resource.
      *
-     * @param array|string|null $data
+     * @param array<string, mixed>|string|null $data
      *
      * @return ResponseInterface
      */
@@ -153,7 +162,7 @@ trait ResponseTrait
     /**
      * Used after a resource has been successfully deleted.
      *
-     * @param array|string|null $data
+     * @param array<string, mixed>|string|null $data
      *
      * @return ResponseInterface
      */
@@ -165,7 +174,7 @@ trait ResponseTrait
     /**
      * Used after a resource has been successfully updated.
      *
-     * @param array|string|null $data
+     * @param array<string, mixed>|string|null $data
      *
      * @return ResponseInterface
      */
@@ -219,21 +228,9 @@ trait ResponseTrait
     }
 
     /**
-     * Used when the data provided by the client cannot be validated.
-     *
-     * @return ResponseInterface
-     *
-     * @deprecated Use failValidationErrors instead
-     */
-    protected function failValidationError(string $description = 'Bad Request', ?string $code = null, string $message = '')
-    {
-        return $this->fail($description, $this->codes['invalid_data'], $code, $message);
-    }
-
-    /**
      * Used when the data provided by the client cannot be validated on one or more fields.
      *
-     * @param string|string[] $errors
+     * @param list<string>|string $errors
      *
      * @return ResponseInterface
      */
@@ -291,31 +288,21 @@ trait ResponseTrait
     // --------------------------------------------------------------------
 
     /**
-     * Handles formatting a response. Currently makes some heavy assumptions
+     * Handles formatting a response. Currently, makes some heavy assumptions
      * and needs updating! :)
      *
-     * @param array|string|null $data
+     * @param array<string, mixed>|string|null $data
      *
      * @return string|null
      */
     protected function format($data = null)
     {
-        // If the data is a string, there's not much we can do to it...
-        if (is_string($data)) {
-            // The content type should be text/... and not application/...
-            // ******************???????????????????? **************
-            return json_encode($data); // ********* RJL *************
-            $contentType = $this->response->getHeaderLine('Content-Type');
-            $contentType = str_replace('application/json', 'text/html', $contentType);
-            $contentType = str_replace('application/', 'text/', $contentType);
-            $this->response->setContentType($contentType);
-            $this->format = 'html';
+        /** @var Format $format */
+        $format = service('format');
 
-            return $data;
-        }
-
-        $format = Services::format();
-        $mime   = "application/{$this->format}";
+        $mime = $this->format === null
+            ? $format->getConfig()->supportedResponseFormats[0]
+            : "application/{$this->format}";
 
         // Determine correct response type through content negotiation if not explicitly declared
         if (
@@ -325,21 +312,35 @@ trait ResponseTrait
             $mime = $this->request->negotiate(
                 'media',
                 $format->getConfig()->supportedResponseFormats,
-                false
+                false,
             );
         }
 
         $this->response->setContentType($mime);
 
         // if we don't have a formatter, make one
-        if (! isset($this->formatter)) {
-            // if no formatter, use the default
-            $this->formatter = $format->getFormatter($mime);
+        $this->formatter ??= $format->getFormatter($mime);
+
+        $asHtml = $this->stringAsHtml ?? false;
+
+        if (
+            ($mime === 'application/json' && $asHtml && is_string($data))
+            || ($mime !== 'application/json' && is_string($data))
+        ) {
+            // The content type should be text/... and not application/...
+            $contentType = $this->response->getHeaderLine('Content-Type');
+            $contentType = str_replace('application/json', 'text/html', $contentType);
+            $contentType = str_replace('application/', 'text/', $contentType);
+            $this->response->setContentType($contentType);
+            $this->format = 'html';
+
+            return $data;
         }
 
         if ($mime !== 'application/json') {
             // Recursively convert objects into associative arrays
             // Conversion not required for JSONFormatter
+            /** @var array<string, mixed>|string|null $data */
             $data = json_decode(json_encode($data), true);
         }
 
@@ -349,11 +350,13 @@ trait ResponseTrait
     /**
      * Sets the format the response should be in.
      *
+     * @param 'json'|'xml' $format Response format
+     *
      * @return $this
      */
     protected function setResponseFormat(?string $format = null)
     {
-        $this->format = strtolower($format);
+        $this->format = $format === null ? null : strtolower($format);
 
         return $this;
     }

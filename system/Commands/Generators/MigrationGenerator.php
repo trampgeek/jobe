@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -90,7 +92,7 @@ class MigrationGenerator extends BaseCommand
         }
 
         $this->classNameLang = 'CLI.generator.className.migration';
-        $this->execute($params);
+        $this->generateClass($params);
     }
 
     /**
@@ -110,10 +112,7 @@ class MigrationGenerator extends BaseCommand
             $data['DBGroup']  = is_string($DBGroup) ? $DBGroup : 'default';
             $data['DBDriver'] = config(Database::class)->{$data['DBGroup']}['DBDriver'];
 
-            /** @var SessionConfig|null $session */
-            $session = config(SessionConfig::class);
-
-            $data['matchIP'] = $session->matchIP;
+            $data['matchIP'] = config(SessionConfig::class)->matchIP;
         }
 
         return $this->parseTemplate($class, [], [], $data);

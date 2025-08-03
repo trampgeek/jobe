@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -24,7 +26,7 @@ class SodiumHandler extends BaseHandler
     /**
      * Starter key
      *
-     * @var string
+     * @var string|null Null is used for buffer cleanup.
      */
     protected $key = '';
 

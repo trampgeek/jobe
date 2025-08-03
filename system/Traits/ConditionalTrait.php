@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -18,18 +20,18 @@ trait ConditionalTrait
      *
      * @template TWhen of mixed
      *
-     * @phpstan-param TWhen                         $condition
-     * @phpstan-param callable(self, TWhen): mixed  $callback
-     * @phpstan-param (callable(self): mixed)|null  $defaultCallback
-     * @param array|bool|float|int|object|resource|string|null $condition
+     * @param TWhen                        $condition
+     * @param callable(self, TWhen): mixed $callback
+     * @param (callable(self): mixed)|null $defaultCallback
+     * @param mixed                        $condition
      *
      * @return $this
      */
     public function when($condition, callable $callback, ?callable $defaultCallback = null): self
     {
-        if ($condition) {
+        if ((bool) $condition) {
             $callback($this, $condition);
-        } elseif ($defaultCallback) {
+        } elseif ($defaultCallback !== null) {
             $defaultCallback($this);
         }
 
@@ -41,18 +43,18 @@ trait ConditionalTrait
      *
      * @template TWhenNot of mixed
      *
-     * @phpstan-param TWhenNot                        $condition
-     * @phpstan-param callable(self, TWhenNot): mixed $callback
-     * @phpstan-param (callable(self): mixed)|null    $defaultCallback
-     * @param array|bool|float|int|object|resource|string|null $condition
+     * @param TWhenNot                        $condition
+     * @param callable(self, TWhenNot): mixed $callback
+     * @param (callable(self): mixed)|null    $defaultCallback
+     * @param mixed                           $condition
      *
      * @return $this
      */
     public function whenNot($condition, callable $callback, ?callable $defaultCallback = null): self
     {
-        if (! $condition) {
+        if (! (bool) $condition) {
             $callback($this, $condition);
-        } elseif ($defaultCallback) {
+        } elseif ($defaultCallback !== null) {
             $defaultCallback($this);
         }
 

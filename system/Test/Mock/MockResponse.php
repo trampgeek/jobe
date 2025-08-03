@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -13,9 +15,6 @@ namespace CodeIgniter\Test\Mock;
 
 use CodeIgniter\HTTP\Response;
 
-/**
- * Class MockResponse
- */
 class MockResponse extends Response
 {
     /**
@@ -25,13 +24,21 @@ class MockResponse extends Response
      */
     protected $pretend = true;
 
-    // for testing
+    /**
+     * For testing.
+     *
+     * @return bool
+     */
     public function getPretend()
     {
         return $this->pretend;
     }
 
-    // artificial error for testing
+    /**
+     * Artificial error for testing
+     *
+     * @return void
+     */
     public function misbehave()
     {
         $this->statusCode = 0;

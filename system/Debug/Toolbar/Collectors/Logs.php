@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -10,8 +12,6 @@
  */
 
 namespace CodeIgniter\Debug\Toolbar\Collectors;
-
-use Config\Services;
 
 /**
  * Loags collector
@@ -45,12 +45,14 @@ class Logs extends BaseCollector
     /**
      * Our collected data.
      *
-     * @var array
+     * @var list<array{level: string, msg: string}>
      */
     protected $data;
 
     /**
-     * Returns the data of this collector to be formatted in the toolbar
+     * Returns the data of this collector to be formatted in the toolbar.
+     *
+     * @return array{logs: list<array{level: string, msg: string}>}
      */
     public function display(): array
     {
@@ -66,7 +68,7 @@ class Logs extends BaseCollector
     {
         $this->collectLogs();
 
-        return empty($this->data);
+        return $this->data !== [];
     }
 
     /**
@@ -82,14 +84,18 @@ class Logs extends BaseCollector
     /**
      * Ensures the data has been collected.
      *
-     * @return array
+     * @return list<array{level: string, msg: string}>
      */
     protected function collectLogs()
     {
-        if (! empty($this->data)) {
+        if ($this->data !== []) {
             return $this->data;
         }
 
-        return $this->data = Services::logger(true)->logCache ?? [];
+        $cache = service('logger')->logCache;
+
+        $this->data = $cache ?? [];
+
+        return $this->data;
     }
 }

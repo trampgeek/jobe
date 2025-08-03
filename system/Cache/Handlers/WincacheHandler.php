@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -11,9 +13,9 @@
 
 namespace CodeIgniter\Cache\Handlers;
 
+use CodeIgniter\Exceptions\BadMethodCallException;
 use CodeIgniter\I18n\Time;
 use Config\Cache;
-use Exception;
 
 /**
  * Cache handler for WinCache from Microsoft & IIS.
@@ -78,7 +80,7 @@ class WincacheHandler extends BaseHandler
      */
     public function deleteMatching(string $pattern)
     {
-        throw new Exception('The deleteMatching method is not implemented for Wincache. You must select File, Redis or Predis handlers to use it.');
+        throw new BadMethodCallException('The deleteMatching method is not implemented for Wincache. You must select File, Redis or Predis handlers to use it.');
     }
 
     /**

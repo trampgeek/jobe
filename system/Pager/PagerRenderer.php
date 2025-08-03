@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -81,6 +83,21 @@ class PagerRenderer
     protected $pageSelector;
 
     /**
+     * Returns the number of results per page that should be shown.
+     */
+    protected ?int $perPage;
+
+    /**
+     * The number of items the page starts with.
+     */
+    protected ?int $perPageStart = null;
+
+    /**
+     * The number of items the page ends with.
+     */
+    protected ?int $perPageEnd = null;
+
+    /**
      * Constructor.
      */
     public function __construct(array $details)
@@ -96,6 +113,8 @@ class PagerRenderer
         $this->pageCount    = $details['pageCount'];
         $this->segment      = $details['segment'] ?? 0;
         $this->pageSelector = $details['pageSelector'] ?? 'page';
+        $this->perPage      = $details['perPage'] ?? null;
+        $this->updatePerPages();
     }
 
     /**
@@ -146,7 +165,7 @@ class PagerRenderer
             $uri->getAuthority(),
             $uri->getPath(),
             $uri->getQuery(),
-            $uri->getFragment()
+            $uri->getFragment(),
         );
     }
 
@@ -184,7 +203,7 @@ class PagerRenderer
             $uri->getAuthority(),
             $uri->getPath(),
             $uri->getQuery(),
-            $uri->getFragment()
+            $uri->getFragment(),
         );
     }
 
@@ -206,7 +225,7 @@ class PagerRenderer
             $uri->getAuthority(),
             $uri->getPath(),
             $uri->getQuery(),
-            $uri->getFragment()
+            $uri->getFragment(),
         );
     }
 
@@ -228,7 +247,7 @@ class PagerRenderer
             $uri->getAuthority(),
             $uri->getPath(),
             $uri->getQuery(),
-            $uri->getFragment()
+            $uri->getFragment(),
         );
     }
 
@@ -250,7 +269,7 @@ class PagerRenderer
             $uri->getAuthority(),
             $uri->getPath(),
             $uri->getQuery(),
-            $uri->getFragment()
+            $uri->getFragment(),
         );
     }
 
@@ -276,7 +295,7 @@ class PagerRenderer
                     $uri->getAuthority(),
                     $uri->getPath(),
                     $uri->getQuery(),
-                    $uri->getFragment()
+                    $uri->getFragment(),
                 ),
                 'title'  => $i,
                 'active' => ($i === $this->current),
@@ -303,6 +322,28 @@ class PagerRenderer
 
         $this->first = $this->current - $count > 0 ? $this->current - $count : 1;
         $this->last  = $this->current + $count <= $this->pageCount ? $this->current + $count : (int) $this->pageCount;
+    }
+
+    /**
+     * Updates the start and end items per pages, which is
+     * the number of items displayed on the active page.
+     */
+    protected function updatePerPages(): void
+    {
+        if ($this->total === null || $this->perPage === null) {
+            return;
+        }
+
+        // When the page is the last, perform a different calculation.
+        if ($this->last === $this->current) {
+            $this->perPageStart = $this->perPage * ($this->current - 1) + 1;
+            $this->perPageEnd   = $this->total;
+
+            return;
+        }
+
+        $this->perPageStart = $this->current === 1 ? 1 : ($this->perPage * $this->current) - $this->perPage + 1;
+        $this->perPageEnd   = $this->perPage * $this->current;
     }
 
     /**
@@ -339,7 +380,7 @@ class PagerRenderer
             $uri->getAuthority(),
             $uri->getPath(),
             $uri->getQuery(),
-            $uri->getFragment()
+            $uri->getFragment(),
         );
     }
 
@@ -377,7 +418,7 @@ class PagerRenderer
             $uri->getAuthority(),
             $uri->getPath(),
             $uri->getQuery(),
-            $uri->getFragment()
+            $uri->getFragment(),
         );
     }
 
@@ -427,5 +468,37 @@ class PagerRenderer
     public function getNextPageNumber(): ?int
     {
         return ($this->current === $this->pageCount) ? null : $this->current + 1;
+    }
+
+    /**
+     * Returns the total items of the page.
+     */
+    public function getTotal(): ?int
+    {
+        return $this->total;
+    }
+
+    /**
+     * Returns the number of items to be displayed on the page.
+     */
+    public function getPerPage(): ?int
+    {
+        return $this->perPage;
+    }
+
+    /**
+     * Returns the number of items the page starts with.
+     */
+    public function getPerPageStart(): ?int
+    {
+        return $this->perPageStart;
+    }
+
+    /**
+     * Returns the number of items the page ends with.
+     */
+    public function getPerPageEnd(): ?int
+    {
+        return $this->perPageEnd;
     }
 }

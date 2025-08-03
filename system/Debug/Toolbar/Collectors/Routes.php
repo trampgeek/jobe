@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -12,7 +14,6 @@
 namespace CodeIgniter\Debug\Toolbar\Collectors;
 
 use CodeIgniter\Router\DefinedRouteCollector;
-use Config\Services;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
@@ -49,12 +50,31 @@ class Routes extends BaseCollector
     /**
      * Returns the data of this collector to be formatted in the toolbar
      *
+     * @return array{
+     *      matchedRoute: list<array{
+     *          directory: string,
+     *          controller: string,
+     *          method: string,
+     *          paramCount: int,
+     *          truePCount: int,
+     *          params: list<array{
+     *              name: string,
+     *              value: mixed
+     *          }>
+     *      }>,
+     *      routes: list<array{
+     *          method: string,
+     *          route: string,
+     *          handler: string
+     *      }>
+     * }
+     *
      * @throws ReflectionException
      */
     public function display(): array
     {
-        $rawRoutes = Services::routes(true);
-        $router    = Services::router(null, null, true);
+        $rawRoutes = service('routes', true);
+        $router    = service('router', null, null, true);
 
         // Get our parameters
         // Closure routes
@@ -63,10 +83,18 @@ class Routes extends BaseCollector
         } else {
             try {
                 $method = new ReflectionMethod($router->controllerName(), $router->methodName());
-            } catch (ReflectionException $e) {
-                // If we're here, the method doesn't exist
-                // and is likely calculated in _remap.
-                $method = new ReflectionMethod($router->controllerName(), '_remap');
+            } catch (ReflectionException) {
+                try {
+                    // If we're here, the method doesn't exist
+                    // and is likely calculated in _remap.
+                    $method = new ReflectionMethod($router->controllerName(), '_remap');
+                } catch (ReflectionException) {
+                    // If we're here, page cache is returned. The router is not executed.
+                    return [
+                        'matchedRoute' => [],
+                        'routes'       => [],
+                    ];
+                }
             }
         }
 
@@ -81,7 +109,7 @@ class Routes extends BaseCollector
                     ' <empty> | default: '
                     . var_export(
                         $param->isDefaultValueAvailable() ? $param->getDefaultValue() : null,
-                        true
+                        true,
                     ),
             ];
         }
@@ -124,7 +152,7 @@ class Routes extends BaseCollector
      */
     public function getBadgeValue(): int
     {
-        $rawRoutes = Services::routes(true);
+        $rawRoutes = service('routes', true);
 
         return count($rawRoutes->getRoutes());
     }

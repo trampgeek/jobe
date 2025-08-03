@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -25,21 +27,21 @@ class Table
     /**
      * Data for table rows
      *
-     * @var array
+     * @var list<array<string, string>>|list<list<array<string, string>>>
      */
     public $rows = [];
 
     /**
      * Data for table heading
      *
-     * @var array
+     * @var array<int, mixed>
      */
     public $heading = [];
 
     /**
      * Data for table footing
      *
-     * @var array
+     * @var array<int, mixed>
      */
     public $footing = [];
 
@@ -60,7 +62,7 @@ class Table
     /**
      * Table layout template
      *
-     * @var array
+     * @var array<string, string>
      */
     public $template;
 
@@ -93,7 +95,7 @@ class Table
     /**
      * Set the template from the table config file if it exists
      *
-     * @param array $config (default: array())
+     * @param array<string, string> $config (default: array())
      */
     public function __construct($config = [])
     {
@@ -106,7 +108,7 @@ class Table
     /**
      * Set the template
      *
-     * @param array $template
+     * @param array<string, string>|string $template
      *
      * @return bool
      */
@@ -155,10 +157,10 @@ class Table
      * columns. This allows a single array with many elements to be
      * displayed in a table that has a fixed column count.
      *
-     * @param array $array
-     * @param int   $columnLimit
+     * @param list<string> $array
+     * @param int          $columnLimit
      *
-     * @return array|false
+     * @return array<int, mixed>|false
      */
     public function makeColumns($array = [], $columnLimit = 0)
     {
@@ -225,13 +227,13 @@ class Table
             $missingKeys = array_diff_key($keyIndex, $tmpRow);
 
             // Remove all keys which don't exist in $keyIndex
-            $tmpRow = array_filter($tmpRow, static fn ($k) => array_key_exists($k, $keyIndex), ARRAY_FILTER_USE_KEY);
+            $tmpRow = array_filter($tmpRow, static fn ($k): bool => array_key_exists($k, $keyIndex), ARRAY_FILTER_USE_KEY);
 
             // add missing keys to row, but use $this->emptyCells
-            $tmpRow = array_merge($tmpRow, array_map(fn ($v) => ['data' => $this->emptyCells], $missingKeys));
+            $tmpRow = array_merge($tmpRow, array_map(fn ($v): array => ['data' => $this->emptyCells], $missingKeys));
 
             // order keys by $keyIndex values
-            uksort($tmpRow, static fn ($k1, $k2) => $keyIndex[$k1] <=> $keyIndex[$k2]);
+            uksort($tmpRow, static fn ($k1, $k2): int => $keyIndex[$k1] <=> $keyIndex[$k2]);
         }
         $this->rows[] = $tmpRow;
 
@@ -258,7 +260,9 @@ class Table
      *
      * Ensures a standard associative array format for all cell data
      *
-     * @return array
+     * @param array<int, mixed> $args
+     *
+     * @return array<string, array<string, mixed>>|list<array<string, mixed>>
      */
     protected function _prepArgs(array $args)
     {
@@ -295,7 +299,7 @@ class Table
     /**
      * Generate the table
      *
-     * @param array|BaseResult|null $tableData
+     * @param array<int, mixed>|BaseResult|null $tableData
      *
      * @return string
      */
@@ -328,7 +332,7 @@ class Table
         $out = $this->template['table_open'] . $this->newline;
 
         // Add any caption here
-        if ($this->caption) {
+        if (isset($this->caption) && $this->caption !== '') {
             $out .= '<caption>' . $this->caption . '</caption>' . $this->newline;
         }
 
@@ -365,7 +369,7 @@ class Table
 
             foreach ($this->rows as $row) {
                 // We use modulus to alternate the row colors
-                $name = fmod($i++, 2) ? '' : 'alt_';
+                $name = fmod($i++, 2) !== 0.0 ? '' : 'alt_';
 
                 $out .= $this->template['row_' . $name . 'start'] . $this->newline;
 
@@ -381,7 +385,7 @@ class Table
                     $cell = $cell['data'] ?? '';
                     $out .= $temp;
 
-                    if ($cell === '' || $cell === null) {
+                    if ($cell === '') {
                         $out .= $this->emptyCells;
                     } elseif (isset($this->function)) {
                         $out .= ($this->function)($cell);
@@ -470,7 +474,7 @@ class Table
     /**
      * Set table data from an array
      *
-     * @param array $data
+     * @param array<int, mixed> $data
      *
      * @return void
      */
@@ -508,7 +512,7 @@ class Table
     /**
      * Default Template
      *
-     * @return array
+     * @return array<string, string>
      */
     protected function _defaultTemplate()
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -14,15 +16,14 @@ namespace CodeIgniter\HTTP;
 use CodeIgniter\Cookie\Cookie;
 use CodeIgniter\Cookie\CookieStore;
 use CodeIgniter\Cookie\Exceptions\CookieException;
+use CodeIgniter\Exceptions\InvalidArgumentException;
 use CodeIgniter\HTTP\Exceptions\HTTPException;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Pager\PagerInterface;
 use CodeIgniter\Security\Exceptions\SecurityException;
 use Config\Cookie as CookieConfig;
-use Config\Services;
 use DateTime;
 use DateTimeZone;
-use InvalidArgumentException;
 
 /**
  * Response Trait
@@ -35,22 +36,11 @@ use InvalidArgumentException;
 trait ResponseTrait
 {
     /**
-     * Whether Content Security Policy is being enforced.
-     *
-     * @var bool
-     *
-     * @deprecated Use $this->CSP->enabled() instead.
-     */
-    protected $CSPEnabled = false;
-
-    /**
      * Content security policy handler
      *
      * @var ContentSecurityPolicy
-     *
-     * @deprecated Will be protected. Use `getCSP()` instead.
      */
-    public $CSP;
+    protected $CSP;
 
     /**
      * CookieStore instance.
@@ -58,69 +48,6 @@ trait ResponseTrait
      * @var CookieStore
      */
     protected $cookieStore;
-
-    /**
-     * Set a cookie name prefix if you need to avoid collisions
-     *
-     * @var string
-     *
-     * @deprecated Use the dedicated Cookie class instead.
-     */
-    protected $cookiePrefix = '';
-
-    /**
-     * Set to .your-domain.com for site-wide cookies
-     *
-     * @var string
-     *
-     * @deprecated Use the dedicated Cookie class instead.
-     */
-    protected $cookieDomain = '';
-
-    /**
-     * Typically will be a forward slash
-     *
-     * @var string
-     *
-     * @deprecated Use the dedicated Cookie class instead.
-     */
-    protected $cookiePath = '/';
-
-    /**
-     * Cookie will only be set if a secure HTTPS connection exists.
-     *
-     * @var bool
-     *
-     * @deprecated Use the dedicated Cookie class instead.
-     */
-    protected $cookieSecure = false;
-
-    /**
-     * Cookie will only be accessible via HTTP(S) (no javascript)
-     *
-     * @var bool
-     *
-     * @deprecated Use the dedicated Cookie class instead.
-     */
-    protected $cookieHTTPOnly = false;
-
-    /**
-     * Cookie SameSite setting
-     *
-     * @var string
-     *
-     * @deprecated Use the dedicated Cookie class instead.
-     */
-    protected $cookieSameSite = Cookie::SAMESITE_LAX;
-
-    /**
-     * Stores all cookies that were set in the response.
-     *
-     * @var array
-     *
-     * @deprecated Use the dedicated Cookie class instead.
-     */
-    protected $cookies = [];
 
     /**
      * Type of format the body is in.
@@ -196,18 +123,21 @@ trait ResponseTrait
      */
     public function setLink(PagerInterface $pager)
     {
-        $links = '';
+        $links    = '';
+        $previous = $pager->getPreviousPageURI();
 
-        if ($previous = $pager->getPreviousPageURI()) {
+        if (is_string($previous) && $previous !== '') {
             $links .= '<' . $pager->getPageURI($pager->getFirstPage()) . '>; rel="first",';
             $links .= '<' . $previous . '>; rel="prev"';
         }
 
-        if (($next = $pager->getNextPageURI()) && $previous) {
+        $next = $pager->getNextPageURI();
+
+        if (is_string($next) && $next !== '' && is_string($previous) && $previous !== '') {
             $links .= ',';
         }
 
-        if ($next) {
+        if (is_string($next) && $next !== '') {
             $links .= '<' . $next . '>; rel="next",';
             $links .= '<' . $pager->getPageURI($pager->getLastPage()) . '>; rel="last"';
         }
@@ -262,7 +192,7 @@ trait ResponseTrait
         $body = $this->body;
 
         if ($this->bodyFormat !== 'json') {
-            $body = Services::format()->getFormatter('application/json')->format($body);
+            $body = service('format')->getFormatter('application/json')->format($body);
         }
 
         return $body ?: null;
@@ -294,7 +224,7 @@ trait ResponseTrait
         $body = $this->body;
 
         if ($this->bodyFormat !== 'xml') {
-            $body = Services::format()->getFormatter('application/xml')->format($body);
+            $body = service('format')->getFormatter('application/xml')->format($body);
         }
 
         return $body;
@@ -319,7 +249,7 @@ trait ResponseTrait
 
         // Nothing much to do for a string...
         if (! is_string($body) || $format === 'json-unencoded') {
-            $body = Services::format()->getFormatter($mime)->format($body);
+            $body = service('format')->getFormatter($mime)->format($body);
         }
 
         return $body;
@@ -472,8 +402,25 @@ trait ResponseTrait
         header(sprintf('HTTP/%s %s %s', $this->getProtocolVersion(), $this->getStatusCode(), $this->getReasonPhrase()), true, $this->getStatusCode());
 
         // Send all of our headers
-        foreach (array_keys($this->headers()) as $name) {
-            header($name . ': ' . $this->getHeaderLine($name), false, $this->getStatusCode());
+        foreach ($this->headers() as $name => $value) {
+            if ($value instanceof Header) {
+                header(
+                    $name . ': ' . $value->getValueLine(),
+                    true,
+                    $this->getStatusCode(),
+                );
+            } else {
+                $replace = true;
+
+                foreach ($value as $header) {
+                    header(
+                        $name . ': ' . $header->getValueLine(),
+                        $replace,
+                        $this->getStatusCode(),
+                    );
+                    $replace = false;
+                }
+            }
         }
 
         return $this;
@@ -507,7 +454,7 @@ trait ResponseTrait
         if (
             $method === 'auto'
             && isset($_SERVER['SERVER_SOFTWARE'])
-            && strpos($_SERVER['SERVER_SOFTWARE'], 'Microsoft-IIS') !== false
+            && str_contains($_SERVER['SERVER_SOFTWARE'], 'Microsoft-IIS')
         ) {
             $method = 'refresh';
         } elseif ($method !== 'refresh' && $code === null) {
@@ -516,9 +463,9 @@ trait ResponseTrait
                 isset($_SERVER['SERVER_PROTOCOL'], $_SERVER['REQUEST_METHOD'])
                 && $this->getProtocolVersion() >= 1.1
             ) {
-                if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+                if ($_SERVER['REQUEST_METHOD'] === Method::GET) {
                     $code = 302;
-                } elseif (in_array($_SERVER['REQUEST_METHOD'], ['POST', 'PUT', 'DELETE'], true)) {
+                } elseif (in_array($_SERVER['REQUEST_METHOD'], [Method::POST, Method::PUT, Method::DELETE], true)) {
                     // reference: https://en.wikipedia.org/wiki/Post/Redirect/Get
                     $code = 303;
                 } else {
@@ -531,15 +478,10 @@ trait ResponseTrait
             $code = 302;
         }
 
-        switch ($method) {
-            case 'refresh':
-                $this->setHeader('Refresh', '0;url=' . $uri);
-                break;
-
-            default:
-                $this->setHeader('Location', $uri);
-                break;
-        }
+        match ($method) {
+            'refresh' => $this->setHeader('Refresh', '0;url=' . $uri),
+            default   => $this->setHeader('Location', $uri),
+        };
 
         $this->setStatusCode($code);
 
@@ -554,7 +496,7 @@ trait ResponseTrait
      *
      * @param array|Cookie|string $name     Cookie name / array containing binds / Cookie object
      * @param string              $value    Cookie value
-     * @param string              $expire   Cookie expiration time in seconds
+     * @param int                 $expire   Cookie expiration time in seconds
      * @param string              $domain   Cookie domain (e.g.: '.yourdomain.com')
      * @param string              $path     Cookie path (default: '/')
      * @param string              $prefix   Cookie name prefix ('': the default prefix)
@@ -567,13 +509,13 @@ trait ResponseTrait
     public function setCookie(
         $name,
         $value = '',
-        $expire = '',
+        $expire = 0,
         $domain = '',
         $path = '/',
         $prefix = '',
         $secure = null,
         $httponly = null,
-        $samesite = null
+        $samesite = null,
     ) {
         if ($name instanceof Cookie) {
             $this->cookieStore = $this->cookieStore->put($name);
@@ -581,14 +523,11 @@ trait ResponseTrait
             return $this;
         }
 
-        /** @var CookieConfig|null $cookieConfig */
         $cookieConfig = config(CookieConfig::class);
 
-        if ($cookieConfig instanceof CookieConfig) {
-            $secure ??= $cookieConfig->secure;
-            $httponly ??= $cookieConfig->httponly;
-            $samesite ??= $cookieConfig->samesite;
-        }
+        $secure ??= $cookieConfig->secure;
+        $httponly ??= $cookieConfig->httponly;
+        $samesite ??= $cookieConfig->samesite;
 
         if (is_array($name)) {
             // always leave 'name' in last place, as the loop will break otherwise, due to ${$item}
@@ -633,7 +572,7 @@ trait ResponseTrait
      */
     public function hasCookie(string $name, ?string $value = null, string $prefix = ''): bool
     {
-        $prefix = $prefix ?: Cookie::setDefaults()['prefix']; // to retain BC
+        $prefix = $prefix !== '' ? $prefix : Cookie::setDefaults()['prefix']; // to retain BC
 
         return $this->cookieStore->has($name, $prefix, $value);
     }
@@ -644,7 +583,7 @@ trait ResponseTrait
      * @param string $prefix Cookie prefix.
      *                       '': the default prefix
      *
-     * @return Cookie|Cookie[]|null
+     * @return array<string, Cookie>|Cookie|null
      */
     public function getCookie(?string $name = null, string $prefix = '')
     {
@@ -653,7 +592,7 @@ trait ResponseTrait
         }
 
         try {
-            $prefix = $prefix ?: Cookie::setDefaults()['prefix']; // to retain BC
+            $prefix = $prefix !== '' ? $prefix : Cookie::setDefaults()['prefix']; // to retain BC
 
             return $this->cookieStore->get($name, $prefix);
         } catch (CookieException $e) {
@@ -674,7 +613,7 @@ trait ResponseTrait
             return $this;
         }
 
-        $prefix = $prefix ?: Cookie::setDefaults()['prefix']; // to retain BC
+        $prefix = $prefix !== '' ? $prefix : Cookie::setDefaults()['prefix']; // to retain BC
 
         $prefixed = $prefix . $name;
         $store    = $this->cookieStore;
@@ -700,7 +639,7 @@ trait ResponseTrait
         }
 
         if (! $found) {
-            $this->setCookie($name, '', '', $domain, $path, $prefix);
+            $this->setCookie($name, '', 0, $domain, $path, $prefix);
         }
 
         return $this;
@@ -709,7 +648,7 @@ trait ResponseTrait
     /**
      * Returns all cookies currently set.
      *
-     * @return Cookie[]
+     * @return array<string, Cookie>
      */
     public function getCookies()
     {
@@ -733,11 +672,11 @@ trait ResponseTrait
     private function dispatchCookies(): void
     {
         /** @var IncomingRequest $request */
-        $request = Services::request();
+        $request = service('request');
 
         foreach ($this->cookieStore->display() as $cookie) {
             if ($cookie->isSecure() && ! $request->isSecure()) {
-                throw SecurityException::forDisallowedAction();
+                throw SecurityException::forInsecureCookie();
             }
 
             $name    = $cookie->getPrefixedName();

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -55,15 +57,6 @@ interface CloneableCookieInterface extends CookieInterface
      * @return static
      */
     public function withExpired();
-
-    /**
-     * Creates a new Cookie that will virtually never expire from the browser.
-     *
-     * @return static
-     *
-     * @deprecated See https://github.com/codeigniter4/CodeIgniter4/pull/6413
-     */
-    public function withNeverExpiring();
 
     /**
      * Creates a new Cookie with a new path on the server the cookie is available.

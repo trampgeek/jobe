@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -35,7 +37,7 @@ class Result extends BaseResult
      */
     public function getFieldNames(): array
     {
-        return array_map(fn ($fieldIndex) => oci_field_name($this->resultID, $fieldIndex), range(1, $this->getFieldCount()));
+        return array_map(fn ($fieldIndex): false|string => oci_field_name($this->resultID, $fieldIndex), range(1, $this->getFieldCount()));
     }
 
     /**

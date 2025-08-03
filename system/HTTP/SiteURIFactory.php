@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -24,13 +26,8 @@ use Config\App;
  */
 final class SiteURIFactory
 {
-    private App $appConfig;
-    private Superglobals $superglobals;
-
-    public function __construct(App $appConfig, Superglobals $superglobals)
+    public function __construct(private readonly App $appConfig, private readonly Superglobals $superglobals)
     {
-        $this->appConfig    = $appConfig;
-        $this->superglobals = $superglobals;
     }
 
     /**
@@ -95,20 +92,11 @@ final class SiteURIFactory
             $protocol = $this->appConfig->uriProtocol;
         }
 
-        switch ($protocol) {
-            case 'REQUEST_URI':
-                $routePath = $this->parseRequestURI();
-                break;
-
-            case 'QUERY_STRING':
-                $routePath = $this->parseQueryString();
-                break;
-
-            case 'PATH_INFO':
-            default:
-                $routePath = $this->superglobals->server($protocol) ?? $this->parseRequestURI();
-                break;
-        }
+        $routePath = match ($protocol) {
+            'REQUEST_URI'  => $this->parseRequestURI(),
+            'QUERY_STRING' => $this->parseQueryString(),
+            default        => $this->superglobals->server($protocol) ?? $this->parseRequestURI(),
+        };
 
         return ($routePath === '/' || $routePath === '') ? '/' : ltrim($routePath, '/');
     }
@@ -144,7 +132,8 @@ final class SiteURIFactory
             && pathinfo($this->superglobals->server('SCRIPT_NAME'), PATHINFO_EXTENSION) === 'php'
         ) {
             // Compare each segment, dropping them until there is no match
-            $segments = $keep = explode('/', $path);
+            $segments = explode('/', rawurldecode($path));
+            $keep     = explode('/', $path);
 
             foreach (explode('/', $this->superglobals->server('SCRIPT_NAME')) as $i => $segment) {
                 // If these segments are not the same then we're done
@@ -158,10 +147,19 @@ final class SiteURIFactory
             $path = implode('/', $keep);
         }
 
+        // Cleanup: if indexPage is still visible in the path, remove it
+        if ($this->appConfig->indexPage !== '' && str_starts_with($path, $this->appConfig->indexPage)) {
+            $remainingPath = substr($path, strlen($this->appConfig->indexPage));
+            // Only remove if followed by '/' (route) or nothing (root)
+            if ($remainingPath === '' || str_starts_with($remainingPath, '/')) {
+                $path = ltrim($remainingPath, '/');
+            }
+        }
+
         // This section ensures that even on servers that require the URI to
         // contain the query string (Nginx) a correct URI is found, and also
         // fixes the QUERY_STRING Server var and $_GET array.
-        if (trim($path, '/') === '' && strncmp($query, '/', 1) === 0) {
+        if (trim($path, '/') === '' && str_starts_with($query, '/')) {
             $parts    = explode('?', $query, 2);
             $path     = $parts[0];
             $newQuery = $query[1] ?? '';
@@ -193,7 +191,7 @@ final class SiteURIFactory
             return '/';
         }
 
-        if (strncmp($query, '/', 1) === 0) {
+        if (str_starts_with($query, '/')) {
             $parts    = explode('?', $query, 2);
             $path     = $parts[0];
             $newQuery = $parts[1] ?? '';

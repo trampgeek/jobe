@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -17,6 +19,7 @@ use CodeIgniter\Test\Constraints\SeeInDatabase;
 use Config\Database;
 use Config\Migrations;
 use Config\Services;
+use PHPUnit\Framework\Attributes\AfterClass;
 
 /**
  * DatabaseTestTrait
@@ -48,6 +51,8 @@ trait DatabaseTestTrait
 
     /**
      * Runs the trait set up methods.
+     *
+     * @return void
      */
     protected function setUpDatabase()
     {
@@ -58,6 +63,8 @@ trait DatabaseTestTrait
 
     /**
      * Runs the trait set up methods.
+     *
+     * @return void
      */
     protected function tearDownDatabase()
     {
@@ -66,6 +73,8 @@ trait DatabaseTestTrait
 
     /**
      * Load any database test dependencies.
+     *
+     * @return void
      */
     public function loadDependencies()
     {
@@ -79,7 +88,7 @@ trait DatabaseTestTrait
             $config          = new Migrations();
             $config->enabled = true;
 
-            $this->migrations = Services::migrations($config, $this->db);
+            $this->migrations = Services::migrations($config, $this->db, false);
             $this->migrations->setSilent(false);
         }
 
@@ -95,6 +104,8 @@ trait DatabaseTestTrait
 
     /**
      * Migrate on setUp
+     *
+     * @return void
      */
     protected function setUpMigrate()
     {
@@ -112,6 +123,8 @@ trait DatabaseTestTrait
 
     /**
      * Regress migrations as defined by the class
+     *
+     * @return void
      */
     protected function regressDatabase()
     {
@@ -138,6 +151,8 @@ trait DatabaseTestTrait
 
     /**
      * Run migrations as defined by the class
+     *
+     * @return void
      */
     protected function migrateDatabase()
     {
@@ -169,6 +184,8 @@ trait DatabaseTestTrait
 
     /**
      * Seed on setUp
+     *
+     * @return void
      */
     protected function setUpSeed()
     {
@@ -179,6 +196,8 @@ trait DatabaseTestTrait
 
     /**
      * Run seeds as defined by the class
+     *
+     * @return void
      */
     protected function runSeeds()
     {
@@ -199,6 +218,8 @@ trait DatabaseTestTrait
 
     /**
      * Seeds that database with a specific seeder.
+     *
+     * @return void
      */
     public function seed(string $name)
     {
@@ -208,12 +229,12 @@ trait DatabaseTestTrait
     // --------------------------------------------------------------------
     // Utility
     // --------------------------------------------------------------------
-
     /**
      * Reset $doneMigration and $doneSeed
      *
-     * @afterClass
+     * @return void
      */
+    #[AfterClass]
     public static function resetMigrationSeedCount()
     {
         self::$doneMigration = false;
@@ -222,6 +243,8 @@ trait DatabaseTestTrait
 
     /**
      * Removes any rows inserted via $this->hasInDatabase()
+     *
+     * @return void
      */
     protected function clearInsertCache()
     {
@@ -239,7 +262,7 @@ trait DatabaseTestTrait
      */
     public function loadBuilder(string $tableName)
     {
-        $builderClass = str_replace('Connection', 'Builder', get_class($this->db));
+        $builderClass = str_replace('Connection', 'Builder', $this->db::class);
 
         return new $builderClass($tableName, $this->db);
     }
@@ -247,6 +270,8 @@ trait DatabaseTestTrait
     /**
      * Fetches a single column from a database row with criteria
      * matching $where.
+     *
+     * @param array<string, mixed> $where
      *
      * @return bool
      *
@@ -272,6 +297,10 @@ trait DatabaseTestTrait
      * Asserts that records that match the conditions in $where DO
      * exist in the database.
      *
+     * @param array<string, mixed> $where
+     *
+     * @return void
+     *
      * @throws DatabaseException
      */
     public function seeInDatabase(string $table, array $where)
@@ -283,6 +312,10 @@ trait DatabaseTestTrait
     /**
      * Asserts that records that match the conditions in $where do
      * not exist in the database.
+     *
+     * @param array<string, mixed> $where
+     *
+     * @return void
      */
     public function dontSeeInDatabase(string $table, array $where)
     {
@@ -296,6 +329,8 @@ trait DatabaseTestTrait
     /**
      * Inserts a row into to the database. This row will be removed
      * after the test has run.
+     *
+     * @param array<string, mixed> $data
      *
      * @return bool
      */
@@ -312,6 +347,10 @@ trait DatabaseTestTrait
     /**
      * Asserts that the number of rows in the database that match $where
      * is equal to $expected.
+     *
+     * @param array<string, mixed> $where
+     *
+     * @return void
      *
      * @throws DatabaseException
      */

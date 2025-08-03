@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -17,6 +19,7 @@ use Config\Cache;
 use Exception;
 use Predis\Client;
 use Predis\Collection\Iterator\Keyspace;
+use Predis\Response\Status;
 
 /**
  * Predis cache handler
@@ -28,7 +31,13 @@ class PredisHandler extends BaseHandler
     /**
      * Default config
      *
-     * @var array
+     * @var array{
+     *   scheme: string,
+     *   host: string,
+     *   password: string|null,
+     *   port: int,
+     *   timeout: int
+     * }
      */
     protected $config = [
         'scheme'   => 'tcp',
@@ -79,29 +88,19 @@ class PredisHandler extends BaseHandler
 
         $data = array_combine(
             ['__ci_type', '__ci_value'],
-            $this->redis->hmget($key, ['__ci_type', '__ci_value'])
+            $this->redis->hmget($key, ['__ci_type', '__ci_value']),
         );
 
         if (! isset($data['__ci_type'], $data['__ci_value']) || $data['__ci_value'] === false) {
             return null;
         }
 
-        switch ($data['__ci_type']) {
-            case 'array':
-            case 'object':
-                return unserialize($data['__ci_value']);
-
-            case 'boolean':
-            case 'integer':
-            case 'double': // Yes, 'double' is returned and NOT 'float'
-            case 'string':
-            case 'NULL':
-                return settype($data['__ci_value'], $data['__ci_type']) ? $data['__ci_value'] : null;
-
-            case 'resource':
-            default:
-                return null;
-        }
+        return match ($data['__ci_type']) {
+            'array', 'object' => unserialize($data['__ci_value']),
+            // Yes, 'double' is returned and NOT 'float'
+            'boolean', 'integer', 'double', 'string', 'NULL' => settype($data['__ci_value'], $data['__ci_type']) ? $data['__ci_value'] : null,
+            default => null,
+        };
     }
 
     /**
@@ -129,7 +128,7 @@ class PredisHandler extends BaseHandler
                 return false;
         }
 
-        if (! $this->redis->hmset($key, ['__ci_type' => $dataType, '__ci_value' => $value])) {
+        if (! $this->redis->hmset($key, ['__ci_type' => $dataType, '__ci_value' => $value]) instanceof Status) {
             return false;
         }
 

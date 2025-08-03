@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -13,6 +15,7 @@ namespace CodeIgniter\Database\SQLSRV;
 
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Database\Exceptions\DatabaseException;
+use CodeIgniter\Database\TableName;
 use stdClass;
 
 /**
@@ -77,7 +80,7 @@ class Connection extends BaseConnection
      *
      * Identifiers that must NOT be escaped.
      *
-     * @var string[]
+     * @var list<string>
      */
     protected $_reserved_identifiers = ['*'];
 
@@ -121,7 +124,7 @@ class Connection extends BaseConnection
             unset($connection['UID'], $connection['PWD']);
         }
 
-        if (strpos($this->hostname, ',') === false && $this->port !== '') {
+        if (! str_contains($this->hostname, ',') && $this->port !== '') {
             $this->hostname .= ', ' . $this->port;
         }
 
@@ -162,6 +165,8 @@ class Connection extends BaseConnection
     /**
      * Keep or establish the connection if no queries have been sent for
      * a length of time exceeding the server's idle timeout.
+     *
+     * @return void
      */
     public function reconnect()
     {
@@ -171,6 +176,8 @@ class Connection extends BaseConnection
 
     /**
      * Close the database connection.
+     *
+     * @return void
      */
     protected function _close()
     {
@@ -190,7 +197,7 @@ class Connection extends BaseConnection
      */
     public function insertID(): int
     {
-        return $this->query('SELECT SCOPE_IDENTITY() AS insert_id')->getRow()->insert_id ?? 0;
+        return (int) ($this->query('SELECT SCOPE_IDENTITY() AS insert_id')->getRow()->insert_id ?? 0);
     }
 
     /**
@@ -209,7 +216,7 @@ class Connection extends BaseConnection
             return $sql .= ' AND [TABLE_NAME] LIKE ' . $this->escape($tableName);
         }
 
-        if ($prefixLimit === true && $this->DBPrefix !== '') {
+        if ($prefixLimit && $this->DBPrefix !== '') {
             $sql .= " AND [TABLE_NAME] LIKE '" . $this->escapeLikeString($this->DBPrefix) . "%' "
                 . sprintf($this->likeEscapeStr, $this->likeEscapeChar);
         }
@@ -219,19 +226,27 @@ class Connection extends BaseConnection
 
     /**
      * Generates a platform-specific query string so that the column names can be fetched.
+     *
+     * @param string|TableName $table
      */
-    protected function _listColumns(string $table = ''): string
+    protected function _listColumns($table = ''): string
     {
+        if ($table instanceof TableName) {
+            $tableName = $this->escape(strtolower($table->getActualTableName()));
+        } else {
+            $tableName = $this->escape($this->DBPrefix . strtolower($table));
+        }
+
         return 'SELECT [COLUMN_NAME] '
             . ' FROM [INFORMATION_SCHEMA].[COLUMNS]'
-            . ' WHERE  [TABLE_NAME] = ' . $this->escape($this->DBPrefix . $table)
+            . ' WHERE  [TABLE_NAME] = ' . $tableName
             . ' AND [TABLE_SCHEMA] = ' . $this->escape($this->schema);
     }
 
     /**
      * Returns an array of objects with index data
      *
-     * @return stdClass[]
+     * @return array<string, stdClass>
      *
      * @throws DatabaseException
      */
@@ -251,12 +266,12 @@ class Connection extends BaseConnection
             $obj->name = $row->index_name;
 
             $_fields     = explode(',', trim($row->index_keys));
-            $obj->fields = array_map(static fn ($v) => trim($v), $_fields);
+            $obj->fields = array_map(static fn ($v): string => trim($v), $_fields);
 
-            if (strpos($row->index_description, 'primary key located on') !== false) {
+            if (str_contains($row->index_description, 'primary key located on')) {
                 $obj->type = 'PRIMARY';
             } else {
-                $obj->type = (strpos($row->index_description, 'nonclustered, unique') !== false) ? 'UNIQUE' : 'INDEX';
+                $obj->type = (str_contains($row->index_description, 'nonclustered, unique')) ? 'UNIQUE' : 'INDEX';
             }
 
             $retVal[$obj->name] = $obj;
@@ -269,7 +284,7 @@ class Connection extends BaseConnection
      * Returns an array of objects with Foreign key data
      * referenced_object_id  parent_object_id
      *
-     * @return stdClass[]
+     * @return array<string, stdClass>
      *
      * @throws DatabaseException
      */
@@ -335,7 +350,7 @@ class Connection extends BaseConnection
     /**
      * Returns an array of objects with field data
      *
-     * @return stdClass[]
+     * @return list<stdClass>
      *
      * @throws DatabaseException
      */
@@ -357,15 +372,19 @@ class Connection extends BaseConnection
         for ($i = 0, $c = count($query); $i < $c; $i++) {
             $retVal[$i] = new stdClass();
 
-            $retVal[$i]->name    = $query[$i]->COLUMN_NAME;
-            $retVal[$i]->type    = $query[$i]->DATA_TYPE;
-            $retVal[$i]->default = $query[$i]->COLUMN_DEFAULT;
+            $retVal[$i]->name = $query[$i]->COLUMN_NAME;
+            $retVal[$i]->type = $query[$i]->DATA_TYPE;
 
             $retVal[$i]->max_length = $query[$i]->CHARACTER_MAXIMUM_LENGTH > 0
                 ? $query[$i]->CHARACTER_MAXIMUM_LENGTH
-                : $query[$i]->NUMERIC_PRECISION;
+                : (
+                    $query[$i]->CHARACTER_MAXIMUM_LENGTH === -1
+                    ? 'max'
+                    : $query[$i]->NUMERIC_PRECISION
+                );
 
             $retVal[$i]->nullable = $query[$i]->IS_NULLABLE !== 'NO';
+            $retVal[$i]->default  = $query[$i]->COLUMN_DEFAULT;
         }
 
         return $retVal;
@@ -434,6 +453,10 @@ class Connection extends BaseConnection
      */
     public function affectedRows(): int
     {
+        if ($this->resultID === false) {
+            return 0;
+        }
+
         return sqlsrv_rows_affected($this->resultID);
     }
 
@@ -538,11 +561,15 @@ class Connection extends BaseConnection
             return $this->dataCache['version'];
         }
 
-        if (! $this->connID || ($info = sqlsrv_server_info($this->connID)) === []) {
+        if (! $this->connID) {
             $this->initialize();
         }
 
-        return isset($info['SQLServerVersion']) ? $this->dataCache['version'] = $info['SQLServerVersion'] : false;
+        if (($info = sqlsrv_server_info($this->connID)) === []) {
+            return '';
+        }
+
+        return isset($info['SQLServerVersion']) ? $this->dataCache['version'] = $info['SQLServerVersion'] : '';
     }
 
     /**

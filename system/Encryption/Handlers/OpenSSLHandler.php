@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -80,7 +82,7 @@ class OpenSSLHandler extends BaseHandler
     public function encrypt($data, $params = null)
     {
         // Allow key override
-        if ($params) {
+        if ($params !== null) {
             $this->key = is_array($params) && isset($params['key']) ? $params['key'] : $params;
         }
 
@@ -116,7 +118,7 @@ class OpenSSLHandler extends BaseHandler
     public function decrypt($data, $params = null)
     {
         // Allow key override
-        if ($params) {
+        if ($params !== null) {
             $this->key = is_array($params) && isset($params['key']) ? $params['key'] : $params;
         }
 

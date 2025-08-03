@@ -11,7 +11,7 @@
 
 namespace CodeIgniter\View;
 
-use CodeIgniter\Autoloader\FileLocator;
+use CodeIgniter\Autoloader\FileLocatorInterface;
 use CodeIgniter\View\Exceptions\ViewException;
 use Config\View as ViewConfig;
 use ParseError;
@@ -56,14 +56,14 @@ class Parser extends View
     /**
      * Stores extracted noparse blocks.
      *
-     * @var array
+     * @var list<string>
      */
     protected $noparseBlocks = [];
 
     /**
      * Stores any plugins registered at run-time.
      *
-     * @var array<string, array<string>|callable|string>
+     * @var         array<string, callable|list<string>|string>
      * @phpstan-var array<string, array<parser_callable_string>|parser_callable_string|parser_callable>
      */
     protected $plugins = [];
@@ -72,17 +72,22 @@ class Parser extends View
      * Stores the context for each data element
      * when set by `setData` so the context is respected.
      *
-     * @var array
+     * @var array<string, mixed>
      */
     protected $dataContexts = [];
 
     /**
      * Constructor
      *
-     * @param FileLocator|null $loader
+     * @param FileLocatorInterface|null $loader
      */
-    public function __construct(ViewConfig $config, ?string $viewPath = null, $loader = null, ?bool $debug = null, ?LoggerInterface $logger = null)
-    {
+    public function __construct(
+        ViewConfig $config,
+        ?string $viewPath = null,
+        $loader = null,
+        ?bool $debug = null,
+        ?LoggerInterface $logger = null,
+    ) {
         // Ensure user plugins override core plugins.
         $this->plugins = $config->plugins;
 
@@ -94,6 +99,10 @@ class Parser extends View
      *
      * Parses pseudo-variables contained in the specified template view,
      * replacing them with any data that has already been set.
+     *
+     * @param array<string, mixed>|null $options Reserved for 3rd-party uses since
+     *                                           it might be needed to pass additional info
+     *                                           to other template engines.
      */
     public function render(string $view, ?array $options = null, ?bool $saveData = null): string
     {
@@ -108,10 +117,14 @@ class Parser extends View
         $cacheName = $options['cache_name'] ?? str_replace('.php', '', $view);
 
         // Was it cached?
-        if (isset($options['cache']) && ($output = cache($cacheName))) {
-            $this->logPerformance($start, microtime(true), $view);
+        if (isset($options['cache'])) {
+            $output = cache($cacheName);
 
-            return $output;
+            if (is_string($output) && $output !== '') {
+                $this->logPerformance($start, microtime(true), $view);
+
+                return $output;
+            }
         }
 
         $file = $this->viewPath . $view;
@@ -154,6 +167,10 @@ class Parser extends View
      *
      * Parses pseudo-variables contained in the specified string,
      * replacing them with any data that has already been set.
+     *
+     * @param array<string, mixed>|null $options Reserved for 3rd-party uses since
+     *                                           it might be needed to pass additional info
+     *                                           to other template engines.
      */
     public function renderString(string $template, ?array $options = null, ?bool $saveData = null): string
     {
@@ -185,8 +202,9 @@ class Parser extends View
      * so that the variable is correctly handled within the
      * parsing itself, and contexts (including raw) are respected.
      *
-     * @param non-empty-string|null $context The context to escape it for: html, css, js, url, raw
-     *                                       If 'raw', no escaping will happen
+     * @param array<string, mixed>                      $data
+     * @param 'attr'|'css'|'html'|'js'|'raw'|'url'|null $context The context to escape it for.
+     *                                                           If 'raw', no escaping will happen.
      */
     public function setData(array $data = [], ?string $context = null): RendererInterface
     {
@@ -216,7 +234,8 @@ class Parser extends View
      * Parses pseudo-variables contained in the specified template,
      * replacing them with the data in the second param
      *
-     * @param array $options Future options
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $options Future options
      */
     protected function parse(string $template, array $data = [], ?array $options = null): string
     {
@@ -238,20 +257,39 @@ class Parser extends View
         // it can potentially modify any template between its tags.
         $template = $this->parsePlugins($template);
 
-        // loop over the data variables, replacing
-        // the content as we go.
+        // Parse stack for each parse type (Single and Pairs)
+        $replaceSingleStack = [];
+        $replacePairsStack  = [];
+
+        // loop over the data variables, saving regex and data
+        // for later replacement.
         foreach ($data as $key => $val) {
             $escape = true;
 
             if (is_array($val)) {
-                $escape  = false;
-                $replace = $this->parsePair($key, $val, $template);
+                $escape              = false;
+                $replacePairsStack[] = [
+                    'replace' => $this->parsePair($key, $val, $template),
+                    'escape'  => $escape,
+                ];
             } else {
-                $replace = $this->parseSingle($key, (string) $val);
+                $replaceSingleStack[] = [
+                    'replace' => $this->parseSingle($key, (string) $val),
+                    'escape'  => $escape,
+                ];
             }
+        }
 
-            foreach ($replace as $pattern => $content) {
-                $template = $this->replaceSingle($pattern, $content, $template, $escape);
+        // Merge both stacks, pairs first + single stacks
+        // This allows for nested data with the same key to be replaced properly
+        $replace = array_merge($replacePairsStack, $replaceSingleStack);
+
+        // Loop over each replace array item which
+        // holds all the data to be replaced
+        foreach ($replace as $replaceItem) {
+            // Loop over the actual data to be replaced
+            foreach ($replaceItem['replace'] as $pattern => $content) {
+                $template = $this->replaceSingle($pattern, $content, $template, $replaceItem['escape']);
             }
         }
 
@@ -260,6 +298,8 @@ class Parser extends View
 
     /**
      * Parse a single key/value, extracting it
+     *
+     * @return array<string, string>
      */
     protected function parseSingle(string $key, string $val): array
     {
@@ -274,6 +314,10 @@ class Parser extends View
      * Parse a tag pair
      *
      * Parses tag pairs: {some_tag} string... {/some_tag}
+     *
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, string>
      */
     protected function parsePair(string $variable, array $data, string $template): array
     {
@@ -288,7 +332,7 @@ class Parser extends View
             $this->leftDelimiter . '\s*/' . preg_quote($variable, '#') . '\s*' . $this->rightDelimiter . '#us',
             $template,
             $matches,
-            PREG_SET_ORDER
+            PREG_SET_ORDER,
         );
 
         /*
@@ -332,7 +376,7 @@ class Parser extends View
                     }
 
                     if (is_object($val)) {
-                        $val = 'Class: ' . get_class($val);
+                        $val = 'Class: ' . $val::class;
                     } elseif (is_resource($val)) {
                         $val = 'Resource';
                     }
@@ -378,7 +422,7 @@ class Parser extends View
          * $matches[][0] is the raw match
          * $matches[][1] is the contents
          */
-        if (preg_match_all($pattern, $template, $matches, PREG_SET_ORDER)) {
+        if (preg_match_all($pattern, $template, $matches, PREG_SET_ORDER) >= 1) {
             foreach ($matches as $match) {
                 // Create a hash of the contents to insert in its place.
                 $hash                       = md5($match[1]);
@@ -443,12 +487,12 @@ class Parser extends View
         $template = preg_replace(
             '/' . $leftDelimiter . '\s*else\s*' . $rightDelimiter . '/ums',
             '<?php else: ?>',
-            $template
+            $template,
         );
         $template = preg_replace(
             '/' . $leftDelimiter . '\s*endif\s*' . $rightDelimiter . '/ums',
             '<?php endif; ?>',
-            $template
+            $template,
         );
 
         // Parse the PHP itself, or insert an error so they can debug
@@ -462,7 +506,7 @@ class Parser extends View
 
         try {
             eval('?>' . $template . '<?php ');
-        } catch (ParseError $e) {
+        } catch (ParseError) {
             ob_end_clean();
 
             throw ViewException::forTagSyntaxError(str_replace(['?>', '<?php '], '', $template));
@@ -512,10 +556,10 @@ class Parser extends View
         $content = (string) $content;
 
         // Replace the content in the template
-        return preg_replace_callback($pattern, function ($matches) use ($content, $escape) {
+        return preg_replace_callback($pattern, function ($matches) use ($content, $escape): string {
             // Check for {! !} syntax to not escape this one.
             if (
-                strpos($matches[0], $this->leftDelimiter . '!') === 0
+                str_starts_with($matches[0], $this->leftDelimiter . '!')
                 && substr($matches[0], -1 - strlen($this->rightDelimiter)) === '!' . $this->rightDelimiter
             ) {
                 $escape = false;
@@ -527,6 +571,8 @@ class Parser extends View
 
     /**
      * Callback used during parse() to apply any filters to the value.
+     *
+     * @param list<string> $matches
      */
     protected function prepareReplacement(array $matches, string $replace, bool $escape = true): string
     {
@@ -562,15 +608,15 @@ class Parser extends View
             }
         }
         // No pipes, then we know we need to escape
-        elseif (strpos($key, '|') === false) {
+        elseif (! str_contains($key, '|')) {
             $escape = 'html';
         }
         // If there's a `noescape` then we're definitely false.
-        elseif (strpos($key, 'noescape') !== false) {
+        elseif (str_contains($key, 'noescape')) {
             $escape = false;
         }
         // If no `esc` filter is found, then we'll need to add one.
-        elseif (! preg_match('/\s+esc/u', $key)) {
+        elseif (preg_match('/\s+esc/u', $key) !== 1) {
             $escape = 'html';
         }
 
@@ -580,6 +626,8 @@ class Parser extends View
     /**
      * Given a set of filters, will apply each of the filters in turn
      * to $replace, and return the modified string.
+     *
+     * @param list<string> $filters
      */
     protected function applyFilters(string $replace, array $filters): string
     {
@@ -611,10 +659,11 @@ class Parser extends View
             }
 
             // Filter it....
+            // We can't know correct param types, so can't set `declare(strict_types=1)`.
             $replace = $this->config->filters[$filter]($replace, ...$param);
         }
 
-        return $replace;
+        return (string) $replace;
     }
 
     // Plugins
@@ -645,7 +694,7 @@ class Parser extends View
              *   $matches[1] = all parameters string in opening tag
              *   $matches[2] = content between the tags to send to the plugin.
              */
-            if (! preg_match_all($pattern, $template, $matches, PREG_SET_ORDER)) {
+            if (preg_match_all($pattern, $template, $matches, PREG_SET_ORDER) < 1) {
                 continue;
             }
 
@@ -701,9 +750,9 @@ class Parser extends View
      * Converts an object to an array, respecting any
      * toArray() methods on an object.
      *
-     * @param array|bool|float|int|object|string|null $value
+     * @param array<string, mixed>|bool|float|int|object|string|null $value
      *
-     * @return array|bool|float|int|string|null
+     * @return array<string, mixed>|bool|float|int|string|null
      */
     protected function objectToArray($value)
     {

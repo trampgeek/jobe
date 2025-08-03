@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -26,15 +28,17 @@ class MockSession extends Session
     /**
      * Holds our "cookie" data.
      *
-     * @var Cookie[]
+     * @var list<Cookie>
      */
-    public $cookies = [];
+    public array $cookies = [];
 
-    public $didRegenerate = false;
+    public bool $didRegenerate = false;
 
     /**
      * Sets the driver as the session handler in PHP.
      * Extracted for easier testing.
+     *
+     * @return void
      */
     protected function setSaveHandler()
     {
@@ -44,6 +48,8 @@ class MockSession extends Session
     /**
      * Starts the session.
      * Extracted for testing reasons.
+     *
+     * @return void
      */
     protected function startSession()
     {
@@ -54,6 +60,8 @@ class MockSession extends Session
     /**
      * Takes care of setting the cookie on the client side.
      * Extracted for testing reasons.
+     *
+     * @return void
      */
     protected function setCookie()
     {
@@ -63,6 +71,11 @@ class MockSession extends Session
         $this->cookies[] = $this->cookie;
     }
 
+    /**
+     * Regenerates the session ID.
+     *
+     * @return void
+     */
     public function regenerate(bool $destroy = false)
     {
         $this->didRegenerate              = true;

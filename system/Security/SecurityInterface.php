@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -49,13 +51,6 @@ interface SecurityInterface
     public function getCookieName(): string;
 
     /**
-     * Check if CSRF cookie is expired.
-     *
-     * @deprecated
-     */
-    public function isExpired(): bool;
-
-    /**
      * Check if request should be redirect on failure.
      */
     public function shouldRedirect(): bool;
@@ -69,7 +64,9 @@ interface SecurityInterface
      *
      * If it is acceptable for the user input to include relative paths,
      * e.g. file/in/some/approved/folder.txt, you can set the second optional
-     * parameter, $relative_path to TRUE.
+     * parameter, $relativePath to TRUE.
+     *
+     * @deprecated 4.6.2 Use `sanitize_filename()` instead
      *
      * @param string $str          Input file name
      * @param bool   $relativePath Whether to preserve paths

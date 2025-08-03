@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -24,7 +26,7 @@ interface QueryInterface
      *
      * @param mixed $binds
      *
-     * @return mixed
+     * @return $this
      */
     public function setQuery(string $sql, $binds = null, bool $setEscape = true);
 
@@ -32,7 +34,7 @@ interface QueryInterface
      * Returns the final, processed query string after binding, etal
      * has been performed.
      *
-     * @return mixed
+     * @return string
      */
     public function getQuery();
 
@@ -41,7 +43,7 @@ interface QueryInterface
      * for it's start and end values. If no end value is present, will
      * use the current time to determine total duration.
      *
-     * @return mixed
+     * @return $this
      */
     public function setDuration(float $start, ?float $end = null);
 
@@ -55,6 +57,8 @@ interface QueryInterface
 
     /**
      * Stores the error description that happened for this query.
+     *
+     * @return $this
      */
     public function setError(int $code, string $error);
 
@@ -81,7 +85,7 @@ interface QueryInterface
     /**
      * Swaps out one table prefix for a new one.
      *
-     * @return mixed
+     * @return $this
      */
     public function swapPrefix(string $orig, string $swap);
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -21,11 +23,8 @@ use Generator;
  */
 final class DefinedRouteCollector
 {
-    private RouteCollection $routeCollection;
-
-    public function __construct(RouteCollection $routes)
+    public function __construct(private readonly RouteCollectionInterface $routeCollection)
     {
-        $this->routeCollection = $routes;
     }
 
     /**
@@ -33,23 +32,16 @@ final class DefinedRouteCollector
      */
     public function collect(): Generator
     {
-        $methods = [
-            'get',
-            'head',
-            'post',
-            'patch',
-            'put',
-            'delete',
-            'options',
-            'trace',
-            'connect',
-            'cli',
-        ];
+        $methods = Router::HTTP_METHODS;
 
         foreach ($methods as $method) {
             $routes = $this->routeCollection->getRoutes($method);
 
             foreach ($routes as $route => $handler) {
+                // The route key should be a string, but it is stored as an array key,
+                // it might be an integer.
+                $route = (string) $route;
+
                 if (is_string($handler) || $handler instanceof Closure) {
                     if ($handler instanceof Closure) {
                         $view = $this->routeCollection->getRoutesOptions($route, $method)['view'] ?? false;

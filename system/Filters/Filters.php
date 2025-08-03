@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of CodeIgniter 4 framework.
  *
@@ -11,13 +13,13 @@
 
 namespace CodeIgniter\Filters;
 
-use CodeIgniter\Exceptions\ConfigException;
+use CodeIgniter\Config\Filters as BaseFiltersConfig;
 use CodeIgniter\Filters\Exceptions\FilterException;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use Config\Feature;
 use Config\Filters as FiltersConfig;
 use Config\Modules;
-use Config\Services;
 
 /**
  * Filters
@@ -27,7 +29,7 @@ use Config\Services;
 class Filters
 {
     /**
-     * The original config file
+     * The Config\Filters instance
      *
      * @var FiltersConfig
      */
@@ -48,25 +50,42 @@ class Filters
     protected $response;
 
     /**
-     * Handle to the modules config.
+     * The Config\Modules instance
      *
      * @var Modules
      */
     protected $modules;
 
     /**
-     * Whether we've done initial processing
-     * on the filter lists.
+     * Whether we've done initial processing on the filter lists.
      *
      * @var bool
      */
     protected $initialized = false;
 
     /**
-     * The processed filters that will
-     * be used to check against.
+     * The filter list to execute for the current request (URI path).
      *
-     * @var array<string, array>
+     * This property is for display. Use $filtersClass to execute filters.
+     * This does not include "Required Filters".
+     *
+     * [
+     *     'before' => [
+     *         'alias',
+     *         'alias:arg1',
+     *         'alias:arg1,arg2',
+     *     ],
+     *     'after'  => [
+     *         'alias',
+     *         'alias:arg1',
+     *         'alias:arg1,arg2',
+     *     ],
+     * ]
+     *
+     * @var array{
+     *     before: list<string>,
+     *     after: list<string>
+     * }
      */
     protected $filters = [
         'before' => [],
@@ -74,10 +93,24 @@ class Filters
     ];
 
     /**
-     * The collection of filters' class names that will
-     * be used to execute in each position.
+     * The collection of filter classnames and their arguments to execute for
+     * the current request (URI path).
      *
-     * @var array<string, array>
+     * This does not include "Required Filters".
+     *
+     * [
+     *     'before' => [
+     *         [classname, arguments],
+     *     ],
+     *     'after'  => [
+     *         [classname, arguments],
+     *     ],
+     * ]
+     *
+     * @var array{
+     *     before: list<array{0: class-string, 1: list<string>}>,
+     *     after: list<array{0: class-string, 1: list<string>}>
+     * }
      */
     protected $filtersClass = [
         'before' => [],
@@ -85,16 +118,27 @@ class Filters
     ];
 
     /**
+     * List of filter class instances.
+     *
+     * @var array<class-string, FilterInterface> [classname => instance]
+     */
+    protected array $filterClassInstances = [];
+
+    /**
      * Any arguments to be passed to filters.
      *
      * @var array<string, list<string>|null> [name => params]
+     *
+     * @deprecated 4.6.0 No longer used.
      */
     protected $arguments = [];
 
     /**
      * Any arguments to be passed to filtersClass.
      *
-     * @var array<class-string, array<string, list<string>>|null> [classname => arguments]
+     * @var array<class-string, list<string>|null> [classname => arguments]
+     *
+     * @deprecated 4.6.0 No longer used.
      */
     protected $argumentsClass = [];
 
@@ -109,7 +153,7 @@ class Filters
         $this->request = &$request;
         $this->setResponse($response);
 
-        $this->modules = $modules ?? config(Modules::class);
+        $this->modules = $modules instanceof Modules ? $modules : new Modules();
 
         if ($this->modules->shouldDiscover('filters')) {
             $this->discoverFilters();
@@ -118,17 +162,17 @@ class Filters
 
     /**
      * If discoverFilters is enabled in Config then system will try to
-     * auto-discover custom filters files in Namespaces and allow access to
-     * the config object via the variable $filters as with the routes file
+     * auto-discover custom filters files in namespaces and allow access to
+     * the config object via the variable $filters as with the routes file.
      *
-     * Sample :
+     * Sample:
      * $filters->aliases['custom-auth'] = \Acme\Blob\Filters\BlobAuth::class;
      *
      * @deprecated 4.4.2 Use Registrar instead.
      */
     private function discoverFilters(): void
     {
-        $locator = Services::locator();
+        $locator = service('locator');
 
         // for access by custom filters
         $filters = $this->config;
@@ -136,10 +180,11 @@ class Filters
         $files = $locator->search('Config/Filters.php');
 
         foreach ($files as $file) {
+            // The $file may not be a class file.
             $className = $locator->getClassname($file);
 
             // Don't include our main Filter config again...
-            if ($className === FiltersConfig::class) {
+            if ($className === FiltersConfig::class || $className === BaseFiltersConfig::class) {
                 continue;
             }
 
@@ -158,10 +203,11 @@ class Filters
     }
 
     /**
-     * Runs through all of the filters for the specified
-     * uri and position.
+     * Runs through all the filters (except "Required Filters") for the specified
+     * URI and position.
      *
-     * @param string $uri URI path relative to baseURL
+     * @param string           $uri      URI path relative to baseURL
+     * @param 'after'|'before' $position
      *
      * @return RequestInterface|ResponseInterface|string|null
      *
@@ -171,55 +217,221 @@ class Filters
     {
         $this->initialize(strtolower($uri));
 
-        foreach ($this->filtersClass[$position] as $className) {
-            $class = new $className();
+        if ($position === 'before') {
+            return $this->runBefore($this->filtersClass[$position]);
+        }
 
-            if (! $class instanceof FilterInterface) {
-                throw FilterException::forIncorrectInterface(get_class($class));
+        // After
+        return $this->runAfter($this->filtersClass[$position]);
+    }
+
+    /**
+     * @param list<array{0: class-string, 1: list<string>}> $filterClassList [[classname, arguments], ...]
+     *
+     * @return RequestInterface|ResponseInterface|string
+     */
+    private function runBefore(array $filterClassList)
+    {
+        foreach ($filterClassList as $filterClassInfo) {
+            $className = $filterClassInfo[0];
+            $arguments = ($filterClassInfo[1] === []) ? null : $filterClassInfo[1];
+
+            $instance = $this->createFilter($className);
+
+            $result = $instance->before($this->request, $arguments);
+
+            if ($result instanceof RequestInterface) {
+                $this->request = $result;
+
+                continue;
             }
 
-            if ($position === 'before') {
-                $result = $class->before(
-                    $this->request,
-                    $this->argumentsClass[$className] ?? null
-                );
-
-                if ($result instanceof RequestInterface) {
-                    $this->request = $result;
-
-                    continue;
-                }
-
-                // If the response object was sent back,
-                // then send it and quit.
-                if ($result instanceof ResponseInterface) {
-                    // short circuit - bypass any other filters
-                    return $result;
-                }
-                // Ignore an empty result
-                if (empty($result)) {
-                    continue;
-                }
-
+            // If the response object was sent back,
+            // then send it and quit.
+            if ($result instanceof ResponseInterface) {
+                // short circuit - bypass any other filters
                 return $result;
             }
 
-            if ($position === 'after') {
-                $result = $class->after(
-                    $this->request,
-                    $this->response,
-                    $this->argumentsClass[$className] ?? null
-                );
+            // Ignore an empty result
+            if (empty($result)) {
+                continue;
+            }
 
-                if ($result instanceof ResponseInterface) {
-                    $this->response = $result;
+            return $result;
+        }
 
-                    continue;
-                }
+        return $this->request;
+    }
+
+    /**
+     * @param list<array{0: class-string, 1: list<string>}> $filterClassList [[classname, arguments], ...]
+     */
+    private function runAfter(array $filterClassList): ResponseInterface
+    {
+        foreach ($filterClassList as $filterClassInfo) {
+            $className = $filterClassInfo[0];
+            $arguments = ($filterClassInfo[1] === []) ? null : $filterClassInfo[1];
+
+            $instance = $this->createFilter($className);
+
+            $result = $instance->after($this->request, $this->response, $arguments);
+
+            if ($result instanceof ResponseInterface) {
+                $this->response = $result;
+
+                continue;
             }
         }
 
-        return $position === 'before' ? $this->request : $this->response;
+        return $this->response;
+    }
+
+    /**
+     * @param class-string $className
+     */
+    private function createFilter(string $className): FilterInterface
+    {
+        if (isset($this->filterClassInstances[$className])) {
+            return $this->filterClassInstances[$className];
+        }
+
+        $instance = new $className();
+
+        if (! $instance instanceof FilterInterface) {
+            throw FilterException::forIncorrectInterface($instance::class);
+        }
+
+        $this->filterClassInstances[$className] = $instance;
+
+        return $instance;
+    }
+
+    /**
+     * Returns the "Required Filters" class list.
+     *
+     * @param 'after'|'before' $position
+     *
+     * @return list<array{0: class-string, 1: list<string>}> [[classname, arguments], ...]
+     */
+    public function getRequiredClasses(string $position): array
+    {
+        [$filters, $aliases] = $this->getRequiredFilters($position);
+
+        if ($filters === []) {
+            return [];
+        }
+
+        $filterClassList = [];
+
+        foreach ($filters as $alias) {
+            if (is_array($aliases[$alias])) {
+                foreach ($this->config->aliases[$alias] as $class) {
+                    $filterClassList[] = [$class, []];
+                }
+            } else {
+                $filterClassList[] = [$aliases[$alias], []];
+            }
+        }
+
+        return $filterClassList;
+    }
+
+    /**
+     * Runs "Required Filters" for the specified position.
+     *
+     * @param 'after'|'before' $position
+     *
+     * @return RequestInterface|ResponseInterface|string|null
+     *
+     * @throws FilterException
+     *
+     * @internal
+     */
+    public function runRequired(string $position = 'before')
+    {
+        $filterClassList = $this->getRequiredClasses($position);
+
+        if ($filterClassList === []) {
+            return $position === 'before' ? $this->request : $this->response;
+        }
+
+        if ($position === 'before') {
+            return $this->runBefore($filterClassList);
+        }
+
+        // After
+        return $this->runAfter($filterClassList);
+    }
+
+    /**
+     * Returns "Required Filters" for the specified position.
+     *
+     * @param 'after'|'before' $position
+     *
+     * @internal
+     */
+    public function getRequiredFilters(string $position = 'before'): array
+    {
+        // For backward compatibility. For users who do not update Config\Filters.
+        if (! isset($this->config->required[$position])) {
+            $baseConfig = config(BaseFiltersConfig::class); // @phpstan-ignore-line
+            $filters    = $baseConfig->required[$position];
+            $aliases    = $baseConfig->aliases;
+        } else {
+            $filters = $this->config->required[$position];
+            $aliases = $this->config->aliases;
+        }
+
+        if ($filters === []) {
+            return [[], $aliases];
+        }
+
+        if ($position === 'after') {
+            if (in_array('toolbar', $this->filters['after'], true)) {
+                // It was already run in globals filters. So remove it.
+                $filters = $this->setToolbarToLast($filters, true);
+            } else {
+                // Set the toolbar filter to the last position to be executed
+                $filters = $this->setToolbarToLast($filters);
+            }
+        }
+
+        foreach ($filters as $alias) {
+            if (! array_key_exists($alias, $aliases)) {
+                throw FilterException::forNoAlias($alias);
+            }
+        }
+
+        return [$filters, $aliases];
+    }
+
+    /**
+     * Set the toolbar filter to the last position to be executed.
+     *
+     * @param list<string> $filters `after` filter array
+     * @param bool         $remove  if true, remove `toolbar` filter
+     */
+    private function setToolbarToLast(array $filters, bool $remove = false): array
+    {
+        $afters = [];
+        $found  = false;
+
+        foreach ($filters as $alias) {
+            if ($alias === 'toolbar') {
+                $found = true;
+
+                continue;
+            }
+
+            $afters[] = $alias;
+        }
+
+        if ($found && ! $remove) {
+            $afters[] = 'toolbar';
+        }
+
+        return $afters;
     }
 
     /**
@@ -237,7 +449,12 @@ class Filters
      *
      * @param string|null $uri URI path relative to baseURL (all lowercase)
      *
+     * @TODO We don't need to accept null as $uri.
+     *
      * @return Filters
+     *
+     * @testTag Only for test code. The run() calls this, so you don't need to
+     *          call this in your app.
      */
     public function initialize(?string $uri = null)
     {
@@ -245,18 +462,27 @@ class Filters
             return $this;
         }
 
-        $this->processGlobals($uri);
-        $this->processMethods();
-        $this->processFilters($uri);
+        // Decode URL-encoded string
+        $uri = urldecode($uri ?? '');
+
+        $oldFilterOrder = config(Feature::class)->oldFilterOrder ?? false;
+        if ($oldFilterOrder) {
+            $this->processGlobals($uri);
+            $this->processMethods();
+            $this->processFilters($uri);
+        } else {
+            $this->processFilters($uri);
+            $this->processMethods();
+            $this->processGlobals($uri);
+        }
 
         // Set the toolbar filter to the last position to be executed
-        if (in_array('toolbar', $this->filters['after'], true)
-            && ($count = count($this->filters['after'])) > 1
-            && $this->filters['after'][$count - 1] !== 'toolbar'
-        ) {
-            array_splice($this->filters['after'], array_search('toolbar', $this->filters['after'], true), 1);
-            $this->filters['after'][] = 'toolbar';
-        }
+        $this->filters['after'] = $this->setToolbarToLast($this->filters['after']);
+
+        // Since some filters like rate limiters rely on being executed once a request,
+        // we filter em here.
+        $this->filters['before'] = array_unique($this->filters['before']);
+        $this->filters['after']  = array_unique($this->filters['after']);
 
         $this->processAliasesToClass('before');
         $this->processAliasesToClass('after');
@@ -287,6 +513,12 @@ class Filters
 
     /**
      * Returns the processed filters array.
+     * This does not include "Required Filters".
+     *
+     * @return array{
+     *      before: list<string>,
+     *      after: list<string>
+     *  }
      */
     public function getFilters(): array
     {
@@ -295,6 +527,12 @@ class Filters
 
     /**
      * Returns the filtersClass array.
+     * This does not include "Required Filters".
+     *
+     * @return array{
+     *      before: list<array{0: class-string, 1: list<string>}>,
+     *      after: list<array{0: class-string, 1: list<string>}>
+     *  }
      */
     public function getFiltersClass(): array
     {
@@ -306,9 +544,11 @@ class Filters
      * MUST be called prior to initialize();
      * Intended for use within routes files.
      *
+     * @param 'after'|'before' $position
+     *
      * @return $this
      */
-    public function addFilter(string $class, ?string $alias = null, string $when = 'before', string $section = 'globals')
+    public function addFilter(string $class, ?string $alias = null, string $position = 'before', string $section = 'globals')
     {
         $alias ??= md5($class);
 
@@ -316,13 +556,13 @@ class Filters
             $this->config->{$section} = [];
         }
 
-        if (! isset($this->config->{$section}[$when])) {
-            $this->config->{$section}[$when] = [];
+        if (! isset($this->config->{$section}[$position])) {
+            $this->config->{$section}[$position] = [];
         }
 
         $this->config->aliases[$alias] = $class;
 
-        $this->config->{$section}[$when][] = $alias;
+        $this->config->{$section}[$position][] = $alias;
 
         return $this;
     }
@@ -334,59 +574,54 @@ class Filters
      * after the filter name, followed by a comma-separated list of arguments that
      * are passed to the filter when executed.
      *
-     * @param string $name filter_name or filter_name:arguments like 'role:admin,manager'
-     *
-     * @return $this
-     *
-     * @deprecated Use enableFilters(). This method will be private.
+     * @param string           $filter   filter_name or filter_name:arguments like 'role:admin,manager'
+     *                                   or filter classname.
+     * @param 'after'|'before' $position
      */
-    public function enableFilter(string $name, string $when = 'before')
+    private function enableFilter(string $filter, string $position = 'before'): void
     {
-        // Get arguments and clean name
-        [$name, $arguments]     = $this->getCleanName($name);
-        $this->arguments[$name] = ($arguments !== []) ? $arguments : null;
+        // Normalize the arguments.
+        [$alias, $arguments] = $this->getCleanName($filter);
+        $filter              = ($arguments === []) ? $alias : $alias . ':' . implode(',', $arguments);
 
-        if (class_exists($name)) {
-            $this->config->aliases[$name] = $name;
-        } elseif (! array_key_exists($name, $this->config->aliases)) {
-            throw FilterException::forNoAlias($name);
+        if (class_exists($alias)) {
+            $this->config->aliases[$alias] = $alias;
+        } elseif (! array_key_exists($alias, $this->config->aliases)) {
+            throw FilterException::forNoAlias($alias);
         }
 
-        $classNames = (array) $this->config->aliases[$name];
-
-        foreach ($classNames as $className) {
-            $this->argumentsClass[$className] = $this->arguments[$name] ?? null;
+        if (! isset($this->filters[$position][$filter])) {
+            $this->filters[$position][] = $filter;
         }
 
-        if (! isset($this->filters[$when][$name])) {
-            $this->filters[$when][]    = $name;
-            $this->filtersClass[$when] = array_merge($this->filtersClass[$when], $classNames);
-        }
-
-        return $this;
+        // Since some filters like rate limiters rely on being executed once a request,
+        // we filter em here.
+        $this->filters[$position] = array_unique($this->filters[$position]);
     }
 
     /**
      * Get clean name and arguments
      *
-     * @param string $name filter_name or filter_name:arguments like 'role:admin,manager'
+     * @param string $filter filter_name or filter_name:arguments like 'role:admin,manager'
      *
      * @return array{0: string, 1: list<string>} [name, arguments]
      */
-    private function getCleanName(string $name): array
+    private function getCleanName(string $filter): array
     {
         $arguments = [];
 
-        if (strpos($name, ':') !== false) {
-            [$name, $arguments] = explode(':', $name);
-
-            $arguments = explode(',', $arguments);
-            array_walk($arguments, static function (&$item) {
-                $item = trim($item);
-            });
+        if (! str_contains($filter, ':')) {
+            return [$filter, $arguments];
         }
 
-        return [$name, $arguments];
+        [$alias, $arguments] = explode(':', $filter);
+
+        $arguments = explode(',', $arguments);
+        array_walk($arguments, static function (&$item): void {
+            $item = trim($item);
+        });
+
+        return [$alias, $arguments];
     }
 
     /**
@@ -396,13 +631,13 @@ class Filters
      * after the filter name, followed by a comma-separated list of arguments that
      * are passed to the filter when executed.
      *
-     * @params array<string> $names filter_name or filter_name:arguments like 'role:admin,manager'
+     * @param list<string> $filters filter_name or filter_name:arguments like 'role:admin,manager'
      *
      * @return Filters
      */
-    public function enableFilters(array $names, string $when = 'before')
+    public function enableFilters(array $filters, string $when = 'before')
     {
-        foreach ($names as $filter) {
+        foreach ($filters as $filter) {
             $this->enableFilter($filter, $when);
         }
 
@@ -413,10 +648,12 @@ class Filters
      * Returns the arguments for a specified key, or all.
      *
      * @return array<string, string>|string
+     *
+     * @deprecated 4.6.0 Already does not work.
      */
     public function getArguments(?string $key = null)
     {
-        return $key === null ? $this->arguments : $this->arguments[$key];
+        return ((string) $key === '') ? $this->arguments : $this->arguments[$key];
     }
 
     // --------------------------------------------------------------------
@@ -441,6 +678,8 @@ class Filters
         // Add any global filters, unless they are excluded for this URI
         $sets = ['before', 'after'];
 
+        $filters = [];
+
         foreach ($sets as $set) {
             if (isset($this->config->globals[$set])) {
                 // look at each alias in the group
@@ -460,10 +699,23 @@ class Filters
                     }
 
                     if ($keep) {
-                        $this->filters[$set][] = $alias;
+                        $filters[$set][] = $alias;
                     }
                 }
             }
+        }
+
+        if (isset($filters['before'])) {
+            $oldFilterOrder = config(Feature::class)->oldFilterOrder ?? false;
+            if ($oldFilterOrder) {
+                $this->filters['before'] = array_merge($this->filters['before'], $filters['before']);
+            } else {
+                $this->filters['before'] = array_merge($filters['before'], $this->filters['before']);
+            }
+        }
+
+        if (isset($filters['after'])) {
+            $this->filters['after'] = array_merge($this->filters['after'], $filters['after']);
         }
     }
 
@@ -478,11 +730,34 @@ class Filters
             return;
         }
 
-        // Request method won't be set for CLI-based requests
-        $method = strtolower($this->request->getMethod()) ?? 'cli';
+        $method = $this->request->getMethod();
+
+        $found = false;
 
         if (array_key_exists($method, $this->config->methods)) {
-            $this->filters['before'] = array_merge($this->filters['before'], $this->config->methods[$method]);
+            $found = true;
+        }
+        // Checks lowercase HTTP method for backward compatibility.
+        // @deprecated 4.5.0
+        // @TODO remove this in the future.
+        elseif (array_key_exists(strtolower($method), $this->config->methods)) {
+            @trigger_error(
+                'Setting lowercase HTTP method key "' . strtolower($method) . '" is deprecated.'
+                . ' Use uppercase HTTP method like "' . strtoupper($method) . '".',
+                E_USER_DEPRECATED,
+            );
+
+            $found  = true;
+            $method = strtolower($method);
+        }
+
+        if ($found) {
+            $oldFilterOrder = config(Feature::class)->oldFilterOrder ?? false;
+            if ($oldFilterOrder) {
+                $this->filters['before'] = array_merge($this->filters['before'], $this->config->methods[$method]);
+            } else {
+                $this->filters['before'] = array_merge($this->config->methods[$method], $this->filters['before']);
+            }
         }
     }
 
@@ -495,25 +770,26 @@ class Filters
      */
     protected function processFilters(?string $uri = null)
     {
-        if (! isset($this->config->filters) || ! $this->config->filters) {
+        if (! isset($this->config->filters) || $this->config->filters === []) {
             return;
         }
 
         $uri = strtolower(trim($uri, '/ '));
 
         // Add any filters that apply to this URI
-        foreach ($this->config->filters as $alias => $settings) {
+        $filters = [];
+
+        foreach ($this->config->filters as $filter => $settings) {
+            // Normalize the arguments.
+            [$alias, $arguments] = $this->getCleanName($filter);
+            $filter              = ($arguments === []) ? $alias : $alias . ':' . implode(',', $arguments);
+
             // Look for inclusion rules
             if (isset($settings['before'])) {
                 $path = $settings['before'];
 
                 if ($this->pathApplies($uri, $path)) {
-                    // Get arguments and clean name
-                    [$name, $arguments] = $this->getCleanName($alias);
-
-                    $this->filters['before'][] = $name;
-
-                    $this->registerArguments($name, $arguments);
+                    $filters['before'][] = $filter;
                 }
             }
 
@@ -521,46 +797,34 @@ class Filters
                 $path = $settings['after'];
 
                 if ($this->pathApplies($uri, $path)) {
-                    // Get arguments and clean name
-                    [$name, $arguments] = $this->getCleanName($alias);
-
-                    $this->filters['after'][] = $name;
-
-                    // The arguments may have already been registered in the before filter.
-                    // So disable check.
-                    $this->registerArguments($name, $arguments, false);
+                    $filters['after'][] = $filter;
                 }
             }
         }
-    }
 
-    /**
-     * @param string $name      filter alias
-     * @param array  $arguments filter arguments
-     * @param bool   $check     if true, check if already defined
-     */
-    private function registerArguments(string $name, array $arguments, bool $check = true): void
-    {
-        if ($arguments !== []) {
-            if ($check && array_key_exists($name, $this->arguments)) {
-                throw new ConfigException(
-                    '"' . $name . '" already has arguments: '
-                    . (($this->arguments[$name] === null) ? 'null' : implode(',', $this->arguments[$name]))
-                );
+        $oldFilterOrder = config(Feature::class)->oldFilterOrder ?? false;
+
+        if (isset($filters['before'])) {
+            if ($oldFilterOrder) {
+                $this->filters['before'] = array_merge($this->filters['before'], $filters['before']);
+            } else {
+                $this->filters['before'] = array_merge($filters['before'], $this->filters['before']);
             }
-
-            $this->arguments[$name] = $arguments;
         }
 
-        $classNames = (array) $this->config->aliases[$name];
+        if (isset($filters['after'])) {
+            if (! $oldFilterOrder) {
+                $filters['after'] = array_reverse($filters['after']);
+            }
 
-        foreach ($classNames as $className) {
-            $this->argumentsClass[$className] = $this->arguments[$name] ?? null;
+            $this->filters['after'] = array_merge($this->filters['after'], $filters['after']);
         }
     }
 
     /**
      * Maps filter aliases to the equivalent filter classes
+     *
+     * @param 'after'|'before' $position
      *
      * @return void
      *
@@ -568,26 +832,30 @@ class Filters
      */
     protected function processAliasesToClass(string $position)
     {
-        foreach ($this->filters[$position] as $alias => $rules) {
-            if (is_numeric($alias) && is_string($rules)) {
-                $alias = $rules;
-            }
+        $filterClassList = [];
+
+        foreach ($this->filters[$position] as $filter) {
+            // Get arguments and clean alias
+            [$alias, $arguments] = $this->getCleanName($filter);
 
             if (! array_key_exists($alias, $this->config->aliases)) {
                 throw FilterException::forNoAlias($alias);
             }
 
             if (is_array($this->config->aliases[$alias])) {
-                $this->filtersClass[$position] = array_merge($this->filtersClass[$position], $this->config->aliases[$alias]);
+                foreach ($this->config->aliases[$alias] as $class) {
+                    $filterClassList[] = [$class, $arguments];
+                }
             } else {
-                $this->filtersClass[$position][] = $this->config->aliases[$alias];
+                $filterClassList[] = [$this->config->aliases[$alias], $arguments];
             }
         }
 
-        // when using enableFilter() we already write the class name in $filtersClass as well as the
-        // alias in $filters. This leads to duplicates when using route filters.
-        // Since some filters like rate limiters rely on being executed once a request we filter em here.
-        $this->filtersClass[$position] = array_values(array_unique($this->filtersClass[$position]));
+        if ($position === 'before') {
+            $this->filtersClass[$position] = array_merge($filterClassList, $this->filtersClass[$position]);
+        } else {
+            $this->filtersClass[$position] = array_merge($this->filtersClass[$position], $filterClassList);
+        }
     }
 
     /**
@@ -601,7 +869,7 @@ class Filters
     private function pathApplies(string $uri, $paths)
     {
         // empty path matches all
-        if (empty($paths)) {
+        if ($paths === '' || $paths === []) {
             return true;
         }
 
@@ -639,7 +907,7 @@ class Filters
     /**
      * Check the URI path as pseudo-regex
      *
-     * @param string $uri   URI path relative to baseURL (all lowercase)
+     * @param string $uri   URI path relative to baseURL (all lowercase, URL-decoded)
      * @param array  $paths The except path patterns
      */
     private function checkPseudoRegex(string $uri, array $paths): bool
@@ -652,7 +920,7 @@ class Filters
             $path = strtolower(str_replace('*', '.*', $path));
 
             // Does this rule apply here?
-            if (preg_match('#^' . $path . '$#', $uri, $match) === 1) {
+            if (preg_match('#\A' . $path . '\z#u', $uri, $match) === 1) {
                 return true;
             }
         }
