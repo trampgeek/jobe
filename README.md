@@ -1067,3 +1067,7 @@ throughput.
 
   1. Use of numpy + matplotlib could use excessive threads, so set default value
      of OPENBLAS_NUM_THREADS to just 4.
+
+### 2.2.0 (10 September 2025)
+
+  1. Upgrade CodeIgniter framework to 4.6.3
