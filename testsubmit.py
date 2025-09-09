@@ -804,19 +804,24 @@ def http_request(method, resource, data, headers):
     '''Send a request to Jobe with given HTTP method to given resource on
        the currently configured Jobe server and given data and headers.
        Return the connection object. '''
-
     headers["X-API-KEY"] = API_KEY  # Relevant only when testing on UCan jobe2
-    url = f"{ARGS.host}:{ARGS.port}{resource}"
-
+    
     if ARGS.proxy != "":
+        # Using proxy - proxy connections are always HTTP regardless of target SSL
         proxy_host, proxy_port = ARGS.proxy.split(":")
         connect = http.client.HTTPConnection(proxy_host, int(proxy_port))
-        full_url = f"http://{ARGS.host}:{ARGS.port}{resource}"
+        # When using proxy, we need the full URL in the request
+        protocol = "https" if ARGS.ssl else "http"
+        full_url = f"{protocol}://{ARGS.host}:{ARGS.port}{resource}"
         connect.request(method, full_url, data, headers)
     else:
-        connect = http.client.HTTPConnection(ARGS.host, ARGS.port)
+        # Direct connection - use SSL or regular HTTP as specified
+        if ARGS.ssl:
+            connect = http.client.HTTPSConnection(ARGS.host, ARGS.port)
+        else:
+            connect = http.client.HTTPConnection(ARGS.host, ARGS.port)
         connect.request(method, resource, data, headers)
-
+    
     return connect
 
 
@@ -1188,6 +1193,8 @@ other users' submissions to fail."""
         help="The port number on the Jobe host (default 80)")
     parser.add_argument('--proxy', default='',
         help='The proxy to use and port, like proxy:3128, let empty to not use proxy (default empty)')
+    parser.add_argument('--ssl', action='store_true',
+        help="Use SSL to connect to the Jobe server (default false)")
     parser.add_argument('--perf', action='store_true',
         help='Measure performance instead of correctness')
     parser.add_argument('-b', '--binarysearch', action='store_true',
