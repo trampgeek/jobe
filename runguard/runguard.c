@@ -879,7 +879,7 @@ int main(int argc, char **argv)
 		if ( setsid()==-1 ) error(errno,"setsid failed");
 
 #ifdef USE_CGROUPS
-		/* Put the child process in the cgroup */
+		/* Put the child process in the cgroup. */
 		cgroup_attach();
 #endif
 
@@ -887,16 +887,20 @@ int main(int argc, char **argv)
 		setrestrictions();
 
 		// As a special case for Python running matplotlib, set up a config dir.
+		int temp_done = 0;
 		for (i = 0; i < 10; i++) {
 			char template[] = "/tmp/mplwork_XXXXXX";
 			char *dirName = mkdtemp(template);
 			if (dirName) {
 				setenv("MPLCONFIGDIR", dirName, 1); // A special case for matplotlib.
+				setenv("HOME", dirName, 1);         // Necessary nowadays as well??
+				temp_done = 1;
 				break;
 			}
-			if (i == 9) { // Something's seriously wrong if this happens!
-				error(errno, "Can't create MPLCONFIGDIR directory for matplotlib");
-			}
+		}
+
+		if (!temp_done) { // Something's seriously wrong if this happens!
+			error(errno, "Can't create MPLCONFIGDIR directory for matplotlib");
 		}
 
 		// Also for Python, limit OPENBLAS to 4 threads. Users can override this in their
