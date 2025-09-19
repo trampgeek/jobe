@@ -1,5 +1,5 @@
 # JOBE
-Version: 2.1.1, 10 February 2025
+Version: 2.2.2, 20 September 2025
 
 Note: this is a new version, with lots of changes.
 If you find errors in this document, please email me. My gmail
@@ -1071,3 +1071,11 @@ throughput.
 ### 2.2.0 (10 September 2025)
 
   1. Upgrade CodeIgniter framework to 4.6.3
+
+### 2.2.1 (20 September 2025)
+
+  1. Set a HOME environment variable to reference the temp directory originally
+     created for MPLCONFIGDIG (Matplotlib for Python) but which could be useful
+     for other apps.
+  1. Remove temporary home directory when task exits (belts and braces - language
+     tasks clean up anyway).

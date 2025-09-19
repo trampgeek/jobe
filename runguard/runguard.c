@@ -887,19 +887,12 @@ int main(int argc, char **argv)
 		setrestrictions();
 
 		// As a special case for Python running matplotlib, set up a config dir.
-		int temp_done = 0;
-		for (i = 0; i < 10; i++) {
-			char template[] = "/tmp/mplwork_XXXXXX";
-			char *dirName = mkdtemp(template);
-			if (dirName) {
-				setenv("MPLCONFIGDIR", dirName, 1); // A special case for matplotlib.
-				setenv("HOME", dirName, 1);         // Necessary nowadays as well??
-				temp_done = 1;
-				break;
-			}
-		}
-
-		if (!temp_done) { // Something's seriously wrong if this happens!
+		char template[] = "/tmp/mplwork_XXXXXX";
+		char* tempDirName = mkdtemp(template);
+		if (tempDirName) {
+			setenv("MPLCONFIGDIR", tempDirName, 1);
+			setenv("HOME", tempDirName, 1);
+		} else {
 			error(errno, "Can't create MPLCONFIGDIR directory for matplotlib");
 		}
 
@@ -1058,6 +1051,11 @@ int main(int argc, char **argv)
 			}
 		} else {
 			exitcode = WEXITSTATUS(status);
+		}
+
+		// Delete the temporary directory (though LanguageTask would clean up anyway).
+		if (tempDirName) {
+			(tempDirName);
 		}
 
 #ifdef USE_CGROUPS
