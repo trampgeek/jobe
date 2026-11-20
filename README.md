@@ -1,13 +1,9 @@
 # JOBE
-Version: 2.2.2, 20 September 2025
-
-Note: this is a new version, with lots of changes.
-If you find errors in this document, please email me. My gmail
-name is trampgeek.
+Version: 2.2.24, 21 November 2026
 
 Author: Richard Lobb, University of Canterbury, New Zealand
 
-Contributors: Tim Hunt, Fedor Lyanguzov, Kai-Cheung Leung, Marcus Klang
+Contributors: Tim Hunt, Fedor Lyanguzov, Kai-Cheung Leung, Marcus Klang, Claude
 
 ## Introduction
 
