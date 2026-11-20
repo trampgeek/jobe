@@ -103,7 +103,7 @@ on it! **CAVEAT EMPTOR!**
 NOTE: a (rather old) video walkthrough of the process of setting up a Jobe server
 on a DigitalOcean droplet is [here](https://www.youtube.com/watch?v=dGpnQpLnERw).
 
-Installation on Ubuntu 22.04 systems should be
+Installation on Ubuntu 22.04 or later systems should be
 straightforward but installation on other flavours of Linux or on systems
 with non-standard configurations may require
 Linux administrator skills.
@@ -115,8 +115,25 @@ on any Linux system that has docker installed.
 The steps to fire up a Jobe Server on Digital Ocean using JobeInAbox are given below in section
 *Setting up a JobeInAbox Digital Ocean server*.
 
-However, for security and performance reasons it it *strongly* recommended to run
-Jobe on a dedicated server, even when running it in a container.
+**Jobe needs a server of its own.** For security and performance reasons it is
+*strongly* recommended to run Jobe on a dedicated server, even when running it
+in a container. This is not merely a performance preference:
+
+  1. Jobe exists to run untrusted code that arbitrary students have written. Its
+     defence is `runguard` plus a pool of unprivileged `jobeNN` run users, and
+     that defence is all that stands between a submitted job and everything else
+     on the machine. Anything else of value on the same server is inside the
+     blast radius of any `runguard` bug.
+  1. A native (non-container) install has to relax some of the web server's own
+     hardening, because Jobe cannot work without it -- see *Jobe and systemd
+     sandboxing* below. Those relaxations apply to the web server as a whole, so
+     **any other Apache-hosted service on the same machine silently loses the
+     same protections**, having gained nothing in return. A site that hosts, say,
+     Moodle and Jobe on one server is weakening Moodle's web server to suit Jobe.
+
+If you have no choice but to share a server, prefer JobeInABox over a native
+install: a container gets its own filesystem, user accounts and web server
+process, so nothing done for Jobe's benefit reaches the host's services.
 
 Jobe runs only on Linux, which must have the Apache web server
 installed and running. PHP must have been compiled with the System V
@@ -218,21 +235,128 @@ in /etc/sudoers. This was
 (reported as a bug)[https://bugzilla.redhat.com/show_bug.cgi?id=1196451]
 and was fixed in later RHEL releases.
 
+### Jobe and systemd sandboxing
+
+**This section applies only to native installs, not to JobeInABox.** If you are
+running the container you can skip it; see *Why the container is exempt* at the
+end for the reason.
+
+Distributions have begun shipping systemd service units that sandbox the web
+server. Ubuntu 26.04's `apache2.service` was the first to break Jobe, and it
+does so in three separate ways. All three are properties of the *systemd unit*,
+not of any Apache configuration file and not of any file permission, so nothing
+in `/etc/apache2` or in a `getfacl` listing gives any hint of them. The web
+server is given its own mount namespace and seccomp filter, and Jobe's files and
+ACLs are untouched and correct while remaining unusable.
+
+The three failures, in the order you will meet them:
+
+  1. `ProtectHome=read-only` makes `/home` read-only inside the web server's
+     mount namespace. Jobe creates one run directory per job with
+     `tempnam("/home/jobe/runs", ...)`, so every submission fails. PHP's
+     `tempnam` responds by falling back to the system temporary directory and
+     emitting a warning, which Jobe turns into an exception, so the symptom is
+     an HTTP 500 reading
+     `Server exception (tempnam(): file created in the system's temporary directory)`.
+     That looks exactly like a file permission problem and is not one.
+  1. `InaccessiblePaths=-/etc/sudoers -/etc/sudoers.d` hides sudo's configuration
+     from the web server, which replaces both paths with an empty, unreadable
+     placeholder. The web server runs `runguard`, `rmjobedir` and `pkill` as root
+     via sudo, so once the first problem is fixed this one stops jobs instead.
+  1. `MemoryDenyWriteExecute=yes` forbids writable executable memory. This is a
+     seccomp filter, and seccomp filters are inherited by every descendant
+     process, so it reaches the submitted jobs themselves. Any language with a
+     JIT compiler then fails: Java aborts with
+     `Failed to mark memory page as executable - check if grsecurity/PaX is enabled`
+     and Node.js crashes on startup. It also disables PHP's PCRE JIT, which
+     logs a warning on every request.
+
+To check whether your web server is affected:
+
+    systemctl show apache2 -p ProtectHome -p InaccessiblePaths -p MemoryDenyWriteExecute
+
+The `install` script makes the necessary changes for you, by writing a drop-in
+at `/etc/systemd/system/apache2.service.d/jobe-sandbox.conf`. It inspects the
+unit's settings as they actually are rather than guessing from a distribution
+version, so it does nothing on a unit that needs nothing and is safe to re-run.
+On a current Ubuntu 26.04 the drop-in it writes is:
+
+    [Service]
+    ReadWritePaths=/home/jobe
+    InaccessiblePaths=
+    InaccessiblePaths=/boot /root -/etc/ssh -/etc/apt -/etc/.git -/etc/.svn
+    MemoryDenyWriteExecute=no
+
+**Sandboxing is applied when the server starts, so a reload is not enough.**
+After installing, run
+
+    sudo systemctl restart apache2
+
+Three notes on what that drop-in does and does not do:
+
+  * It is deliberately narrower than `ProtectHome=no`. `ProtectHome=read-only`
+    is documented as being "mostly equivalent to `ReadOnlyPaths=`", and
+    `ReadWritePaths=` nests inside that, so only `/home/jobe` becomes writable
+    and your real users' home directories stay read-only. Where `ProtectHome` is
+    `yes` or `tmpfs` that nesting is not possible and the installer falls back to
+    `ProtectHome=no`.
+  * The `InaccessiblePaths=` reset is unavoidable. Single entries cannot be
+    removed from that list, and nothing can be nested inside it, so the only way
+    to restore sudo's configuration is to clear the list and put back everything
+    except the two sudoers paths. The installer reads the current list and
+    rewrites it, so whatever else your distribution protects stays protected.
+  * **None of this weakens Jobe's own sandbox.** Jobs are still confined by
+    `runguard` and by the unprivileged `jobeNN` run users. What it weakens is the
+    *web server's* protection against itself, which is precisely why Jobe should
+    not share a server with anything else: as noted at the top of
+    *Installation*, every other site on that Apache instance loses these three
+    protections too.
+
+`install --uninstall` removes the drop-in again, so a machine that no longer
+runs Jobe does not keep the relaxed settings. If you would rather write the
+drop-in by hand, `sudo systemctl edit apache2` is the supported way to do it.
+
+#### Why the container is exempt
+
+JobeInABox runs on Ubuntu 26.04 and contains the identical hardened unit file,
+yet is entirely unaffected, because nothing ever reads it. The image's `CMD` is
+`apache2ctl -D FOREGROUND`, so Apache is process 1 and systemd never runs at
+all. The unit is inert text in the image: there is no mount namespace, no
+seccomp filter and no sandboxing, and `/home`, sudo and the JIT languages all
+work normally. The same is true of any container that execs the web server
+directly.
+
+The practical consequence is that this whole section is a hazard of the native
+install path only, and is one more reason to prefer the container. If JobeInABox
+is ever changed to boot systemd as process 1, all three failures above will
+reappear and the drop-in will become necessary inside the container too.
+
 ### Setting the locale
 
-By default, Apache is configured to use the C locale. This means that programs
-generating, say, UTF-8 output will fail with an error
+Jobe needs Apache's `LANG` to be a UTF-8 compatible value. Apache 2.4.65-3 and
+later set one by default, so **on Ubuntu 26.04 and later there is nothing to do
+here**, and JobeInABox has never needed anything either. Older versions
+defaulted to the C locale, under which programs generating, say, UTF-8 output
+fail with an error
 
     UnicodeEncodeError: 'ascii' codec can't encode character ...
 
-If you wish to run UTF-8 code (recommended) you should
-find the line in the Apache envvars file (on Ubuntu systems this is to be found
-at /etc/apache2/envvars)
+To see which applies to your server, check the Apache envvars file (on Ubuntu
+systems this is at /etc/apache2/envvars):
+
+    grep '^export LANG' /etc/apache2/envvars
+
+If that already reports a UTF-8 value, such as
+
+    export LANG=C.UTF-8
+
+then skip the rest of this section. If it reports
 
     export LANG=C
 
-and change it to either C.UTF-8 (which changes the charset to UTF-8 but leaves
-other locale settings unchanged) or to the required standard locale value, e.g.
+then edit that line, changing it to either C.UTF-8 (which changes the charset to
+UTF-8 but leaves other locale settings unchanged) or to the required standard
+locale value, e.g.
 
     export LANG=en_NZ.UTF-8
 
@@ -1090,3 +1214,8 @@ throughput.
   1. Plug security hole that allowed an attacker to replace prog.out and/or prog.err with symbolic links (allowed reading anything that www-data could read) or with a pipe (permanently hanging a Jobe worker even across a reboot).
   1. Prevent a setuid/setgid exploit that allowed one Jobe worker to assume another jobe user's identity.
   1. Tighten security in the event a user somehow obtained www-data level access (belts and braces).
+
+### 2.2.4 (21 November 2026)
+  1. Support native installs on distributions that ship a sandboxed web-server systemd unit, such as Ubuntu 26.04. Its `apache2.service` sets `ProtectHome=read-only` (so run directories cannot be created, giving an HTTP 500 reading `tempnam(): file created in the system's temporary directory`), hides `/etc/sudoers` and `/etc/sudoers.d` (so sudo cannot run `runguard`), and sets `MemoryDenyWriteExecute=yes` (whose seccomp filter is inherited by submitted jobs, breaking the Java and JavaScript JIT compilers). The `install` script now detects this and writes a drop-in to relax only what is needed; `install --uninstall` removes it. See *Jobe and systemd sandboxing* in the installation instructions. JobeInABox is unaffected, as systemd never runs in it.
+  1. Documentation: make it explicit that Jobe should have a dedicated server, and that on a shared one the above relaxations apply to every other Apache-hosted service on the machine.
+  1. Documentation: *Setting the locale* no longer tells you to change a line that doesn't exist. Apache 2.4.65-3 changed the default `LANG` in `envvars` from `C` to `C.UTF-8`, so on Ubuntu 26.04 and later there is nothing to do; the section now says how to tell which case you are in.

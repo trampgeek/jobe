@@ -19,6 +19,7 @@ class LoginDefsException (Exception):
 JOBE_DIRS = ['/var/www/jobe', '/var/www/html/jobe']
 LANGUAGE_CACHE_FILE = '/tmp/jobe_language_cache_file'
 FILE_CACHE_BASE = '/home/jobe/files'
+SANDBOX_DROP_IN = 'jobe-sandbox.conf'
 
 def get_config(param_name, install_dir):
     '''Get a config parameter from <<install_dir>>/app/Config/Jobe.php.
@@ -155,6 +156,124 @@ def make_runguard(install_dir):
         raise OSError("Runguard build failed")
 
 
+def get_webserver_unit():
+    '''Return the name of the systemd service unit running the web server, or
+       None if systemd isn't managing this machine. It is not managing it in a
+       container, where the web server is normally started directly (JobeInABox
+       runs "apache2ctl -D FOREGROUND" as process 1), and there the unit file is
+       inert even when the package has installed one.
+    '''
+    if not os.path.isdir('/run/systemd/system'):
+        return None
+    for server in ['apache2', 'httpd']:
+        try:
+            pids = subprocess.check_output(f'pgrep -x {server}', shell=True).decode('utf8').split()
+        except subprocess.CalledProcessError:
+            continue  # That web server isn't running.
+        for pid in pids:
+            try:
+                with open(f'/proc/{pid}/cgroup') as cgroup:
+                    match = re.search(r'/([\w\-.@]+\.service)', cgroup.read())
+            except OSError:
+                continue  # The process exited under us.
+            if match:
+                return match.group(1)
+    return None
+
+
+def get_unit_settings(unit, properties):
+    '''Return a dict of the given systemd properties of the given unit, as
+       currently in effect, i.e. including the effect of any existing drop-ins.
+    '''
+    args = ' '.join(f'-p {property}' for property in properties)
+    output = subprocess.check_output(f'systemctl show {args} {unit}', shell=True).decode('utf8')
+    settings = {}
+    for line in output.splitlines():
+        name, separator, value = line.partition('=')
+        if separator:
+            settings[name] = value
+    return settings
+
+
+def configure_webserver_sandbox(unit):
+    '''Relax, with a drop-in, those parts of the web server unit's systemd
+       sandboxing that stop Jobe working.
+
+       Distributions have begun shipping hardened units: Ubuntu 26.04's
+       apache2.service breaks Jobe three separate ways (see "Jobe and systemd
+       sandboxing" in the README). The checks below are made against the unit's
+       settings as they actually are rather than against a distribution version,
+       so a unit needing nothing is left alone and this is safe to re-run.
+
+       None of this weakens Jobe's own sandbox, which is runguard plus the jobe
+       run users; it undoes only restrictions on the web server that Jobe has no
+       way to work around. It is also why Jobe should have a server to itself:
+       any other Apache-hosted service on the same machine loses the same
+       protections, having gained nothing.
+    '''
+    properties = ['ProtectHome', 'ReadWritePaths', 'InaccessiblePaths', 'MemoryDenyWriteExecute']
+    try:
+        settings = get_unit_settings(unit, properties)
+    except subprocess.CalledProcessError:
+        print(f"WARNING: couldn't read the systemd settings of {unit}.")
+        print("         Skipping the sandbox check; see 'Jobe and systemd sandboxing' in the README.")
+        return
+
+    directives = []
+
+    # 1. Jobe makes a run directory per job with tempnam("/home/jobe/runs", ...),
+    #    which fails if /home is read-only in the web server's mount namespace.
+    protect_home = settings.get('ProtectHome', 'no')
+    if '/home/jobe' not in settings.get('ReadWritePaths', '').split():
+        if protect_home == 'read-only':
+            # ProtectHome=read-only is documented as "mostly equivalent to
+            # ReadOnlyPaths=", and ReadWritePaths= nests inside that, so only
+            # /home/jobe is exposed: real users' home directories stay read-only.
+            directives.append('ReadWritePaths=/home/jobe')
+        elif protect_home in ['yes', 'tmpfs']:
+            # Neither of these can have ReadWritePaths= nested inside it.
+            directives.append('ProtectHome=no')
+
+    # 2. The web server runs runguard, rmjobedir and pkill as root via sudo, so
+    #    sudo must be able to read its own configuration. Single entries can't be
+    #    removed from InaccessiblePaths=, nor can anything be nested inside it,
+    #    so the list has to be reset and everything else restored.
+    inaccessible = settings.get('InaccessiblePaths', '').split()
+    wanted = [path for path in inaccessible if not path.lstrip('-+').startswith('/etc/sudoers')]
+    if wanted != inaccessible:
+        directives.append('InaccessiblePaths=')
+        if wanted:
+            directives.append('InaccessiblePaths=' + ' '.join(wanted))
+
+    # 3. Java and JavaScript need writable executable pages for their JIT
+    #    compilers. MemoryDenyWriteExecute is a seccomp filter, so it is
+    #    inherited by every process the web server starts and so reaches the
+    #    submitted jobs; it also disables PHP's own PCRE JIT.
+    if settings.get('MemoryDenyWriteExecute') == 'yes':
+        directives.append('MemoryDenyWriteExecute=no')
+
+    if not directives:
+        print(f"Systemd sandboxing of {unit} needs no changes")
+        return
+
+    drop_in_dir = f'/etc/systemd/system/{unit}.d'
+    drop_in = f'{drop_in_dir}/{SANDBOX_DROP_IN}'
+    print(f"Relaxing the systemd sandboxing of {unit} where it would break Jobe")
+    os.makedirs(drop_in_dir, exist_ok=True)
+    with open(drop_in, 'w') as dropin:
+        dropin.write('# Written by the Jobe installer: see "Jobe and systemd sandboxing"\n')
+        dropin.write('# in the Jobe README. Removed by "install --uninstall".\n')
+        dropin.write('[Service]\n')
+        dropin.write('\n'.join(directives) + '\n')
+    os.chmod(drop_in, 0o644)
+    do_command('systemctl daemon-reload')
+    print(f"    Wrote {drop_in}:")
+    for directive in directives:
+        print(f"        {directive}")
+    print(f"**** Jobe will not work until you run: systemctl restart {unit}")
+    print("     A reload is not enough: sandboxing is applied when the server starts.")
+
+
 def do_purge(install_dir):
     '''Purge existing users and extra files set up by a previous install'''
     with open('/etc/passwd') as infile:
@@ -168,6 +287,8 @@ def do_purge(install_dir):
     #do_command('groupdel jobe', ignore_errors=True)
     do_command('rm -rf /home/jobe')
     do_command('rm -rf /var/log/jobe')
+    do_command(f'rm -f /etc/systemd/system/*/{SANDBOX_DROP_IN}', ignore_errors=True)
+    do_command('systemctl daemon-reload', ignore_errors=True)
     do_command('rm -rf {}/files'.format(install_dir), ignore_errors=True)
     do_command('rm -rf ' + FILE_CACHE_BASE + '/*', ignore_errors=True)
 
@@ -269,6 +390,12 @@ def main():
         make_runguard(install_dir)
 
         make_sudoers(install_dir, webserver_user, num_jobe_users)
+
+        webserver_unit = get_webserver_unit()
+        if webserver_unit is None:
+            print("Web server is not run by systemd, so its sandboxing needs no changes")
+        else:
+            configure_webserver_sandbox(webserver_unit)
         try:
             os.remove(LANGUAGE_CACHE_FILE)
         except:
